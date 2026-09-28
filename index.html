@@ -4,6 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TripExpense V11</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--ink:#182230;--muted:#718096;--line:#e7ebf0;--brand:#2563eb;--brand2:#1d4ed8;--danger:#dc2626;--ok:#059669;--shadow:0 8px 28px rgba(15,23,42,.07);--r:18px}
@@ -54,8 +55,8 @@
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 <script>
 // ===================== SUPABASE CONFIG =====================
-const SUPABASE_URL='https://xqaqkmmpyzmftmphrjoi.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fbPAOthDBUtiDvVuJgr7dw_o847gLp6';
+const SUPABASE_URL=window.TRIP_EXPENSE_CONFIG?.SUPABASE_URL||'';
+const SUPABASE_PUBLISHABLE_KEY=window.TRIP_EXPENSE_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'';
 // ===========================================================
 const $=id=>document.getElementById(id); let sb=null, currentUser=null, cache={groups:[],trips:[],schedules:[],expenses:[],members:[],budgets:[]};
 const titles={dashboard:['Dashboard','ภาพรวมการเดินทาง'],groups:['Groups','จัดการกลุ่มผู้ร่วมเดินทาง'],trips:['Trips','จัดการทริปและ Trip ย่อย'],schedule:['Schedule','ตารางเดินทางและโรงแรม'],expenses:['Expenses','ค่าใช้จ่ายและใบเสร็จ'],budget:['Budget','งบประมาณและการควบคุมค่าใช้จ่าย'],settings:['Settings','บัญชีและการเชื่อมต่อ Supabase'],reports:['Reports','รายงานและ Export']};
@@ -139,5 +140,5 @@ async function deleteSchedule(id){if(!confirm('ลบ Schedule นี้? ค่
 async function openGroupMembers(gid){const g=cache.groups.find(x=>x.id===gid);const {data:gm,error}=await sb.from('group_members').select('user_id,role,joined_at').eq('group_id',gid);if(error)throw error;const ids=(gm||[]).map(x=>x.user_id);let ps=[];if(ids.length){const {data}=await sb.from('profiles').select('id,full_name').in('id',ids);ps=data||[]}modal(`<div class="section"><div><h3>${esc(g.name)} · สมาชิก</h3><div class="muted">Group Code: ${esc(g.code)}</div></div><div class="spacer"></div><button class="btn secondary" onclick="closeModal()">ปิด</button></div>${(gm||[]).map(m=>{const p=ps.find(x=>x.id===m.user_id);return `<div class="listitem"><b>${esc(p?.full_name||m.user_id.slice(0,8))}</b><div class="muted">${esc(m.role)}</div></div>`}).join('')||'<div class="empty">ไม่มีสมาชิก</div>'}`)}
 async function saveProfile(){try{const name=$('profileName').value.trim();const {error}=await sb.from('profiles').update({full_name:name,updated_at:new Date().toISOString()}).eq('id',currentUser.id);if(error)throw error;toast('บันทึกข้อมูลแล้ว')}catch(e){err(e)}}
 async function boot(){try{const {data:{user}}=await sb.auth.getUser();if(!user)return;currentUser=user;$('auth').classList.add('hide');$('app').classList.remove('hide');$('projectUrl').textContent=SUPABASE_URL;const {data:p}=await sb.from('profiles').select('full_name').eq('id',user.id).maybeSingle();$('profileName').value=p?.full_name||user.user_metadata?.full_name||'';await render();go('dashboard')}catch(e){err(e)}}
-if(!ready()){alert('กรุณาใส่ SUPABASE_URL และ SUPABASE_PUBLISHABLE_KEY ใน Index.html ก่อนใช้งาน');}else{sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){currentUser=null;$('app').classList.add('hide');$('auth').classList.remove('hide')}});sb.auth.getSession().then(({data})=>{if(data.session)boot()})}
+if(!ready()){alert('กรุณาใส่ SUPABASE_URL และ SUPABASE_PUBLISHABLE_KEY ใน assets/js/config.js ก่อนใช้งาน');}else{sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){currentUser=null;$('app').classList.add('hide');$('auth').classList.remove('hide')}});sb.auth.getSession().then(({data})=>{if(data.session)boot()})}
 </script></body></html>
