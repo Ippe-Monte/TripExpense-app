@@ -54,8 +54,8 @@
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 <script>
 // ===================== SUPABASE CONFIG =====================
-const SUPABASE_URL='YOUR_SUPABASE_URL';
-const SUPABASE_PUBLISHABLE_KEY='YOUR_SUPABASE_PUBLISHABLE_KEY';
+const SUPABASE_URL='https://xqaqkmmpyzmftmphrjoi.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fbPAOthDBUtiDvVuJgr7dw_o847gLp6';
 // ===========================================================
 const $=id=>document.getElementById(id); let sb=null, currentUser=null, cache={groups:[],trips:[],schedules:[],expenses:[],members:[],budgets:[]};
 const titles={dashboard:['Dashboard','ภาพรวมการเดินทาง'],groups:['Groups','จัดการกลุ่มผู้ร่วมเดินทาง'],trips:['Trips','จัดการทริปและ Trip ย่อย'],schedule:['Schedule','ตารางเดินทางและโรงแรม'],expenses:['Expenses','ค่าใช้จ่ายและใบเสร็จ'],budget:['Budget','งบประมาณและการควบคุมค่าใช้จ่าย'],settings:['Settings','บัญชีและการเชื่อมต่อ Supabase'],reports:['Reports','รายงานและ Export']};
