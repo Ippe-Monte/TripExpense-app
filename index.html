@@ -2,8 +2,8 @@
 <html lang="th">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TripExpense V14</title>
-<link rel="stylesheet" href="css/app.css?v=14">
+<title>TripExpense V14.1</title>
+<link rel="stylesheet" href="css/app.css?v=141">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,7 +14,7 @@
   <div id="authLogin">
     <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="email"></div>
     <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
-    <button class="btn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
+    <button class="btn" id="loginBtn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
     <p style="text-align:center;margin:10px 0 0"><button class="btn ghost sm" onclick="openForgotPassword()">ลืมรหัสผ่าน?</button></p>
     <p class="muted" style="text-align:center">ยังไม่มีบัญชี? <button class="btn ghost" onclick="showRegister()">สมัครสมาชิก</button></p>
   </div>
@@ -22,13 +22,13 @@
     <div class="field"><label>ชื่อ</label><input id="regName"></div>
     <div class="field"><label>Email</label><input id="regEmail" type="email"></div>
     <div class="field"><label>Password (อย่างน้อย 8 ตัวอักษร)</label><input id="regPass" type="password" autocomplete="new-password"></div>
-    <button class="btn" style="width:100%" onclick="register()">สร้างบัญชี</button>
+    <button class="btn" id="regBtn" style="width:100%" onclick="register()">สร้างบัญชี</button>
     <p class="muted" style="text-align:center">มีบัญชีแล้ว? <button class="btn ghost" onclick="showLogin()">เข้าสู่ระบบ</button></p>
   </div>
 </div></div>
 
 <div id="app" class="app hide"><div class="layout">
-<aside class="side"><div class="logo">Trip<span>Expense</span></div><div class="muted">V14 · Supabase</div>
+<aside class="side"><div class="logo">Trip<span>Expense</span></div><div class="muted">V14.1 · Supabase</div>
 <nav class="nav">
 <button data-p="dashboard" onclick="go('dashboard')">🏠 Dashboard</button><button data-p="trips" onclick="go('trips')">🧳 Trips</button><button data-p="schedule" onclick="go('schedule')">🗺️ Schedule</button><button data-p="expenses" onclick="go('expenses')">💸 Expenses</button><button data-p="documents" onclick="go('documents')">📄 Documents</button><button data-p="budget" onclick="go('budget')">💰 Budget</button><button data-p="reports" onclick="go('reports')">📊 Reports</button><button data-p="groups" onclick="go('groups')">👥 Groups</button><button data-p="settings" onclick="go('settings')">👤 Profile</button><button class="devOnly" data-p="developer" onclick="go('developer')">🛠️ Developer</button>
 </nav><div style="position:absolute;bottom:20px;left:20px;right:20px"><button class="btn secondary" style="width:100%" onclick="logout()">ออกจากระบบ</button></div></aside>
@@ -57,16 +57,16 @@
 </div></main></div><div class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')">🏠<br>Home</button><button data-p="trips" onclick="go('trips')">🧳<br>Trip</button><button data-p="schedule" onclick="go('schedule')">🗺️<br>Schedule</button><button data-p="expenses" onclick="go('expenses')">💸<br>Expense</button><button data-p="documents" onclick="go('documents')">📄<br>Docs</button><button data-p="budget" onclick="go('budget')">💰<br>Budget</button><button data-more onclick="openMoreMenu()">☰<br>เพิ่มเติม</button></div></div>
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 
-<script src="js/core.js?v=14"></script>
-<script src="js/groups.js?v=14"></script>
-<script src="js/trips.js?v=14"></script>
-<script src="js/dashboard.js?v=14"></script>
-<script src="js/schedule.js?v=14"></script>
-<script src="js/expenses.js?v=14"></script>
-<script src="js/budget.js?v=14"></script>
-<script src="js/documents.js?v=14"></script>
-<script src="js/reports.js?v=14"></script>
-<script src="js/profile.js?v=14"></script>
-<script src="js/developer.js?v=14"></script>
+<script src="js/core.js?v=141"></script>
+<script src="js/groups.js?v=141"></script>
+<script src="js/trips.js?v=141"></script>
+<script src="js/dashboard.js?v=141"></script>
+<script src="js/schedule.js?v=141"></script>
+<script src="js/expenses.js?v=141"></script>
+<script src="js/budget.js?v=141"></script>
+<script src="js/documents.js?v=141"></script>
+<script src="js/reports.js?v=141"></script>
+<script src="js/profile.js?v=141"></script>
+<script src="js/developer.js?v=141"></script>
 <script>init()</script>
 </body></html>
