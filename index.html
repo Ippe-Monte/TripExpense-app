@@ -66,8 +66,8 @@ th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sorted{color:va
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 <script>
 // ===================== SUPABASE CONFIG =====================
-const SUPABASE_URL=window.TRIP_EXPENSE_CONFIG?.SUPABASE_URL||'';
-const SUPABASE_PUBLISHABLE_KEY=window.TRIP_EXPENSE_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'';
+const SUPABASE_URL=window.TRIP_EXPENSE_CONFIG?.SUPABASE_URL||'https://xqaqkmmpyzmftmphrjoi.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY=window.TRIP_EXPENSE_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_fbPAOthDBUtiDvVuJgr7dw_o847gLp6';
 // ===========================================================
 const $=id=>document.getElementById(id); let sb=null, currentUser=null, cache={groups:[],trips:[],schedules:[],expenses:[],members:[],budgets:[],budgetError:null,receipts:[],receiptError:null,documents:[],docFiles:[],docError:null};
 let calCursor=null, calInit=false;
