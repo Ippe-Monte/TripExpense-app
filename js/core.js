@@ -1,0 +1,107 @@
+// =====================================================================
+// TripExpense V14 — core.js
+// Supabase client, state, สิทธิ์, Trip ปัจจุบัน, การโหลดข้อมูล, auth, helpers
+// =====================================================================
+const SUPABASE_URL=window.TRIP_EXPENSE_CONFIG?.SUPABASE_URL||'';
+const SUPABASE_PUBLISHABLE_KEY=window.TRIP_EXPENSE_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'';
+const APP_URL=location.origin+location.pathname;
+const $=id=>document.getElementById(id);
+let sb=null,currentUser=null,me=null,myContacts=null,isDev=false,curTripId=null,devViewId=null;
+let calCursor=null,calInit=false;
+const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],expenses:[],budgets:[],budgetError:null,receipts:[],receiptError:null,documents:[],docFiles:[],docError:null,payments:[],paymentError:null};
+const titles={dashboard:['Dashboard','ภาพรวมของ Trip ปัจจุบัน'],groups:['Groups','กลุ่มของฉัน'],trips:['Trips','Trip ของฉันและ Trip ใน Group'],schedule:['Schedule','ตารางเดินทาง'],expenses:['Expenses','ค่าใช้จ่ายและการชำระคืน'],documents:['Documents','เอกสารการเดินทาง'],budget:['Budget','งบประมาณ'],reports:['Reports','รายงานและ Export'],settings:['Profile','ข้อมูลส่วนตัวและความปลอดภัย'],developer:['Developer Console','ภาพรวมทั้งระบบ (ดูได้อย่างเดียว)']};
+// ---------- utils ----------
+function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function money(v){return new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:2}).format(Number(v||0))}
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function today(){return ymd(new Date())}
+function thaiDate(ds){return new Date(ds+'T00:00:00').toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
+function toast(msg){$('toast').textContent=msg;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2600)}
+function tripById(id){return id?cache.trips.find(t=>t.id===id)||null:null}
+function tripEnd(t){return t?.end_date||t?.start_date||''}
+function inTrip(t,ds){return !!t?.start_date&&!!ds&&ds>=t.start_date&&ds<=tripEnd(t)}
+function tripDates(t){if(!t?.start_date)return [];const out=[],end=tripEnd(t),d=new Date(t.start_date+'T00:00:00');for(let i=0;i<400;i++){const s=ymd(d);if(s>end)break;out.push(s);d.setDate(d.getDate()+1)}return out}
+function tripRangeText(t){return t?.start_date?`${t.start_date} → ${tripEnd(t)} (${tripDates(t).length} วัน)`:'Trip นี้ยังไม่ได้กำหนดวันเดินทาง'}
+function checkTripDates(s,e){if(s&&e&&e<s)throw new Error('วันกลับต้องไม่ก่อนวันเริ่ม')}
+function rpcId(d){if(!d)return null;if(typeof d==='string')return d;if(Array.isArray(d))return rpcId(d[0]);return d.id||d.trip_id||null}
+async function selectIn(table,cols,col,ids,size=150){const out=[];for(let i=0;i<ids.length;i+=size){const {data,error}=await sb.from(table).select(cols).in(col,ids.slice(i,i+size));if(error)throw error;out.push(...(data||[]))}return out}
+function modal(html){$('modal').innerHTML=html;$('mb').classList.add('show')};function closeModal(){$('mb').classList.remove('show');$('modal').innerHTML=''}
+function showRegister(){$('authLogin').classList.add('hide');$('authRegister').classList.remove('hide')}
+function showLogin(){$('authRegister').classList.add('hide');$('authLogin').classList.remove('hide')}
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function downloadBlob(text,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+// ---------- บทบาทและสิทธิ์ (UI) — ฐานข้อมูลบังคับสิทธิ์จริงด้วย RLS ----------
+function curTrip(){return tripById(curTripId)}
+function myRole(tid=curTripId){return cache.roles[tid]||null}
+function isTripAdmin(tid=curTripId){return ['owner','admin'].includes(myRole(tid))}
+function isClosed(t=curTrip()){return t?.status==='closed'}
+function canWrite(tid=curTripId){return !!myRole(tid)&&!isClosed(tripById(tid))}
+function canAdmin(tid=curTripId){return isTripAdmin(tid)&&canWrite(tid)}
+function canEditRow(row){return canWrite()&&(row?.created_by===currentUser?.id||isTripAdmin())}
+function roleName(r){return {owner:'👑 Owner',admin:'🛡️ Admin',member:'Member'}[r]||r||'-'}
+function tripStatus(t){if(!t)return {key:'none',label:'-'};if(t.status==='closed')return {key:'closed',label:'🔒 ปิดแล้ว'};const td=today();if(t.start_date&&td<t.start_date)return {key:'planning',label:'🟡 วางแผน'};if(t.start_date&&td<=tripEnd(t))return {key:'traveling',label:'🟢 กำลังเดินทาง'};if(t.start_date&&td>tripEnd(t))return {key:'ended',label:'⚪ เดินทางเสร็จแล้ว'};return {key:'planning',label:'🟡 วางแผน'}}
+function displayName(p){return p?(String(p.nickname||'').trim()||String(p.full_name||'').trim()||String(p.id||'').slice(0,8)):'-'}
+function memberName(uid){return displayName(cache.members.find(m=>m.id===uid)||{id:uid})}
+function payerName(id){return memberName(id)}
+function applyAccessClasses(){document.body.classList.toggle('ro',!canWrite());document.body.classList.toggle('notadm',!canAdmin());document.body.classList.toggle('isdev',isDev);const b=$('tripBanner');if(!b)return;const t=curTrip();let html='';if(devViewId&&t)html=`<div class="banner dev">👁 โหมด Developer: กำลังดู <b>${esc(t.trip_no)} · ${esc(t.name)}</b> แบบอ่านอย่างเดียว <button class="btn sm secondary" onclick="exitDevView()">ออกจากโหมดดู</button></div>`;else if(t&&isClosed(t))html=`<div class="banner closed">🔒 Trip นี้ปิดแล้ว — ดูได้อย่างเดียว${isTripAdmin()?` <button class="btn sm secondary" onclick="reopenTrip('${t.id}')">เปิด Trip อีกครั้ง</button>`:''}</div>`;b.innerHTML=html}
+function saveCurTrip(){try{if(curTripId&&!devViewId)localStorage.setItem('te_cur_trip_'+currentUser.id,curTripId)}catch(_){}}
+function pickDefaultTrip(){let saved=null;try{saved=localStorage.getItem('te_cur_trip_'+currentUser.id)}catch(_){}if(saved&&cache.roles[saved])return saved;const mine=cache.trips.filter(t=>cache.roles[t.id]);const open=mine.filter(t=>t.status!=='closed');const td=today();return (open.find(t=>inTrip(t,td))||open.filter(t=>t.start_date&&t.start_date>=td).sort((a,b)=>a.start_date.localeCompare(b.start_date))[0]||open[0]||mine[0])?.id||null}
+async function switchTrip(id){if(!id)return;devViewId=null;curTripId=id;calInit=false;saveCurTrip();await render()}
+// ---------- Error messages ----------
+const ERR_TEXT={NOT_AUTHENTICATED:'กรุณาเข้าสู่ระบบใหม่',TRIP_NOT_FOUND:'ไม่พบ Trip',NOT_GROUP_MEMBER:'คุณไม่ได้เป็นสมาชิก Group นี้',INVALID_BUDGET:'กรุณาระบุงบประมาณมากกว่า 0',INVALID_ALERT_PERCENT:'เปอร์เซ็นต์แจ้งเตือนต้องอยู่ระหว่าง 1-100',GROUP_NOT_FOUND:'ไม่พบ Group Code',NOT_TRIP_ADMIN:'เฉพาะ Owner หรือ Admin ของ Trip ที่ยังไม่ปิดเท่านั้น',NOT_TRIP_OWNER:'เฉพาะ Owner ของ Trip เท่านั้น',NOT_GROUP_OWNER:'เฉพาะ Owner ของ Group เท่านั้น',NOT_GROUP_ADMIN:'เฉพาะ Owner หรือ Admin ของ Group เท่านั้น',CANNOT_REMOVE_OWNER:'ไม่สามารถนำ Owner ออกได้',OWNER_CANNOT_LEAVE:'Owner ออกจากกลุ่มไม่ได้',MEMBER_NOT_FOUND:'ไม่พบสมาชิก',MEMBER_HAS_EXPENSES:'สมาชิกคนนี้มีค่าใช้จ่ายหรือส่วนที่ต้องหารอยู่ใน Trip จึงนำออกไม่ได้ (ต้องแก้ไขรายการค่าใช้จ่ายก่อน)',INVALID_ROLE:'บทบาทไม่ถูกต้อง',NOT_DEVELOPER:'เฉพาะ Developer เท่านั้น',INVALID_STATUS:'สถานะไม่ถูกต้อง'};
+function friendlyError(e){const m=e?.message||String(e),c=e?.code||'';if(ERR_TEXT[m])return ERR_TEXT[m];if(c==='PGRST202'||/could not find the function/i.test(m))return 'ไม่พบฟังก์ชันในฐานข้อมูล กรุณารันไฟล์ sql/v14_security.sql ใน Supabase SQL Editor ก่อน\n('+m+')';if(c==='42P01'||c==='PGRST205'||/does not exist|could not find the table/i.test(m))return 'ไม่พบตาราง/คอลัมน์ในฐานข้อมูล กรุณารันไฟล์ sql/v14_security.sql ใน Supabase SQL Editor ก่อน\n('+m+')';if(c==='42501'||/row-level security|permission denied/i.test(m))return isClosed()?'Trip นี้ปิดแล้ว จึงแก้ไขข้อมูลไม่ได้':'คุณไม่มีสิทธิ์ทำรายการนี้ (อาจเป็นรายการที่คนอื่นสร้าง หรือต้องเป็น Admin)';if(/trips_date_range_chk/.test(m))return 'วันกลับต้องไม่ก่อนวันเริ่ม';if(c==='23502'||/violates not-null constraint/i.test(m))return 'ข้อมูลในฐานข้อมูลขาดค่าที่จำเป็น\n('+m+')';if(/Invalid login credentials/i.test(m))return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';if(/Email not confirmed/i.test(m))return 'ยังไม่ได้ยืนยันอีเมล กรุณาตรวจสอบกล่องจดหมาย';if(/Password should be at least/i.test(m))return 'รหัสผ่านสั้นเกินไป';if(/rate limit|too many/i.test(m))return 'ทำรายการบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่';return m}
+function err(e){console.error(e);alert(friendlyError(e))}
+function ready(){return SUPABASE_URL.startsWith('http')&&!SUPABASE_PUBLISHABLE_KEY.startsWith('YOUR_')}
+function go(p){if(p==='developer'&&!isDev)p='dashboard';document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(p).classList.add('active');document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('active',x.dataset.p===p));document.querySelector('.mobileNav [data-more]')?.classList.toggle('active',['groups','reports','settings','developer'].includes(p));$('pt').textContent=titles[p][0];$('ps').textContent=titles[p][1];if(p==='developer')renderDeveloper();if(p==='settings')renderProfile();window.scrollTo(0,0)}
+// ---------- โหลดข้อมูล: รายการ Trip ทั้งหมดของฉัน + ข้อมูลละเอียดเฉพาะ Trip ปัจจุบัน ----------
+async function loadAll(){
+  const {data:gm,error:ge}=await sb.from('group_members').select('group_id,role,groups(id,name,code,owner_id)').eq('user_id',currentUser.id);if(ge)throw ge;
+  cache.groups=(gm||[]).filter(x=>x.groups).map(x=>({...x.groups,role:x.role}));
+  const {data:tm,error:te}=await sb.from('trip_members').select('trip_id,role').eq('user_id',currentUser.id);if(te)throw te;
+  cache.roles=Object.fromEntries((tm||[]).map(x=>[x.trip_id,x.role]));
+  const myIds=Object.keys(cache.roles),gids=cache.groups.map(g=>g.id);
+  const [a,b]=await Promise.all([myIds.length?selectIn('trips','*','id',myIds):[],gids.length?selectIn('trips','*','group_id',gids):[]]);
+  const map=new Map();[...a,...b].forEach(t=>map.set(t.id,t));
+  if(devViewId&&isDev&&!map.has(devViewId)){const {data:dt,error:de}=await sb.from('trips').select('*').eq('id',devViewId).maybeSingle();if(de)throw de;if(dt)map.set(dt.id,dt);else devViewId=null}
+  cache.trips=[...map.values()].sort((x,y)=>String(y.created_at||'').localeCompare(String(x.created_at||'')));
+  if(devViewId)curTripId=devViewId;else if(!curTripId||!cache.roles[curTripId])curTripId=pickDefaultTrip();
+  await loadTripData(curTripId)}
+async function loadTripData(tid){
+  Object.assign(cache,{tripMembers:[],members:[],schedules:[],expenses:[],budgets:[],budgetError:null,receipts:[],receiptError:null,documents:[],docFiles:[],docError:null,payments:[],paymentError:null});
+  if(!tid)return;
+  const [mR,sR,eR,bR]=await Promise.all([sb.from('trip_members').select('user_id,role,joined_at').eq('trip_id',tid),sb.from('schedules').select('*').eq('trip_id',tid).order('schedule_date',{ascending:true}),sb.from('expenses').select('*').eq('trip_id',tid).order('expense_date',{ascending:false}).order('created_at',{ascending:false}),sb.from('trip_budgets').select('*').eq('trip_id',tid)]);
+  if(mR.error)throw mR.error;if(sR.error)throw sR.error;if(eR.error)throw eR.error;
+  cache.tripMembers=mR.data||[];cache.schedules=sR.data||[];cache.expenses=eR.data||[];
+  if(bR.error){console.warn('trip_budgets',bR.error);cache.budgetError=bR.error}else cache.budgets=bR.data||[];
+  const uids=[...new Set([...cache.tripMembers.map(m=>m.user_id),...cache.expenses.map(e=>e.payer_id)])];
+  if(uids.length){const {data:ps,error:pe}=await sb.from('profiles').select('*').in('id',uids);if(pe)throw pe;cache.members=ps||[]}
+  const eids=cache.expenses.map(e=>e.id);
+  const tasks=[
+    (async()=>{try{cache.receipts=eids.length?await selectIn('expense_receipts','*','expense_id',eids):[]}catch(x){console.warn('expense_receipts',x);cache.receiptError=x}})(),
+    (async()=>{try{const {data,error}=await sb.from('trip_documents').select('*').eq('trip_id',tid);if(error)throw error;cache.documents=(data||[]).sort((a,b)=>String(a.doc_date||'9999').localeCompare(String(b.doc_date||'9999'))||String(b.created_at||'').localeCompare(String(a.created_at||'')));const dids=cache.documents.map(d=>d.id);cache.docFiles=dids.length?await selectIn('trip_document_files','*','document_id',dids):[];cache.docFiles.sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')))}catch(x){console.warn('trip_documents',x);cache.docError=x;cache.documents=[];cache.docFiles=[]}})(),
+    (async()=>{try{const {data,error}=await sb.from('settlement_payments').select('*').eq('trip_id',tid).order('paid_at',{ascending:false});if(error)throw error;cache.payments=data||[]}catch(x){console.warn('settlement_payments',x);cache.paymentError=x}})()];
+  await Promise.all(tasks)}
+async function render(){try{await loadAll();renderTripSwitcher();applyAccessClasses();renderDashboard();renderGroups();renderTrips();renderScheduleSelectors();if(!calInit){calInit=true;calCursor=initialCalendarDate()}renderCalendar(calCursor||today());renderScheduleList();renderExpenseTable();renderDocFilters();renderDocuments();renderCharts();renderExpenseSummary();renderBudgetSelectors();renderReportSelectors();if(isDev&&$('developer').classList.contains('active'))renderDeveloper()}catch(e){err(e)}}
+// ---------- Auth ----------
+async function register(){try{const email=$('regEmail').value.trim(),pass=$('regPass').value,name=$('regName').value.trim();if(!email||!pass||!name)return alert('กรุณากรอกข้อมูลให้ครบ');if(pass.length<8)return alert('รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร');const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:APP_URL}});if(error)throw error;if(data.session){toast('สมัครสมาชิกสำเร็จ');await boot()}else alert('สมัครสมาชิกสำเร็จ กรุณาตรวจสอบ Email เพื่อยืนยันบัญชี แล้วเข้าสู่ระบบ')}catch(e){err(e)}}
+async function login(){try{const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPass').value});if(error)throw error;await boot()}catch(e){err(e)}}
+async function logout(){await sb.auth.signOut();currentUser=null;me=null;isDev=false;devViewId=null;curTripId=null;$('app').classList.add('hide');$('auth').classList.remove('hide');showLogin()}
+function openForgotPassword(){modal(`<div class="section"><h3>ลืมรหัสผ่าน</h3><div class="spacer"></div><button class="btn secondary" onclick="closeModal()">ปิด</button></div><p class="muted">ใส่อีเมลที่ใช้สมัคร ระบบจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้</p><div class="field"><label>Email</label><input id="fpEmail" type="email" autocomplete="email" value="${esc($('loginEmail')?.value||'')}"></div><button class="btn" id="fpBtn" onclick="sendResetEmail()">ส่งลิงก์ตั้งรหัสผ่านใหม่</button>`)}
+async function sendResetEmail(){const btn=$('fpBtn');try{const email=$('fpEmail').value.trim();if(!email)throw new Error('กรุณาใส่อีเมล');btn.disabled=true;const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:APP_URL});if(error)throw error;closeModal();alert('ถ้าอีเมลนี้มีบัญชีอยู่ ระบบได้ส่งลิงก์ตั้งรหัสผ่านใหม่ไปแล้ว กรุณาตรวจสอบกล่องจดหมาย (รวมถึงโฟลเดอร์ Spam)')}catch(e){if(btn)btn.disabled=false;err(e)}}
+function showRecoveryModal(){modal(`<div class="section"><h3>ตั้งรหัสผ่านใหม่</h3></div><div class="field"><label>รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)</label><input id="rpNew" type="password" autocomplete="new-password"></div><div class="field"><label>ยืนยันรหัสผ่านใหม่</label><input id="rpNew2" type="password" autocomplete="new-password"></div><button class="btn" id="rpBtn" onclick="setRecoveredPassword()">บันทึกรหัสผ่านใหม่</button>`)}
+async function setRecoveredPassword(){const btn=$('rpBtn');try{const p=$('rpNew').value,p2=$('rpNew2').value;if(p.length<8)throw new Error('รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร');if(p!==p2)throw new Error('รหัสผ่านทั้งสองช่องไม่ตรงกัน');btn.disabled=true;const {error}=await sb.auth.updateUser({password:p});if(error)throw error;closeModal();history.replaceState(null,'',APP_URL);toast('ตั้งรหัสผ่านใหม่แล้ว');await boot()}catch(e){if(btn)btn.disabled=false;err(e)}}
+async function boot(){try{const {data:{user}}=await sb.auth.getUser();if(!user)return;currentUser=user;$('auth').classList.add('hide');$('app').classList.remove('hide');const [{data:dv},_p]=await Promise.all([sb.rpc('te_is_developer'),loadMyProfile()]);isDev=dv===true;document.body.classList.toggle('isdev',isDev);await render();go('dashboard')}catch(e){err(e)}}
+function openMoreMenu(){modal(`<div class="section"><h3>เมนูเพิ่มเติม</h3><div class="spacer"></div><button class="btn secondary" onclick="closeModal()">ปิด</button></div><div class="morelist"><button onclick="closeModal();openTripForm()">＋ สร้าง Trip</button><button onclick="closeModal();go('groups')">👥 Groups</button><button onclick="closeModal();go('reports')">📊 Reports</button><button onclick="closeModal();go('settings')">👤 Profile</button>${isDev?`<button onclick="closeModal();go('developer')">🛠️ Developer Console</button>`:''}<button class="dangerText" onclick="closeModal();logout()">ออกจากระบบ</button></div>`)}
+function init(){if(!ready()){alert('กรุณาใส่ SUPABASE_URL และ SUPABASE_PUBLISHABLE_KEY ใน assets/js/config.js ก่อนใช้งาน');return}sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});let recovering=false;sb.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){currentUser=null;$('app').classList.add('hide');$('auth').classList.remove('hide')}if(event==='PASSWORD_RECOVERY'){recovering=true;$('auth').classList.add('hide');$('app').classList.remove('hide');setTimeout(showRecoveryModal,50)}});sb.auth.getSession().then(({data})=>{if(data.session&&!recovering)boot()})}
+// ---------- file upload helpers ----------
+const MAX_UPLOAD=10*1024*1024;
+const RECEIPT_SETUP_MSG='ยังไม่ได้ติดตั้งระบบใบเสร็จหลายใบ กรุณารันไฟล์ v13_features.sql ใน Supabase SQL Editor';
+const DOC_SETUP_MSG='ยังไม่ได้ติดตั้งระบบเอกสาร กรุณารันไฟล์ v13_features.sql ใน Supabase SQL Editor';
+function validateFileType(f){const ok=/^image\//.test(f.type)||f.type==='application/pdf'||/\.(pdf|jpe?g|png|webp|gif|heic|heif)$/i.test(f.name);if(!ok)throw new Error(`ไฟล์ "${f.name}" ไม่รองรับ (รองรับรูปภาพและ PDF)`);if(f.size>40*1024*1024)throw new Error(`ไฟล์ "${f.name}" ใหญ่เกินไป`)}
+async function compressImage(file,maxSide=1600,quality=.82){const bmp=await createImageBitmap(file);const scale=Math.min(1,maxSide/Math.max(bmp.width,bmp.height));if(scale===1&&file.size<700*1024){bmp.close?.();return file}const c=document.createElement('canvas');c.width=Math.round(bmp.width*scale);c.height=Math.round(bmp.height*scale);const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(bmp,0,0,c.width,c.height);bmp.close?.();const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',quality));if(!blob||blob.size>=file.size)return file;return new File([blob],file.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'})}
+async function prepareUpload(file){validateFileType(file);let out=file;if(/^image\/(jpeg|png|webp)$/.test(file.type)){try{out=await compressImage(file)}catch(x){console.warn('compress',x)}}if(out.size>MAX_UPLOAD)throw new Error(`ไฟล์ "${file.name}" ใหญ่เกิน 10 MB`);return out}
+function safeName(n){return String(n||'file').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-80)}
+function uniqId(){return Date.now()+'-'+Math.random().toString(36).slice(2,8)}
+function isImage(f){return /^image\/(jpeg|png|webp|gif)$/.test(f.mime_type||'')||/\.(jpe?g|png|webp|gif)$/i.test(f.file_name||f.file_path||'')}
+function thumbHtml(f,u){return `<a class="thumb" href="${esc(u||'#')}" target="_blank" rel="noopener">${isImage(f)&&u?`<img src="${esc(u)}" alt="" loading="lazy">`:'<span class="fileicon">📄</span>'}<small>${esc(f.file_name||'ไฟล์')}</small></a>`}
+async function renderThumbs(bucket,files,target){const box=$(target);if(!box)return;if(!files.length){box.innerHTML='<div class="muted">ไม่มีไฟล์</div>';return}try{const {data,error}=await sb.storage.from(bucket).createSignedUrls(files.map(f=>f.file_path),600);if(error)throw error;const urls=new Map((data||[]).map(x=>[x.path,x.signedUrl]));box.innerHTML=files.map(f=>thumbHtml(f,urls.get(f.file_path))).join('')}catch(x){box.innerHTML='<div class="dangerText">'+esc(friendlyError(x))+'</div>'}}
