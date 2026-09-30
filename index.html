@@ -2,57 +2,71 @@
 <html lang="th">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TripExpense V16</title>
+<title>TripExpense</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2563eb">
-<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="theme-color" content="#1a8cff">
+<link rel="icon" type="image/svg+xml" href="img/logo.svg">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TripExpense">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/app.css?v=16">
+<link rel="stylesheet" href="css/app.css?v=17">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 </head>
 <body>
-<div id="auth" class="auth"><div class="authbox">
-  <div class="logo">Trip<span>Expense</span></div><p class="muted">ระบบจัดการทริป ตารางเดินทาง และค่าใช้จ่ายแบบหลายผู้ใช้</p><div id="authInvite"></div>
-  <div id="authLogin">
-    <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="email"></div>
-    <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
-    <button class="btn" id="loginBtn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
-    <p style="text-align:center;margin:10px 0 0"><button class="btn ghost sm" onclick="openForgotPassword()">ลืมรหัสผ่าน?</button></p>
-    <p class="muted" style="text-align:center">ยังไม่มีบัญชี? <button class="btn ghost" onclick="showRegister()">สมัครสมาชิก</button></p>
+<div id="splash" class="splash"><div class="splash-in"><img src="img/logo.svg" class="splash-logo" alt=""><h1>Trip<span>Expense</span></h1><p>Travel More &nbsp;·&nbsp; Spend Smarter</p></div><div class="splash-dots"><i></i><i></i><i></i></div></div>
+
+<div id="auth" class="auth">
+  <div class="auth-top"><img src="img/logo.svg" class="auth-logo" alt=""><h1>Trip<span>Expense</span></h1><p>Travel More &nbsp;·&nbsp; Spend Smarter</p></div>
+  <div class="authcard">
+    <div id="authInvite"></div>
+    <div id="authWelcome">
+      <p class="auth-lead">บันทึกค่าใช้จ่ายทริปของคุณ<br>ให้ทุกการเดินทาง..คุ้มค่ากว่าเดิม</p><div class="featrow"><div><span>👛</span>บันทึกรายจ่าย<br>ง่ายๆ</div><div><span>📊</span>สรุปค่าใช้จ่าย<br>อัตโนมัติ</div><div><span>👥</span>แชร์ทริป<br>กับเพื่อนได้</div><div><span>✈️</span>เดินทาง<br>ได้สบายใจ</div></div>
+      <button class="btn big" style="width:100%" onclick="showRegister()">เริ่มใช้งาน</button>
+      <button class="btn ghost" style="width:100%;margin-top:6px" onclick="showLogin()">เข้าสู่ระบบ</button>
+    </div>
+    <div id="authLogin" class="hide">
+      <h3>เข้าสู่ระบบ</h3>
+      <div class="field"><label>อีเมล</label><input id="loginEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label>รหัสผ่าน</label><input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="btn big" id="loginBtn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
+      <div class="row" style="justify-content:space-between;margin-top:8px"><button class="btn ghost sm" onclick="openForgotPassword()">ลืมรหัสผ่าน?</button><button class="btn ghost sm" onclick="showRegister()">สมัครสมาชิก</button></div>
+      <button class="btn ghost sm backlink" onclick="showWelcome()">‹ กลับ</button>
+    </div>
+    <div id="authRegister" class="hide">
+      <h3>สร้างบัญชีใหม่</h3>
+      <div class="field"><label>ชื่อ</label><input id="regName" autocomplete="name"></div>
+      <div class="field"><label>อีเมล</label><input id="regEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label><input id="regPass" type="password" autocomplete="new-password"></div>
+      <button class="btn big" id="regBtn" style="width:100%" onclick="register()">สร้างบัญชี</button>
+      <p class="muted" style="text-align:center;margin:10px 0 0">มีบัญชีแล้ว? <button class="btn ghost sm" onclick="showLogin()">เข้าสู่ระบบ</button></p>
+      <button class="btn ghost sm backlink" onclick="showWelcome()">‹ กลับ</button>
+    </div>
   </div>
-  <div id="authRegister" class="hide">
-    <div class="field"><label>ชื่อ</label><input id="regName"></div>
-    <div class="field"><label>Email</label><input id="regEmail" type="email"></div>
-    <div class="field"><label>Password (อย่างน้อย 8 ตัวอักษร)</label><input id="regPass" type="password" autocomplete="new-password"></div>
-    <button class="btn" id="regBtn" style="width:100%" onclick="register()">สร้างบัญชี</button>
-    <p class="muted" style="text-align:center">มีบัญชีแล้ว? <button class="btn ghost" onclick="showLogin()">เข้าสู่ระบบ</button></p>
-  </div>
-</div></div>
+</div>
 
 <div id="app" class="app hide"><div class="layout">
-<aside class="side"><div class="logo">Trip<span>Expense</span></div><div class="muted">V16 · Supabase</div>
+<aside class="side"><div class="sidelogo"><img src="img/logo.svg" alt=""><div><div class="logo">Trip<span>Expense</span></div><div class="muted mini">V17 · Supabase</div></div></div>
 <nav class="nav">
-<button data-p="dashboard" onclick="go('dashboard')">🏠 Dashboard</button><button data-p="trips" onclick="go('trips')">🧳 Trips</button><button data-p="schedule" onclick="go('schedule')">🗺️ Schedule</button><button data-p="expenses" onclick="go('expenses')">💸 Expenses</button><button data-p="chat" onclick="go('chat')">💬 Chat <span class="navcount chatCount hide">0</span></button><button data-p="documents" onclick="go('documents')">📄 Documents</button><button data-p="budget" onclick="go('budget')">💰 Budget</button><button data-p="reports" onclick="go('reports')">📊 Reports</button><button data-p="groups" onclick="go('groups')">👥 Groups</button><button data-p="friends" onclick="go('friends')">🤝 Friends</button><button data-p="settings" onclick="go('settings')">👤 Profile</button><button class="devOnly" data-p="developer" onclick="go('developer')">🛠️ Developer</button>
-</nav><div style="position:absolute;bottom:20px;left:20px;right:20px;display:grid;gap:8px"><button class="btn secondary installBtn" style="width:100%" onclick="installApp()">📲 ติดตั้งเป็นแอป</button><button class="btn secondary" style="width:100%" onclick="logout()">ออกจากระบบ</button></div></aside>
-<main class="main"><header class="top"><div class="titles"><h2 id="pt" style="margin:0">Dashboard</h2><div id="ps" class="muted">ภาพรวมของ Trip ปัจจุบัน</div></div><div class="spacer"></div><button class="bell" title="การแจ้งเตือน" onclick="openInbox()">🔔<span class="inboxCount hide">0</span></button><select id="tripSwitch" class="tripswitch" title="Trip ปัจจุบัน" onchange="switchTrip(this.value)"></select><button class="btn hideMobile" onclick="openTripForm()">＋ สร้าง Trip</button></header>
+<button data-p="dashboard" onclick="go('dashboard')">🏠 หน้าหลัก</button><button data-p="summary" onclick="go('summary')">📊 สรุป</button><button data-p="chat" onclick="go('chat')">💬 แชต <span class="navcount chatCount hide">0</span></button><button data-p="schedule" onclick="go('schedule')">🗺️ Schedule</button><button data-p="trips" onclick="go('trips')">🧳 จัดการทริป</button><button data-p="documents" onclick="go('documents')">📄 เอกสาร</button><button data-p="budget" onclick="go('budget')">💰 งบประมาณ</button><button data-p="reports" onclick="go('reports')">🖨️ รายงาน</button><button data-p="groups" onclick="go('groups')">👥 กลุ่ม</button><button data-p="friends" onclick="go('friends')">🤝 เพื่อน</button><button data-p="profile" onclick="go('profile')">👤 โปรไฟล์</button><button class="devOnly" data-p="developer" onclick="go('developer')">🛠️ Developer</button>
+</nav><div class="sidebottom"><button class="btn secondary installBtn" style="width:100%" onclick="installApp()">📲 ติดตั้งเป็นแอป</button><button class="btn secondary" style="width:100%" onclick="logout()">ออกจากระบบ</button></div></aside>
+<main class="main"><header class="top"><div class="titles"><h2 id="pt" style="margin:0">หน้าหลัก</h2><div id="ps" class="muted">ภาพรวมของ Trip ปัจจุบัน</div></div><div class="spacer"></div><select id="tripSwitch" class="tripswitch" title="Trip ปัจจุบัน" onchange="switchTrip(this.value)"></select><button class="btn hideMobile" onclick="openTripForm()">＋ สร้าง Trip</button><button class="bell" title="การแจ้งเตือน" onclick="openInbox()">🔔<span class="inboxCount hide">0</span></button><button class="hdravatar" id="hdrAvatar" title="โปรไฟล์" onclick="go('profile')"></button></header>
 <div class="content"><div id="tripBanner"></div>
 
-<section id="dashboard" class="page active"><div id="dashHero"></div><br><div class="grid4"><div class="card metric"><div class="muted">ค่าใช้จ่ายรวม</div><b id="mTotal">-</b></div><div class="card metric"><div class="muted">สมาชิก</div><b id="mMembers">-</b></div><div class="card metric"><div class="muted">รายการค่าใช้จ่าย</div><b id="mExp">-</b></div><div class="card metric"><div class="muted">งบคงเหลือ</div><b id="mRemain">-</b></div></div><br><div class="grid2"><div class="card"><div class="section"><h3>💰 Budget</h3><div class="spacer"></div><button class="btn sm secondary" onclick="go('budget')">ดูทั้งหมด</button></div><div id="dashBudget"></div></div><div class="card"><div class="section"><h3>💸 ยอดค้างชำระคืน</h3><div class="spacer"></div><button class="btn sm secondary" onclick="go('expenses')">Settlement</button></div><div id="dashSettle"></div></div></div><br><div class="grid2"><div class="card"><div class="section"><h3>ค่าใช้จ่ายตามหมวด</h3></div><div id="categoryChart" class="chart"></div></div><div class="card"><div class="section"><h3>ผู้จ่ายเงิน</h3></div><div id="payerChart" class="chart"></div></div></div><br><div class="card"><div class="section"><h3>ค่าใช้จ่ายล่าสุด</h3><div class="spacer"></div><button class="btn sm secondary" onclick="go('expenses')">ดูทั้งหมด</button></div><div id="dashExpenses"></div></div></section>
+<section id="dashboard" class="page active"><div id="homeBox"></div></section>
 
-<section id="groups" class="page"><div class="section"><div><h3>Groups</h3><div class="muted">คนที่เข้าร่วม Trip ด้วยกันบ่อยๆ รวมไว้เป็น Group</div></div><div class="spacer"></div><button class="btn" onclick="createGroup()">＋ สร้าง Group</button></div><div class="card"><div class="row"><input id="joinCode" placeholder="ใส่ Code ของ Group หรือ Trip" autocapitalize="characters" onkeydown="if(event.key==='Enter')joinCodeFromInput()" style="flex:1;min-width:220px;padding:11px;border:1px solid var(--line);border-radius:11px"><button class="btn secondary" onclick="joinCodeFromInput()">เข้าร่วม</button></div><div class="mini muted" style="margin-top:8px">ใส่ได้ทั้ง Group Code และ Trip Code · เข้าร่วม Group แล้ว ไปที่หน้า Trips เพื่อเข้าร่วมหรือขอเข้าร่วม Trip ใน Group</div></div><br><div id="groupsList"></div></section>
+<section id="summary" class="page"><div class="segtabs" id="sumTabs"><button data-t="overview" onclick="setSumTab('overview')">ภาพรวม</button><button data-t="daily" onclick="setSumTab('daily')">รายวัน</button><button data-t="category" onclick="setSumTab('category')">หมวดหมู่</button><button data-t="list" onclick="setSumTab('list')">รายการ</button></div><div id="summaryBox"></div></section>
+
+<section id="chat" class="page"><div class="chattabs" id="chatTabs"></div><div class="chatpane card"><div id="chatHead" class="chathead"><div class="muted">เลือกห้องแชตด้านบน</div></div><div id="chatMsgs" class="chatmsgs"></div><div id="chatClosedNote" class="muted mini hide" style="padding:10px;text-align:center">🔒 Trip นี้ปิดแล้ว ส่งข้อความใหม่ไม่ได้</div><div id="chatComposer" class="chatcomposer hide"><div id="chatFileName" class="mini"></div><div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="btn secondary sm attach" title="แนบรูป">📷<input type="file" accept="image/*" hidden onchange="onChatFile(this)"></label><textarea id="chatInput" rows="1" maxlength="2000" placeholder="พิมพ์ข้อความ..." onkeydown="chatKey(event)"></textarea><button class="btn" id="chatSend" onclick="sendChat()">ส่ง</button></div></div></div></section>
+
+<section id="schedule" class="page"><div class="segtabs"><button class="active">🗓️ ตารางเดินทาง</button><button onclick="toast('🗺️ แผนที่การเดินทาง (ปักหมุดตามแผน) — เร็วๆ นี้')">🗺️ แผนที่ <small>เร็วๆ นี้</small></button></div><div class="section"><div><h3>Schedule</h3><div class="muted">ตารางเดินทางตามช่วงวันของ Trip · โรงแรมจะเชื่อมกับ Expenses อัตโนมัติ</div></div><div class="spacer"></div><button class="btn w" onclick="openScheduleForm()">＋ เพิ่ม Schedule</button></div><div class="card"><div id="scheduleTripInfo" class="muted"></div></div><br><div class="card"><div class="section"><h3 id="calTitle">Calendar</h3><div class="spacer"></div><button class="btn sm secondary" onclick="shiftCalendar(-1)">‹</button><button class="btn sm secondary" onclick="renderCalendar(today())">วันนี้</button><button class="btn sm secondary" onclick="shiftCalendar(1)">›</button></div><div id="calendar" class="calendar"></div><div class="mini muted" style="margin-top:8px">🟩 วันที่อยู่ในช่วง Trip — คลิกเพื่อเพิ่ม Schedule ของวันนั้น</div></div><br><div class="card"><div id="scheduleList"></div></div></section>
 
 <section id="trips" class="page"><div class="section"><div><h3>Trips</h3><div class="muted">Trip ที่คุณเป็นสมาชิก · เลือก "ใช้ Trip นี้" เพื่อสลับ Trip ปัจจุบัน</div></div><div class="spacer"></div><button class="btn" onclick="openTripForm()">＋ สร้าง Trip</button></div><div id="tripGrid"></div></section>
-
-<section id="schedule" class="page"><div class="section"><div><h3>Schedule</h3><div class="muted">ตารางเดินทางตามช่วงวันของ Trip · โรงแรมจะเชื่อมกับ Expenses อัตโนมัติ</div></div><div class="spacer"></div><button class="btn w" onclick="openScheduleForm()">＋ เพิ่ม Schedule</button></div><div class="card"><div id="scheduleTripInfo" class="muted"></div></div><br><div class="card"><div class="section"><h3 id="calTitle">Calendar</h3><div class="spacer"></div><button class="btn sm secondary" onclick="shiftCalendar(-1)">‹</button><button class="btn sm secondary" onclick="renderCalendar(today())">วันนี้</button><button class="btn sm secondary" onclick="shiftCalendar(1)">›</button></div><div id="calendar" class="calendar"></div><div class="mini muted" style="margin-top:8px">🟩 วันที่อยู่ในช่วง Trip — คลิกเพื่อเพิ่ม Schedule ของวันนั้น</div></div><br><div class="card"><div id="scheduleList"></div></div></section>
-
-<section id="expenses" class="page"><div class="section"><div><h3>Expenses</h3><div class="muted">ระบุผู้จ่าย แนบใบเสร็จ และบันทึกการชำระคืน</div></div><div class="spacer"></div><button class="btn w" onclick="openExpenseForm()">＋ เพิ่มค่าใช้จ่าย</button></div><div class="grid2"><div class="card"><div class="section"><h3>สรุปการจ่าย</h3></div><div id="expenseSummary"></div></div><div class="card"><div class="section"><h3>ค่าใช้จ่ายรายวัน</h3></div><div id="tripExpenseChart" class="chart"></div></div></div><br><div class="card hero"><div class="section"><div><h3>Settlement</h3><div class="muted">ใครออกเงินเกิน/ขาด รายการโอนคืน และบันทึกว่าชำระแล้ว</div></div></div><div id="settlementBox"></div></div><br><div class="card"><div class="row filterbar" style="margin-bottom:12px"><input id="expSearch" placeholder="🔍 ค้นหารายการ / หมวด / ผู้จ่าย" oninput="renderExpenseTable()" style="flex:2;min-width:190px"><select id="expSortKey" onchange="setExpSortKey(this.value)"><option value="date">เรียงตาม: วันที่</option><option value="amount">เรียงตาม: จำนวนเงิน</option><option value="detail">เรียงตาม: รายการ</option><option value="category">เรียงตาม: หมวด</option><option value="payer">เรียงตาม: ผู้จ่าย</option><option value="receipts">เรียงตาม: ใบเสร็จ</option></select><button class="btn sm secondary" id="expSortDir" onclick="toggleExpSortDir()"></button></div><div class="tablewrap"><table class="table"><thead><tr id="expenseHead"></tr></thead><tbody id="expenseTable"></tbody><tfoot id="expenseFoot"></tfoot></table></div></div></section>
 
 <section id="documents" class="page"><div class="section"><div><h3>Documents</h3><div class="muted">ใบจองโรงแรม ตั๋วเครื่องบิน และเอกสารการเดินทาง · เลือกแชร์หรือเก็บไว้ดูคนเดียวได้</div></div><div class="spacer"></div><button class="btn w" onclick="openDocForm()">＋ เพิ่มเอกสาร</button></div><div class="card"><div class="row filterbar"><select id="docType" onchange="renderDocuments()" style="flex:1;min-width:150px"></select><input id="docSearch" placeholder="🔍 ชื่อเอกสาร / เลขที่การจอง" oninput="renderDocuments()" style="flex:2;min-width:190px"></div></div><br><div id="docList"></div></section>
 
@@ -60,30 +74,35 @@
 
 <section id="reports" class="page"><div class="section"><div><h3>Reports & Export</h3><div class="muted">รายงานของ Trip ปัจจุบัน พร้อม Export</div></div><div class="spacer"></div><button class="btn secondary" onclick="printReport()">🖨️ PDF / Print</button><button class="btn" onclick="exportReportXLSX()">📥 Excel</button></div><div class="card"><div class="grid3"><div class="field"><label>วันที่เริ่มรายงาน</label><input id="reportFrom" type="date" onchange="renderReport()"></div><div class="field"><label>วันที่สิ้นสุดรายงาน</label><input id="reportTo" type="date" onchange="renderReport()"></div><div class="field"><label>&nbsp;</label><div class="row"><button class="btn sm secondary" onclick="setReportAllDates()">ทั้งหมด</button><button class="btn sm secondary" onclick="exportReportCSV()">CSV</button></div></div></div></div><br><div id="reportArea"></div></section>
 
-<section id="chat" class="page"><div class="chatwrap"><div class="chatlist card"><div class="section"><h3>💬 ห้องแชต</h3></div><div id="chatRooms"></div></div><div class="chatpane card"><div id="chatHead" class="chathead"><div class="muted">เลือกห้องแชตทางซ้าย</div></div><div id="chatMsgs" class="chatmsgs"></div><div id="chatClosedNote" class="muted mini hide" style="padding:10px;text-align:center">🔒 Trip นี้ปิดแล้ว ส่งข้อความใหม่ไม่ได้</div><div id="chatComposer" class="chatcomposer hide"><div id="chatFileName" class="mini"></div><div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="btn secondary sm attach" title="แนบรูป">📷<input type="file" accept="image/*" hidden onchange="onChatFile(this)"></label><textarea id="chatInput" rows="1" maxlength="2000" placeholder="พิมพ์ข้อความ..." onkeydown="chatKey(event)"></textarea><button class="btn" id="chatSend" onclick="sendChat()">ส่ง</button></div></div></div></div></section>
+<section id="groups" class="page"><div class="section"><div><h3>Groups</h3><div class="muted">คนที่เข้าร่วม Trip ด้วยกันบ่อยๆ รวมไว้เป็น Group</div></div><div class="spacer"></div><button class="btn" onclick="createGroup()">＋ สร้าง Group</button></div><div class="card"><div class="row"><input id="joinCode" placeholder="ใส่ Code ของ Group หรือ Trip" autocapitalize="characters" onkeydown="if(event.key==='Enter')joinCodeFromInput()" style="flex:1;min-width:220px;padding:11px;border:1px solid var(--line);border-radius:11px"><button class="btn secondary" onclick="joinCodeFromInput()">เข้าร่วม</button></div><div class="mini muted" style="margin-top:8px">ใส่ได้ทั้ง Group Code และ Trip Code · เข้าร่วม Group แล้ว ไปที่หน้า Trips เพื่อเข้าร่วมหรือขอเข้าร่วม Trip ใน Group</div></div><br><div id="groupsList"></div></section>
 
 <section id="friends" class="page"><div id="friendsBox"></div></section>
+
+<section id="profile" class="page"><div id="profilePage"></div></section>
 
 <section id="settings" class="page"><div id="profileBox"></div></section>
 
 <section id="developer" class="page"><div id="devBox"></div></section>
-</div></main></div><div class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')">🏠<br>Home</button><button data-p="trips" onclick="go('trips')">🧳<br>Trip</button><button data-p="schedule" onclick="go('schedule')">🗺️<br>Schedule</button><button data-p="expenses" onclick="go('expenses')">💸<br>Expense</button><button data-p="documents" onclick="go('documents')">📄<br>Docs</button><button data-p="chat" onclick="go('chat')" class="mnchat">💬<br>Chat<span class="navcount chatCount hide">0</span></button><button data-more onclick="openMoreMenu()">☰<br>เพิ่มเติม</button></div></div>
+</div></main></div>
+<nav class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')"><span>🏠</span>หน้าหลัก</button><button data-p="summary" onclick="go('summary')"><span>📊</span>สรุป</button><button class="fab" onclick="openQuickMenu()" title="เมนูลัด">＋</button><button data-p="chat" onclick="go('chat')"><span>💬</span>แชต<i class="navcount chatCount hide">0</i></button><button data-p="schedule" onclick="go('schedule')"><span>🗺️</span>Schedule</button></nav></div>
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 
-<script src="js/core.js?v=16"></script>
-<script src="js/groups.js?v=16"></script>
-<script src="js/trips.js?v=16"></script>
-<script src="js/dashboard.js?v=16"></script>
-<script src="js/schedule.js?v=16"></script>
-<script src="js/expenses.js?v=16"></script>
-<script src="js/budget.js?v=16"></script>
-<script src="js/documents.js?v=16"></script>
-<script src="js/reports.js?v=16"></script>
-<script src="js/profile.js?v=16"></script>
-<script src="js/developer.js?v=16"></script>
-<script src="js/invites.js?v=16"></script>
-<script src="js/friends.js?v=16"></script>
-<script src="js/chat.js?v=16"></script>
-<script src="js/pwa.js?v=16"></script>
+<script src="js/core.js?v=17"></script>
+<script src="js/ui.js?v=17"></script>
+<script src="js/groups.js?v=17"></script>
+<script src="js/trips.js?v=17"></script>
+<script src="js/dashboard.js?v=17"></script>
+<script src="js/summary.js?v=17"></script>
+<script src="js/schedule.js?v=17"></script>
+<script src="js/expenses.js?v=17"></script>
+<script src="js/budget.js?v=17"></script>
+<script src="js/documents.js?v=17"></script>
+<script src="js/reports.js?v=17"></script>
+<script src="js/profile.js?v=17"></script>
+<script src="js/developer.js?v=17"></script>
+<script src="js/invites.js?v=17"></script>
+<script src="js/friends.js?v=17"></script>
+<script src="js/chat.js?v=17"></script>
+<script src="js/pwa.js?v=17"></script>
 <script>init()</script>
 </body></html>
