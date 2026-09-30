@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TripExpense">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/app.css?v=17">
+<link rel="stylesheet" href="css/app.css?v=18">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -80,6 +80,8 @@
 
 <section id="profile" class="page"><div id="profilePage"></div></section>
 
+<section id="history" class="page"><div id="historyBox"></div></section>
+
 <section id="settings" class="page"><div id="profileBox"></div></section>
 
 <section id="developer" class="page"><div id="devBox"></div></section>
@@ -87,22 +89,23 @@
 <nav class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')"><span>🏠</span>หน้าหลัก</button><button data-p="summary" onclick="go('summary')"><span>📊</span>สรุป</button><button class="fab" onclick="openQuickMenu()" title="เมนูลัด">＋</button><button data-p="chat" onclick="go('chat')"><span>💬</span>แชต<i class="navcount chatCount hide">0</i></button><button data-p="schedule" onclick="go('schedule')"><span>🗺️</span>Schedule</button></nav></div>
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 
-<script src="js/core.js?v=17"></script>
-<script src="js/ui.js?v=17"></script>
-<script src="js/groups.js?v=17"></script>
-<script src="js/trips.js?v=17"></script>
-<script src="js/dashboard.js?v=17"></script>
-<script src="js/summary.js?v=17"></script>
-<script src="js/schedule.js?v=17"></script>
-<script src="js/expenses.js?v=17"></script>
-<script src="js/budget.js?v=17"></script>
-<script src="js/documents.js?v=17"></script>
-<script src="js/reports.js?v=17"></script>
-<script src="js/profile.js?v=17"></script>
-<script src="js/developer.js?v=17"></script>
-<script src="js/invites.js?v=17"></script>
-<script src="js/friends.js?v=17"></script>
-<script src="js/chat.js?v=17"></script>
-<script src="js/pwa.js?v=17"></script>
+<script src="js/core.js?v=18"></script>
+<script src="js/ui.js?v=18"></script>
+<script src="js/groups.js?v=18"></script>
+<script src="js/trips.js?v=18"></script>
+<script src="js/dashboard.js?v=18"></script>
+<script src="js/summary.js?v=18"></script>
+<script src="js/schedule.js?v=18"></script>
+<script src="js/expenses.js?v=18"></script>
+<script src="js/budget.js?v=18"></script>
+<script src="js/documents.js?v=18"></script>
+<script src="js/reports.js?v=18"></script>
+<script src="js/profile.js?v=18"></script>
+<script src="js/history.js?v=18"></script>
+<script src="js/developer.js?v=18"></script>
+<script src="js/invites.js?v=18"></script>
+<script src="js/friends.js?v=18"></script>
+<script src="js/chat.js?v=18"></script>
+<script src="js/pwa.js?v=18"></script>
 <script>init()</script>
 </body></html>
