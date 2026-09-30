@@ -187,3 +187,81 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .calday.inTrip .calcount{background:#15803d}
 .calhead{font-size:10px;padding:2px 0}
 @media(max-width:420px){.calday b{font-size:12px}.calday .holname{font-size:7px}}
+/* ===================== V18.2 — แก้ขนาดตัวอักษร / การจัดวาง ===================== */
+/* ปุ่ม ＋ ตรงกลาง: กฎ background:transparent ก่อนหน้าไปทับ จึงยกเว้นให้ .fab */
+.mobileNav button.fab{background:linear-gradient(135deg,#2aa9ff,#1666f0)!important;color:#fff!important;font-size:30px;line-height:1;padding:0;font-weight:400}
+.mobileNav button.fab:active{background:linear-gradient(135deg,#1e97ea,#0f57d0)!important}
+
+/* การ์ด Trip บนหน้าหลัก: ข้อความอยู่ใต้รูป อ่านง่าย ไม่ทับรูป */
+.tripcard{background:#fff;border-radius:22px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;margin-bottom:14px}
+.tc-photo{position:relative;height:150px;background:url('../img/splash.svg') center 62%/cover;background-color:#1a8cff;display:flex;align-items:flex-start;justify-content:space-between;padding:12px}
+.tc-photo.has{background-size:cover;background-position:center}
+.tc-body{padding:12px 16px 14px}
+.tc-body h2{margin:0 0 4px;font-size:19px;line-height:1.3;word-break:break-word}
+.tc-meta{font-size:13px;color:var(--muted)}
+.tc-day{margin-top:5px;font-size:12px;font-weight:700;color:var(--brand)}
+
+/* หัวข้อหน้าด้านบน: บรรทัดเดียว ไม่ให้ตัวอักษรเรียงลงแนวตั้ง */
+.top .titles h2{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.top .titles{flex:1;min-width:0}
+@media(max-width:950px){
+  .top .titles h2{font-size:15px;max-width:34vw}
+  .top .titles #ps{display:none}
+  .tripswitch{max-width:34vw;font-size:12px}
+  .top{gap:5px}
+  .bell{padding:7px 9px;font-size:15px}
+  /* หัวข้อในแต่ละหน้า (h3 ของ .section) ให้พอดีจอ ไม่ล้น */
+  .section h3{font-size:16px;line-height:1.35}
+  .section h2{font-size:18px}
+  .section{flex-wrap:wrap;gap:8px}
+  .section .muted{font-size:12px;width:100%}
+  .page>.section .btn{padding:8px 12px;font-size:13px}
+}
+/* ปฏิทิน: ชื่อเดือนบรรทัดเดียว อยู่กึ่งกลาง มีลูกศรสองข้าง */
+.calbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.calbar h3{flex:1;margin:0;text-align:center;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calnav{width:34px;height:34px;flex:none;border-radius:50%;background:#eef2f7;color:#475569;font-size:19px;line-height:1;display:grid;place-items:center}
+.calnav:hover{background:#dbeafe;color:var(--brand)}
+/* ตัวเลือก (radio) ในหน้าต่าง: ตัวอักษรเล็กลง เรียงเป็นรายการอ่านง่าย */
+.field .radiorow{flex-direction:column;gap:0}
+.field .radiorow label{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;font-size:14px;line-height:1.35;align-items:flex-start;gap:10px}
+.field .radiorow label:has(input:checked){border-color:var(--brand);background:#f5f9ff}
+.field .radiorow input{margin-top:2px}
+/* ข้อความในหน้าต่าง/ฟอร์มให้พอดีมือถือ */
+@media(max-width:600px){
+  .modal h3,.sheethead h3{font-size:17px}
+  .field label{font-size:13px}
+  .field input,.field select,.field textarea{font-size:15px}
+  .checklist label{font-size:13.5px}
+  .listitem{font-size:14px}
+}
+/* ===================== V18.2 — กันข้อความล้นกรอบ (ตรวจรอบสุดท้าย) ===================== */
+/* ตัวเลขสถิติ: ถ้ายอดเงินหลักล้าน ต้องไม่ดันกรอบแตก */
+.pstats b,.histsum b{font-size:clamp(14px,4.2vw,20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.statcard b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(15px,5vw,24px)}
+.bigamt{font-size:clamp(24px,8vw,32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exright b,.catline b,.listitem b{overflow-wrap:anywhere}
+/* ชื่อที่ผู้ใช้ตั้งเอง (Trip/Group/คน) ยาวแค่ไหนก็ไม่ล้น */
+.tc-body h2,.hello h2{overflow-wrap:anywhere}
+.hello h2{font-size:clamp(18px,5.6vw,24px)}
+.menuitem{font-size:clamp(13px,3.9vw,15px)}
+.menuitem span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* แถบบนสุดบนจอแคบ: ให้ทุกชิ้นอยู่ในบรรทัดเดียวพอดี */
+@media(max-width:600px){
+  .top .titles h2{max-width:26vw}
+  .tripswitch{max-width:30vw}
+  .langtoggle.small{padding:7px 9px;font-size:11px}
+  .hdravatar img,.hdravatar .avatar{width:30px!important;height:30px!important}
+}
+/* ตารางในหน้ารายงาน/Developer เลื่อนแนวนอนได้ ไม่ดันหน้าจอ */
+.tablewrap{-webkit-overflow-scrolling:touch}
+.table th,.table td{font-size:13px}
+@media(max-width:600px){.table th,.table td{font-size:12px;padding:8px 6px}}
+/* ตารางรายงาน: ไม่ให้ช่องเดียวยืดจนตารางกว้างเกินไป */
+.table td{max-width:240px;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){.table td{max-width:150px}}
+/* หัวข้อในแต่ละหน้า: กำหนดขนาดชัดเจน ไม่ปล่อยตามค่าเริ่มต้นของเบราว์เซอร์ */
+.section h3{font-size:17px;line-height:1.35}
+.section h2{font-size:20px}
+.card h3{font-size:16px}
+.card h4{font-size:14px}
