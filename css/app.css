@@ -83,7 +83,7 @@ body{background:var(--bg)}
 .auth-top{position:relative;text-align:center;color:#fff;padding:9vh 20px 20px}.auth-logo{width:84px;height:84px;border-radius:22px;box-shadow:0 10px 26px rgba(0,40,120,.35)}
 .authcard{position:relative;background:#fff;border-radius:28px 28px 0 0;padding:26px 22px calc(22px + env(safe-area-inset-bottom,0px));width:100%;max-width:480px;margin:0 auto;box-shadow:0 -10px 40px rgba(0,30,90,.18)}
 .authcard h3{margin:0 0 8px;font-size:22px}.auth-lead{text-align:center;font-weight:700;font-size:16px;margin:0 0 14px;color:var(--ink)}
-.featrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 18px;text-align:center;font-size:11px;color:#475569}.featrow span{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 6px;border-radius:50%;background:linear-gradient(135deg,#2dd4f5,#1666f0);font-size:21px}
+.featrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 18px;text-align:center;font-size:11px;color:#475569;line-height:1.35}.featrow>div>span:first-child{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 6px;border-radius:50%;background:linear-gradient(135deg,#2dd4f5,#1666f0);font-size:21px}
 .backlink{display:block;margin:8px auto 0}
 @media(min-width:951px){.auth{justify-content:center;gap:26px}.authcard{border-radius:28px;margin-bottom:6vh}}
 /* ---------- layout / nav ---------- */
@@ -163,3 +163,7 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .langtoggle{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:5;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.55);color:#fff;border-radius:999px;padding:6px 14px;font-weight:800;font-size:12px;letter-spacing:.5px;backdrop-filter:blur(4px)}
 .langtoggle.small{position:static;background:#eef2f7;border:1px solid var(--line);color:#475569;padding:8px 12px}
 @media(min-width:951px){.langtoggle{top:24px;right:24px}}
+/* ===================== V18.1 — desktop sidebar SVG icons ===================== */
+.nav button{display:flex;align-items:center;gap:10px}
+.nav .navicon{width:19px;height:19px;flex:none;stroke:#64748b}
+.nav button.active .navicon,.nav button:hover .navicon{stroke:var(--brand)}
