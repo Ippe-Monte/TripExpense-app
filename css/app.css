@@ -25,3 +25,13 @@ body:not(.isdev) .devOnly{display:none!important}
 .btn.danger.primary{background:var(--danger);color:#fff}
 @media(max-width:950px){.top{gap:8px}.top .titles #ps{display:none}.tripswitch{max-width:58vw;font-size:13px}.inrow{flex-wrap:wrap}.field .inrow select.vissel{max-width:100%;width:100%}}
 
+/* ===== V15 ===== */
+.bell{position:relative;background:#eef2f7;border-radius:11px;padding:8px 11px;font-size:17px;line-height:1}
+.bell .inboxCount{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--danger);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}
+.bell .inboxCount.hide{display:none!important}
+.bigcode{font-size:30px;font-weight:800;letter-spacing:4px;font-family:ui-monospace,Menlo,Consolas,monospace;margin:2px 0}
+.qrbox{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:#fff;border:1px solid var(--line);border-radius:12px}.qrbox svg{width:100%;max-width:200px;height:auto}.qrbox.dim{opacity:.25}
+.btn.line{background:#06c755;color:#fff}.btn.line:hover{background:#05a847}
+.pill.pol-open{background:#dcfce7;color:#166534}.pill.pol-password{background:#fef3c7;color:#92400e}.pill.pol-invite_only{background:#ede9fe;color:#5b21b6}
+.sel{padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff}
+@media(max-width:600px){.bigcode{font-size:24px;letter-spacing:2px}}
