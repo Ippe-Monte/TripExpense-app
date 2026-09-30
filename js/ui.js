@@ -56,3 +56,39 @@ function openJoinCode(){modal(`<div class="sheethead"><h3>🔑 เข้าร�
 // ---------- Donut chart ----------
 function donutSvg(parts,total,size=150,label='รวมทั้งหมด'){const r=58,C=2*Math.PI*r;let off=0;const segs=parts.filter(p=>p.v>0).map(p=>{const len=total>0?p.v/total*C:0;const s=`<circle r="${r}" cx="75" cy="75" fill="none" stroke="${p.color}" stroke-width="20" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return s}).join('');return `<svg class="donut" viewBox="0 0 150 150" width="${size}" height="${size}"><circle r="${r}" cx="75" cy="75" fill="none" stroke="#eef2f7" stroke-width="20"/>${segs}<text x="75" y="72" text-anchor="middle" class="dv">${esc(moneyShort(total))}</text><text x="75" y="92" text-anchor="middle" class="dl">${esc(label)}</text></svg>`}
 function moneyShort(v){v=Number(v||0);return '฿'+(v>=1e6?(v/1e6).toFixed(1)+'M':Math.round(v).toLocaleString('th-TH'))}
+
+// =====================================================================
+// ตัวแปลระดับ DOM — ใช้เฉพาะโหมด EN
+// แปลข้อความของระบบที่ฝังอยู่ใน template literal/modal ได้ทั้งหมด
+// ข้อความที่ผู้ใช้พิมพ์เองจะไม่ถูกแตะ เพราะไม่ตรงกับพจนานุกรม
+// =====================================================================
+let _trKeys=null,_translating=false;
+function trKeys(){if(!_trKeys)_trKeys=Object.keys(TH_EN).sort((a,b)=>b.length-a.length);return _trKeys}
+function trText(s){let out=s;for(const k of trKeys()){if(out.includes(k))out=out.split(k).join(TH_EN[k])}return out}
+const SKIP_TAGS={SCRIPT:1,STYLE:1,TEXTAREA:1,SVG:1};
+function translateDOM(root){
+  if(LANG!=='en'||_translating)return;
+  root=root||document.body;if(!root||!root.querySelectorAll)return;
+  _translating=true;
+  try{
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      if(!n.nodeValue||!/[\u0E00-\u0E7F]/.test(n.nodeValue))return NodeFilter.FILTER_REJECT;
+      if(n.parentElement&&SKIP_TAGS[n.parentElement.tagName])return NodeFilter.FILTER_REJECT;
+      if(n.parentElement&&n.parentElement.closest('[data-no-tr]'))return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT}});
+    const hits=[];let n;while(n=w.nextNode())hits.push(n);
+    hits.forEach(n=>{const v=trText(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v});
+    root.querySelectorAll('[placeholder],[title]').forEach(el=>{
+      ['placeholder','title'].forEach(a=>{const v=el.getAttribute(a);
+        if(v&&/[\u0E00-\u0E7F]/.test(v)){const t2=trText(v);if(t2!==v)el.setAttribute(a,t2)}})});
+    root.querySelectorAll('option').forEach(o=>{if(o.closest('[data-no-tr]'))return;if(/[\u0E00-\u0E7F]/.test(o.textContent)){const t2=trText(o.textContent);if(t2!==o.textContent)o.textContent=t2}});
+  }finally{_translating=false}
+}
+// เฝ้าดูการเปลี่ยนแปลงหน้าจอ แล้วแปลอัตโนมัติ (รวมถึง modal ที่เพิ่งเปิด)
+let _trTimer=null;
+function initAutoTranslate(){
+  if(!window.MutationObserver)return;
+  const obs=new MutationObserver(()=>{if(LANG!=='en'||_translating)return;clearTimeout(_trTimer);_trTimer=setTimeout(()=>translateDOM(document.body),30)});
+  obs.observe(document.body,{childList:true,subtree:true,characterData:true});
+  if(LANG==='en')translateDOM(document.body);
+}

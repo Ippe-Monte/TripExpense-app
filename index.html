@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TripExpense">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/app.css?v=18">
+<link rel="stylesheet" href="css/app.css?v=181">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -65,7 +65,7 @@
 
 <section id="chat" class="page"><div class="chattabs" id="chatTabs"></div><div class="chatpane card"><div id="chatHead" class="chathead"><div class="muted">เลือกห้องแชตด้านบน</div></div><div id="chatMsgs" class="chatmsgs"></div><div id="chatClosedNote" class="muted mini hide" style="padding:10px;text-align:center">🔒 Trip นี้ปิดแล้ว ส่งข้อความใหม่ไม่ได้</div><div id="chatComposer" class="chatcomposer hide"><div id="chatFileName" class="mini"></div><div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="btn secondary sm attach" title="แนบรูป">📷<input type="file" accept="image/*" hidden onchange="onChatFile(this)"></label><textarea id="chatInput" rows="1" maxlength="2000" placeholder="พิมพ์ข้อความ..." onkeydown="chatKey(event)"></textarea><button class="btn" id="chatSend" onclick="sendChat()">ส่ง</button></div></div></div></section>
 
-<section id="schedule" class="page"><div class="segtabs"><button class="active">🗓️ ตารางเดินทาง</button><button onclick="toast('🗺️ แผนที่การเดินทาง (ปักหมุดตามแผน) — เร็วๆ นี้')">🗺️ แผนที่ <small>เร็วๆ นี้</small></button></div><div class="section"><div><h3>Schedule</h3><div class="muted">ตารางเดินทางตามช่วงวันของ Trip · โรงแรมจะเชื่อมกับ Expenses อัตโนมัติ</div></div><div class="spacer"></div><button class="btn w" onclick="openScheduleForm()">＋ เพิ่ม Schedule</button></div><div class="card"><div id="scheduleTripInfo" class="muted"></div></div><br><div class="card"><div class="section"><h3 id="calTitle">Calendar</h3><div class="spacer"></div><button class="btn sm secondary" onclick="shiftCalendar(-1)">‹</button><button class="btn sm secondary" onclick="renderCalendar(today())">วันนี้</button><button class="btn sm secondary" onclick="shiftCalendar(1)">›</button></div><div id="calendar" class="calendar"></div><div class="mini muted" style="margin-top:8px">🟩 วันที่อยู่ในช่วง Trip — คลิกเพื่อเพิ่ม Schedule ของวันนั้น</div></div><br><div class="card"><div id="scheduleList"></div></div></section>
+<section id="schedule" class="page"><div class="segtabs"><button class="active">🗓️ ตารางเดินทาง</button><button onclick="toast('🗺️ แผนที่การเดินทาง (ปักหมุดตามแผน) — เร็วๆ นี้')">🗺️ แผนที่ <small>เร็วๆ นี้</small></button></div><div class="section"><div><h3>Schedule</h3><div class="muted">ตารางเดินทางตามช่วงวันของ Trip · โรงแรมจะเชื่อมกับ Expenses อัตโนมัติ</div></div><div class="spacer"></div><button class="btn w" onclick="openScheduleForm()">＋ เพิ่ม Schedule</button></div><div class="card"><div id="scheduleTripInfo" class="muted"></div></div><br><div class="card"><div class="section"><h3 id="calTitle">Calendar</h3><div class="spacer"></div><select id="holCC" class="sel" title="วันหยุดของประเทศ" onchange="setHolidayCountry(this.value)"></select><button class="btn sm secondary" onclick="shiftCalendar(-1)">‹</button><button class="btn sm secondary" onclick="renderCalendar(today())">วันนี้</button><button class="btn sm secondary" onclick="shiftCalendar(1)">›</button></div><div id="calendar" class="calendar" data-no-tr="1"></div><div class="mini muted" style="margin-top:8px">🟩 วันที่อยู่ในช่วง Trip — คลิกเพื่อเพิ่ม Schedule ของวันนั้น</div></div><br><div class="card"><div id="scheduleList"></div></div></section>
 
 <section id="trips" class="page"><div class="section"><div><h3>Trips</h3><div class="muted">Trip ที่คุณเป็นสมาชิก · เลือก "ใช้ Trip นี้" เพื่อสลับ Trip ปัจจุบัน</div></div><div class="spacer"></div><button class="btn" onclick="openTripForm()">＋ สร้าง Trip</button></div><div id="tripGrid"></div></section>
 
@@ -90,23 +90,25 @@
 <nav class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg><span data-i18n="nav_home">หน้าหลัก</span></button><button data-p="summary" onclick="go('summary')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V4M19 20v-7"/><path d="M3 20h18"/></svg><span data-i18n="nav_summary">สรุป</span></button><button class="fab" onclick="openQuickMenu()" title="เมนูลัด">＋</button><button data-p="chat" onclick="go('chat')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/></svg><span data-i18n="nav_chat">แชต</span><i class="navcount chatCount hide">0</i></button><button data-p="schedule" onclick="go('schedule')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span data-i18n="nav_schedule">Schedule</span></button></nav></div>
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 
-<script src="js/core.js?v=18"></script>
-<script src="js/ui.js?v=18"></script>
-<script src="js/groups.js?v=18"></script>
-<script src="js/trips.js?v=18"></script>
-<script src="js/dashboard.js?v=18"></script>
-<script src="js/summary.js?v=18"></script>
-<script src="js/schedule.js?v=18"></script>
-<script src="js/expenses.js?v=18"></script>
-<script src="js/budget.js?v=18"></script>
-<script src="js/documents.js?v=18"></script>
-<script src="js/reports.js?v=18"></script>
-<script src="js/profile.js?v=18"></script>
-<script src="js/history.js?v=18"></script>
-<script src="js/developer.js?v=18"></script>
-<script src="js/invites.js?v=18"></script>
-<script src="js/friends.js?v=18"></script>
-<script src="js/chat.js?v=18"></script>
-<script src="js/pwa.js?v=18"></script>
+<script src="js/core.js?v=181"></script>
+<script src="js/i18n_map.js?v=181"></script>
+<script src="js/ui.js?v=181"></script>
+<script src="js/groups.js?v=181"></script>
+<script src="js/trips.js?v=181"></script>
+<script src="js/dashboard.js?v=181"></script>
+<script src="js/summary.js?v=181"></script>
+<script src="js/holidays.js?v=181"></script>
+<script src="js/schedule.js?v=181"></script>
+<script src="js/expenses.js?v=181"></script>
+<script src="js/budget.js?v=181"></script>
+<script src="js/documents.js?v=181"></script>
+<script src="js/reports.js?v=181"></script>
+<script src="js/profile.js?v=181"></script>
+<script src="js/history.js?v=181"></script>
+<script src="js/developer.js?v=181"></script>
+<script src="js/invites.js?v=181"></script>
+<script src="js/friends.js?v=181"></script>
+<script src="js/chat.js?v=181"></script>
+<script src="js/pwa.js?v=181"></script>
 <script>init()</script>
 </body></html>

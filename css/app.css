@@ -167,3 +167,23 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .nav button{display:flex;align-items:center;gap:10px}
 .nav .navicon{width:19px;height:19px;flex:none;stroke:#64748b}
 .nav button.active .navicon,.nav button:hover .navicon{stroke:var(--brand)}
+/* ===================== V18.1 — sticky tabs, nav icon size guard ===================== */
+.nav .navicon{width:19px!important;height:19px!important;flex:none}
+.mobileNav .navicon{width:23px!important;height:23px!important;flex:none}
+/* แถบแท็บ (ภาพรวม/รายวัน/หมวดหมู่/รายการ) ติดอยู่ด้านบน ไม่เลื่อนหายตอนสกรอลล์ */
+.segtabs{position:sticky;top:0;z-index:6;background:#eaf0f8;backdrop-filter:blur(6px)}
+@media(max-width:950px){.segtabs{top:60px}}
+.chattabs{position:sticky;top:0;z-index:6;background:var(--bg);padding-top:6px}
+@media(max-width:950px){.chattabs{top:60px}}
+/* ===================== V18.1 — ปฏิทินกะทัดรัด + วันหยุด ===================== */
+.calendar{gap:4px}
+.calday{min-height:auto;aspect-ratio:1/1;padding:3px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:1px;border-radius:10px;position:relative;overflow:hidden}
+.calday b{font-size:13px;font-weight:600;line-height:1.5}
+.calday.weekend b{color:#94a3b8}
+.calday.holiday{background:#fff1f2;border-color:#fecdd3}
+.calday.holiday b{color:#e11d48}
+.calday .holname{font-size:8px;line-height:1.1;color:#e11d48;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 1px}
+.calday .calcount{position:absolute;bottom:3px;min-width:15px;height:15px;padding:0 4px;border-radius:99px;background:var(--brand);color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center}
+.calday.inTrip .calcount{background:#15803d}
+.calhead{font-size:10px;padding:2px 0}
+@media(max-width:420px){.calday b{font-size:12px}.calday .holname{font-size:7px}}
