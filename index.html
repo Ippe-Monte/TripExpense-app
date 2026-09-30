@@ -2,8 +2,16 @@
 <html lang="th">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TripExpense V15</title>
-<link rel="stylesheet" href="css/app.css?v=15">
+<title>TripExpense V16</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TripExpense">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="css/app.css?v=16">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -29,10 +37,10 @@
 </div></div>
 
 <div id="app" class="app hide"><div class="layout">
-<aside class="side"><div class="logo">Trip<span>Expense</span></div><div class="muted">V15 · Supabase</div>
+<aside class="side"><div class="logo">Trip<span>Expense</span></div><div class="muted">V16 · Supabase</div>
 <nav class="nav">
-<button data-p="dashboard" onclick="go('dashboard')">🏠 Dashboard</button><button data-p="trips" onclick="go('trips')">🧳 Trips</button><button data-p="schedule" onclick="go('schedule')">🗺️ Schedule</button><button data-p="expenses" onclick="go('expenses')">💸 Expenses</button><button data-p="documents" onclick="go('documents')">📄 Documents</button><button data-p="budget" onclick="go('budget')">💰 Budget</button><button data-p="reports" onclick="go('reports')">📊 Reports</button><button data-p="groups" onclick="go('groups')">👥 Groups</button><button data-p="settings" onclick="go('settings')">👤 Profile</button><button class="devOnly" data-p="developer" onclick="go('developer')">🛠️ Developer</button>
-</nav><div style="position:absolute;bottom:20px;left:20px;right:20px"><button class="btn secondary" style="width:100%" onclick="logout()">ออกจากระบบ</button></div></aside>
+<button data-p="dashboard" onclick="go('dashboard')">🏠 Dashboard</button><button data-p="trips" onclick="go('trips')">🧳 Trips</button><button data-p="schedule" onclick="go('schedule')">🗺️ Schedule</button><button data-p="expenses" onclick="go('expenses')">💸 Expenses</button><button data-p="chat" onclick="go('chat')">💬 Chat <span class="navcount chatCount hide">0</span></button><button data-p="documents" onclick="go('documents')">📄 Documents</button><button data-p="budget" onclick="go('budget')">💰 Budget</button><button data-p="reports" onclick="go('reports')">📊 Reports</button><button data-p="groups" onclick="go('groups')">👥 Groups</button><button data-p="friends" onclick="go('friends')">🤝 Friends</button><button data-p="settings" onclick="go('settings')">👤 Profile</button><button class="devOnly" data-p="developer" onclick="go('developer')">🛠️ Developer</button>
+</nav><div style="position:absolute;bottom:20px;left:20px;right:20px;display:grid;gap:8px"><button class="btn secondary installBtn" style="width:100%" onclick="installApp()">📲 ติดตั้งเป็นแอป</button><button class="btn secondary" style="width:100%" onclick="logout()">ออกจากระบบ</button></div></aside>
 <main class="main"><header class="top"><div class="titles"><h2 id="pt" style="margin:0">Dashboard</h2><div id="ps" class="muted">ภาพรวมของ Trip ปัจจุบัน</div></div><div class="spacer"></div><button class="bell" title="การแจ้งเตือน" onclick="openInbox()">🔔<span class="inboxCount hide">0</span></button><select id="tripSwitch" class="tripswitch" title="Trip ปัจจุบัน" onchange="switchTrip(this.value)"></select><button class="btn hideMobile" onclick="openTripForm()">＋ สร้าง Trip</button></header>
 <div class="content"><div id="tripBanner"></div>
 
@@ -52,23 +60,30 @@
 
 <section id="reports" class="page"><div class="section"><div><h3>Reports & Export</h3><div class="muted">รายงานของ Trip ปัจจุบัน พร้อม Export</div></div><div class="spacer"></div><button class="btn secondary" onclick="printReport()">🖨️ PDF / Print</button><button class="btn" onclick="exportReportXLSX()">📥 Excel</button></div><div class="card"><div class="grid3"><div class="field"><label>วันที่เริ่มรายงาน</label><input id="reportFrom" type="date" onchange="renderReport()"></div><div class="field"><label>วันที่สิ้นสุดรายงาน</label><input id="reportTo" type="date" onchange="renderReport()"></div><div class="field"><label>&nbsp;</label><div class="row"><button class="btn sm secondary" onclick="setReportAllDates()">ทั้งหมด</button><button class="btn sm secondary" onclick="exportReportCSV()">CSV</button></div></div></div></div><br><div id="reportArea"></div></section>
 
+<section id="chat" class="page"><div class="chatwrap"><div class="chatlist card"><div class="section"><h3>💬 ห้องแชต</h3></div><div id="chatRooms"></div></div><div class="chatpane card"><div id="chatHead" class="chathead"><div class="muted">เลือกห้องแชตทางซ้าย</div></div><div id="chatMsgs" class="chatmsgs"></div><div id="chatClosedNote" class="muted mini hide" style="padding:10px;text-align:center">🔒 Trip นี้ปิดแล้ว ส่งข้อความใหม่ไม่ได้</div><div id="chatComposer" class="chatcomposer hide"><div id="chatFileName" class="mini"></div><div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="btn secondary sm attach" title="แนบรูป">📷<input type="file" accept="image/*" hidden onchange="onChatFile(this)"></label><textarea id="chatInput" rows="1" maxlength="2000" placeholder="พิมพ์ข้อความ..." onkeydown="chatKey(event)"></textarea><button class="btn" id="chatSend" onclick="sendChat()">ส่ง</button></div></div></div></div></section>
+
+<section id="friends" class="page"><div id="friendsBox"></div></section>
+
 <section id="settings" class="page"><div id="profileBox"></div></section>
 
 <section id="developer" class="page"><div id="devBox"></div></section>
-</div></main></div><div class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')">🏠<br>Home</button><button data-p="trips" onclick="go('trips')">🧳<br>Trip</button><button data-p="schedule" onclick="go('schedule')">🗺️<br>Schedule</button><button data-p="expenses" onclick="go('expenses')">💸<br>Expense</button><button data-p="documents" onclick="go('documents')">📄<br>Docs</button><button data-p="budget" onclick="go('budget')">💰<br>Budget</button><button data-more onclick="openMoreMenu()">☰<br>เพิ่มเติม</button></div></div>
+</div></main></div><div class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')">🏠<br>Home</button><button data-p="trips" onclick="go('trips')">🧳<br>Trip</button><button data-p="schedule" onclick="go('schedule')">🗺️<br>Schedule</button><button data-p="expenses" onclick="go('expenses')">💸<br>Expense</button><button data-p="documents" onclick="go('documents')">📄<br>Docs</button><button data-p="chat" onclick="go('chat')" class="mnchat">💬<br>Chat<span class="navcount chatCount hide">0</span></button><button data-more onclick="openMoreMenu()">☰<br>เพิ่มเติม</button></div></div>
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 
-<script src="js/core.js?v=15"></script>
-<script src="js/groups.js?v=15"></script>
-<script src="js/trips.js?v=15"></script>
-<script src="js/dashboard.js?v=15"></script>
-<script src="js/schedule.js?v=15"></script>
-<script src="js/expenses.js?v=15"></script>
-<script src="js/budget.js?v=15"></script>
-<script src="js/documents.js?v=15"></script>
-<script src="js/reports.js?v=15"></script>
-<script src="js/profile.js?v=15"></script>
-<script src="js/developer.js?v=15"></script>
-<script src="js/invites.js?v=15"></script>
+<script src="js/core.js?v=16"></script>
+<script src="js/groups.js?v=16"></script>
+<script src="js/trips.js?v=16"></script>
+<script src="js/dashboard.js?v=16"></script>
+<script src="js/schedule.js?v=16"></script>
+<script src="js/expenses.js?v=16"></script>
+<script src="js/budget.js?v=16"></script>
+<script src="js/documents.js?v=16"></script>
+<script src="js/reports.js?v=16"></script>
+<script src="js/profile.js?v=16"></script>
+<script src="js/developer.js?v=16"></script>
+<script src="js/invites.js?v=16"></script>
+<script src="js/friends.js?v=16"></script>
+<script src="js/chat.js?v=16"></script>
+<script src="js/pwa.js?v=16"></script>
 <script>init()</script>
 </body></html>
