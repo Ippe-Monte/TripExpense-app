@@ -91,7 +91,11 @@ body{background:var(--bg)}
 .sidebottom{position:absolute;bottom:20px;left:20px;right:20px;display:grid;gap:8px}.side{overflow:auto}.nav{padding-bottom:120px}
 @media(max-width:950px){
   .mobileNav{left:0;right:0;bottom:0;border-radius:22px 22px 0 0;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));justify-content:space-around;align-items:flex-end;box-shadow:0 -6px 24px rgba(20,40,90,.08)}
-  .mobileNav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:56px;position:relative}.mobileNav button span{font-size:20px;line-height:1.1}
+  .mobileNav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;min-width:56px;position:relative;background:transparent!important;color:#94a3b8;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+.mobileNav button:active,.mobileNav button:focus{background:transparent!important;outline:none}
+.mobileNav .navicon{width:23px;height:23px;stroke:#94a3b8;transition:stroke .15s,color .15s}
+.mobileNav button.active{color:var(--brand)}.mobileNav button.active .navicon{stroke:var(--brand)}
+.mobileNav button span{font-size:11px;font-weight:600;line-height:1.1}
   .mobileNav .fab{width:58px;height:58px;min-width:58px;border-radius:50%;background:linear-gradient(135deg,#2aa9ff,#1666f0);color:#fff;font-size:30px;font-weight:400;margin-top:-26px;box-shadow:0 8px 20px rgba(22,102,240,.4);justify-content:center}
   .mobileNav .navcount{position:absolute;top:0;right:8px;margin:0;font-style:normal}
   .content{padding:14px 14px 96px}.top{height:60px;gap:6px}.top .titles h2{font-size:18px}
@@ -115,7 +119,7 @@ body{background:var(--bg)}
 @media(max-width:600px){.shortcuts{grid-template-columns:repeat(3,1fr)}}
 #homeBox>.card{margin-bottom:14px}
 /* ---------- expense rows / categories ---------- */
-.caticon{display:inline-grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--c) 15%,#fff);flex:none}
+.caticon{display:inline-grid;place-items:center;border-radius:50%;background:linear-gradient(150deg,color-mix(in srgb,var(--c) 88%,#fff),var(--c));color:#fff;flex:none;box-shadow:0 3px 8px color-mix(in srgb,var(--c) 35%,transparent)}.caticon svg{width:52%;height:52%}
 .catbadge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);margin-top:3px}
 .exprow{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #f0f3f8;cursor:pointer}.exprow:last-child{border-bottom:0}.exprow:hover{background:#fafcff}
 .exmain{flex:1;min-width:0}.exmain b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.exmain .mini{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.exright{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
@@ -123,7 +127,7 @@ body{background:var(--bg)}
 .bigamt{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:2px 0 6px}
 .bars{display:flex;align-items:flex-end;gap:8px;height:190px;padding:18px 4px 0;overflow-x:auto}.bar{flex:1;min-width:26px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:pointer}.bar i{display:block;width:70%;max-width:26px;background:linear-gradient(180deg,#4aa3ff,#1666f0);border-radius:8px 8px 4px 4px}.bar small{font-size:11px;color:#6b7a90;margin-top:6px}.bar .bv{font-size:9px;color:#6b7a90;margin-bottom:3px;white-space:nowrap}
 /* ---------- add expense sheet ---------- */
-.catgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.catchip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:14px;background:#f5f8fc;border:1.5px solid transparent;font-size:12px;font-weight:600;color:#334155}.catchip span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 15%,#fff);font-size:17px}.catchip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 8%,#fff);color:var(--ink)}
+.catgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.catchip{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:14px;background:#f5f8fc;border:1.5px solid transparent;font-size:12px;font-weight:600;color:#334155}.catchip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 8%,#fff);color:var(--ink)}
 .amountbox{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:0 14px;background:#fff}.amountbox span{font-size:20px;font-weight:800;color:#64748b}.field .amountbox input{border:0;box-shadow:none!important;font-size:24px;font-weight:800;padding:12px 0}
 .phototiles{display:flex;flex-wrap:wrap;gap:10px}.ptile{position:relative;width:86px;height:86px;border-radius:14px;overflow:hidden;background:#f1f5f9;display:grid;place-items:center;font-size:26px}.ptile img{width:100%;height:100%;object-fit:cover}.ptile button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(15,23,42,.6);color:#fff;font-size:11px;padding:0}.ptile.add{border:1.5px dashed #b6c6dc;background:#fff;color:#64748b;display:flex;flex-direction:column;gap:2px;font-size:24px}.ptile.add small{font-size:10px}
 details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0}details.more summary{cursor:pointer;font-weight:700;font-size:13px;color:#475569}details.more[open] summary{margin-bottom:8px}details.more select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px}
@@ -155,3 +159,7 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .histyearbadge{background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px}
 .histbody{padding:10px 12px}.histbody b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
 @media(max-width:420px){.histgrid{grid-template-columns:1fr}}
+/* ===================== V19 — bottom-nav flat icons, TH/EN toggle ===================== */
+.langtoggle{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:5;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.55);color:#fff;border-radius:999px;padding:6px 14px;font-weight:800;font-size:12px;letter-spacing:.5px;backdrop-filter:blur(4px)}
+.langtoggle.small{position:static;background:#eef2f7;border:1px solid var(--line);color:#475569;padding:8px 12px}
+@media(min-width:951px){.langtoggle{top:24px;right:24px}}

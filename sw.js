@@ -1,5 +1,5 @@
 // TripExpense Service Worker — โหลดจากเครือข่ายก่อนเสมอ (ได้เวอร์ชันล่าสุด) ถ้าออฟไลน์ใช้ไฟล์ที่เก็บไว้
-const CACHE='tripexpense-v18';
+const CACHE='tripexpense-v18-2';
 const SHELL=['./','./index.html','./manifest.webmanifest','./css/app.css?v=18','./icons/icon-192.png','./icons/icon-512.png','./img/logo.svg','./img/splash.svg',
   ...['core','groups','trips','dashboard','schedule','expenses','budget','documents','reports','profile','developer','invites','friends','chat','pwa','ui','summary','history'].map(n=>`./js/${n}.js?v=18`)];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()))});

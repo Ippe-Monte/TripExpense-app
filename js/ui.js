@@ -2,13 +2,24 @@
 // ui.js — V17: วันที่ไทย, หมวด/ไอคอน, รูปโปรไฟล์/รูปปก, Splash, หน้า Log-in, เมนูลัด ＋, header
 // =====================================================================
 // ---------- วันที่แบบไทย (พ.ศ.) ----------
-function fmtDate(ds,opt){if(!ds)return '-';const d=new Date(String(ds).length<=10?ds+'T00:00:00':ds);if(isNaN(d))return String(ds);return d.toLocaleDateString('th-TH',opt||{day:'numeric',month:'short',year:'numeric'})}
-function fmtRange(t){if(!t?.start_date)return 'ยังไม่กำหนดวันเดินทาง';const s=new Date(t.start_date+'T00:00:00'),e=new Date(tripEnd(t)+'T00:00:00');if(s.getFullYear()===e.getFullYear()&&s.getMonth()===e.getMonth())return `${s.getDate()}${s.getTime()!==e.getTime()?' – '+e.getDate():''} ${e.toLocaleDateString('th-TH',{month:'short',year:'numeric'})}`;return `${fmtDate(t.start_date,{day:'numeric',month:'short'})} – ${fmtDate(tripEnd(t))}`}
+function fmtDate(ds,opt){if(!ds)return '-';const d=new Date(String(ds).length<=10?ds+'T00:00:00':ds);if(isNaN(d))return String(ds);return d.toLocaleDateString(LANG==='en'?'en-GB':'th-TH',opt||{day:'numeric',month:'short',year:'numeric'})}
+function fmtRange(t){if(!t?.start_date)return LANG==='en'?'Dates not set':'ยังไม่กำหนดวันเดินทาง';const s=new Date(t.start_date+'T00:00:00'),e=new Date(tripEnd(t)+'T00:00:00');if(s.getFullYear()===e.getFullYear()&&s.getMonth()===e.getMonth())return `${s.getDate()}${s.getTime()!==e.getTime()?' – '+e.getDate():''} ${e.toLocaleDateString(LANG==='en'?'en-GB':'th-TH',{month:'short',year:'numeric'})}`;return `${fmtDate(t.start_date,{day:'numeric',month:'short'})} – ${fmtDate(tripEnd(t))}`}
 // ---------- หมวดหมู่: ไอคอน + สี ----------
-const CAT_META={hotel:{icon:'🛏️',color:'#3b82f6'},food:{icon:'🍜',color:'#f97316'},transport:{icon:'🚆',color:'#10b981'},activity:{icon:'🎟️',color:'#ec4899'},shopping:{icon:'🛍️',color:'#8b5cf6'},car:{icon:'🚗',color:'#14b8a6'},other:{icon:'📦',color:'#94a3b8'}};
+// ---------- ไอคอนหมวดหมู่ (SVG เส้น สไตล์ทันสมัย) ----------
+const CAT_SVG={
+  hotel:'<path d="M3 18v-7a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3"/><path d="M3 14h17a1 1 0 0 1 1 1v3"/><path d="M3 18v3M21 18v3"/><circle cx="7" cy="10.2" r="1.3" fill="currentColor" stroke="none"/>',
+  food:'<path d="M6 3v7a2 2 0 0 0 4 0V3M8 10v11M8 3v3.5M4 3v3.5M6 3v3.5"/><path d="M16 3c-1.7 0-3 1.8-3 4s1.3 4 3 4v10"/>',
+  transport:'FILL:M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z',
+  activity:'<path d="M4 8a2 2 0 1 1 0-3.9V4h16v.1a2 2 0 0 1 0 3.9v.1a2 2 0 0 1 0 3.8v.1a2 2 0 0 1 0 3.9v.1H4v-.1a2 2 0 0 1 0-3.9"/><path d="M14 4v16" stroke-dasharray="2.4 2.4"/>',
+  shopping:'<path d="M6 8h12l-1 12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  car:'<path d="M4 16V11l2.2-4.4A2 2 0 0 1 8 5.5h8a2 2 0 0 1 1.8 1.1L20 11v5"/><path d="M4 16h16M6 16v2M18 16v2"/><circle cx="7.5" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="1.5" fill="currentColor" stroke="none"/>',
+  other:'<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M4 12h16M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>'
+};
+const CAT_META={hotel:{color:'#3b82f6'},food:{color:'#f97316'},transport:{color:'#10b981'},activity:{color:'#ec4899'},shopping:{color:'#8b5cf6'},car:{color:'#14b8a6'},other:{color:'#94a3b8'}};
 function hashColor(s){let h=0;for(const c of String(s||'x'))h=(h*31+c.charCodeAt(0))>>>0;return `hsl(${h%360} 62% 52%)`}
-function catMeta(k){return CAT_META[k]||{icon:'🏷️',color:hashColor(k)}}
-function catIcon(k,size=40){const m=catMeta(k);return `<span class="caticon" style="--c:${m.color};width:${size}px;height:${size}px;font-size:${Math.round(size*.48)}px">${m.icon}</span>`}
+function catMeta(k){return CAT_META[k]||{color:hashColor(k)}}
+function catSvgPath(k){return CAT_SVG[k]||'<circle cx="12" cy="9" r="2.6"/><path d="M4 20c0-3.6 3.6-6 8-6s8 2.4 8 6"/>'}
+function catIcon(k,size=40){const m=catMeta(k);const raw=catSvgPath(k);const fill=raw.startsWith('FILL:');const d=fill?raw.slice(5):raw;const svg=fill?`<svg viewBox="0 0 24 24" fill="currentColor">${d.startsWith('<')?d:`<path d="${d}"/>`}</svg>`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;return `<span class="caticon" style="--c:${m.color};width:${size}px;height:${size}px">${svg}</span>`}
 function catBadge(k){const m=catMeta(k);return `<span class="catbadge" style="--c:${m.color}">${esc(catName(k))}</span>`}
 // ---------- รูปโปรไฟล์ / รูป Group / รูปปก Trip ----------
 const mediaUrls=new Map();

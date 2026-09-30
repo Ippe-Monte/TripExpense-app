@@ -22,29 +22,30 @@
 <div id="splash" class="splash"><div class="splash-in"><img src="img/logo.svg" class="splash-logo" alt=""><h1>Trip<span>Expense</span></h1><p>Travel More &nbsp;·&nbsp; Spend Smarter</p></div><div class="splash-dots"><i></i><i></i><i></i></div></div>
 
 <div id="auth" class="auth">
+  <button class="langtoggle" onclick="toggleLang()" title="TH / EN"><span class="langChip">TH</span></button>
   <div class="auth-top"><img src="img/logo.svg" class="auth-logo" alt=""><h1>Trip<span>Expense</span></h1><p>Travel More &nbsp;·&nbsp; Spend Smarter</p></div>
   <div class="authcard">
     <div id="authInvite"></div>
     <div id="authWelcome">
-      <p class="auth-lead">บันทึกค่าใช้จ่ายทริปของคุณ<br>ให้ทุกการเดินทาง..คุ้มค่ากว่าเดิม</p><div class="featrow"><div><span>👛</span>บันทึกรายจ่าย<br>ง่ายๆ</div><div><span>📊</span>สรุปค่าใช้จ่าย<br>อัตโนมัติ</div><div><span>👥</span>แชร์ทริป<br>กับเพื่อนได้</div><div><span>✈️</span>เดินทาง<br>ได้สบายใจ</div></div>
-      <button class="btn big" style="width:100%" onclick="showRegister()">เริ่มใช้งาน</button>
-      <button class="btn ghost" style="width:100%;margin-top:6px" onclick="showLogin()">เข้าสู่ระบบ</button>
+      <p class="auth-lead" data-i18n="auth_lead">บันทึกค่าใช้จ่ายทริปของคุณ ให้ทุกการเดินทาง..คุ้มค่ากว่าเดิม</p><div class="featrow"><div><span>👛</span><span data-i18n="feat_track">บันทึกรายจ่าย ง่ายๆ</span></div><div><span>📊</span><span data-i18n="feat_sum">สรุปค่าใช้จ่าย อัตโนมัติ</span></div><div><span>👥</span><span data-i18n="feat_share">แชร์ทริป กับเพื่อนได้</span></div><div><span>✈️</span><span data-i18n="feat_go">เดินทาง ได้สบายใจ</span></div></div>
+      <button class="btn big" style="width:100%" onclick="showRegister()" data-i18n="auth_start">เริ่มใช้งาน</button>
+      <button class="btn ghost" style="width:100%;margin-top:6px" onclick="showLogin()" data-i18n="auth_login">เข้าสู่ระบบ</button>
     </div>
     <div id="authLogin" class="hide">
-      <h3>เข้าสู่ระบบ</h3>
-      <div class="field"><label>อีเมล</label><input id="loginEmail" type="email" autocomplete="email"></div>
-      <div class="field"><label>รหัสผ่าน</label><input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
-      <button class="btn big" id="loginBtn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
-      <div class="row" style="justify-content:space-between;margin-top:8px"><button class="btn ghost sm" onclick="openForgotPassword()">ลืมรหัสผ่าน?</button><button class="btn ghost sm" onclick="showRegister()">สมัครสมาชิก</button></div>
-      <button class="btn ghost sm backlink" onclick="showWelcome()">‹ กลับ</button>
+      <h3 data-i18n="auth_signin_h">เข้าสู่ระบบ</h3>
+      <div class="field"><label data-i18n="auth_email">อีเมล</label><input id="loginEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label data-i18n="auth_pass">รหัสผ่าน</label><input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="btn big" id="loginBtn" style="width:100%" onclick="login()" data-i18n="auth_login">เข้าสู่ระบบ</button>
+      <div class="row" style="justify-content:space-between;margin-top:8px"><button class="btn ghost sm" onclick="openForgotPassword()" data-i18n="auth_forgot">ลืมรหัสผ่าน?</button><button class="btn ghost sm" onclick="showRegister()" data-i18n="auth_signup">สมัครสมาชิก</button></div>
+      <button class="btn ghost sm backlink" onclick="showWelcome()" data-i18n="auth_back">‹ กลับ</button>
     </div>
     <div id="authRegister" class="hide">
-      <h3>สร้างบัญชีใหม่</h3>
-      <div class="field"><label>ชื่อ</label><input id="regName" autocomplete="name"></div>
-      <div class="field"><label>อีเมล</label><input id="regEmail" type="email" autocomplete="email"></div>
-      <div class="field"><label>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label><input id="regPass" type="password" autocomplete="new-password"></div>
-      <button class="btn big" id="regBtn" style="width:100%" onclick="register()">สร้างบัญชี</button>
-      <p class="muted" style="text-align:center;margin:10px 0 0">มีบัญชีแล้ว? <button class="btn ghost sm" onclick="showLogin()">เข้าสู่ระบบ</button></p>
+      <h3 data-i18n="auth_signup_h">สร้างบัญชีใหม่</h3>
+      <div class="field"><label data-i18n="auth_name">ชื่อ</label><input id="regName" autocomplete="name"></div>
+      <div class="field"><label data-i18n="auth_email">อีเมล</label><input id="regEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label data-i18n="auth_pass8">รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label><input id="regPass" type="password" autocomplete="new-password"></div>
+      <button class="btn big" id="regBtn" style="width:100%" onclick="register()" data-i18n="auth_create">สร้างบัญชี</button>
+      <p class="muted" style="text-align:center;margin:10px 0 0"><span data-i18n="auth_havelogin">มีบัญชีแล้ว?</span> <button class="btn ghost sm" onclick="showLogin()">เข้าสู่ระบบ</button></p>
       <button class="btn ghost sm backlink" onclick="showWelcome()">‹ กลับ</button>
     </div>
   </div>
@@ -55,7 +56,7 @@
 <nav class="nav">
 <button data-p="dashboard" onclick="go('dashboard')">🏠 หน้าหลัก</button><button data-p="summary" onclick="go('summary')">📊 สรุป</button><button data-p="chat" onclick="go('chat')">💬 แชต <span class="navcount chatCount hide">0</span></button><button data-p="schedule" onclick="go('schedule')">🗺️ Schedule</button><button data-p="trips" onclick="go('trips')">🧳 จัดการทริป</button><button data-p="documents" onclick="go('documents')">📄 เอกสาร</button><button data-p="budget" onclick="go('budget')">💰 งบประมาณ</button><button data-p="reports" onclick="go('reports')">🖨️ รายงาน</button><button data-p="groups" onclick="go('groups')">👥 กลุ่ม</button><button data-p="friends" onclick="go('friends')">🤝 เพื่อน</button><button data-p="profile" onclick="go('profile')">👤 โปรไฟล์</button><button class="devOnly" data-p="developer" onclick="go('developer')">🛠️ Developer</button>
 </nav><div class="sidebottom"><button class="btn secondary installBtn" style="width:100%" onclick="installApp()">📲 ติดตั้งเป็นแอป</button><button class="btn secondary" style="width:100%" onclick="logout()">ออกจากระบบ</button></div></aside>
-<main class="main"><header class="top"><div class="titles"><h2 id="pt" style="margin:0">หน้าหลัก</h2><div id="ps" class="muted">ภาพรวมของ Trip ปัจจุบัน</div></div><div class="spacer"></div><select id="tripSwitch" class="tripswitch" title="Trip ปัจจุบัน" onchange="switchTrip(this.value)"></select><button class="btn hideMobile" onclick="openTripForm()">＋ สร้าง Trip</button><button class="bell" title="การแจ้งเตือน" onclick="openInbox()">🔔<span class="inboxCount hide">0</span></button><button class="hdravatar" id="hdrAvatar" title="โปรไฟล์" onclick="go('profile')"></button></header>
+<main class="main"><header class="top"><div class="titles"><h2 id="pt" style="margin:0">หน้าหลัก</h2><div id="ps" class="muted">ภาพรวมของ Trip ปัจจุบัน</div></div><div class="spacer"></div><select id="tripSwitch" class="tripswitch" title="Trip ปัจจุบัน" onchange="switchTrip(this.value)"></select><button class="btn hideMobile" onclick="openTripForm()">＋ สร้าง Trip</button><button class="langtoggle small" onclick="toggleLang()" title="TH / EN"><span class="langChip">TH</span></button><button class="bell" title="การแจ้งเตือน" onclick="openInbox()">🔔<span class="inboxCount hide">0</span></button><button class="hdravatar" id="hdrAvatar" title="โปรไฟล์" onclick="go('profile')"></button></header>
 <div class="content"><div id="tripBanner"></div>
 
 <section id="dashboard" class="page active"><div id="homeBox"></div></section>
@@ -86,7 +87,7 @@
 
 <section id="developer" class="page"><div id="devBox"></div></section>
 </div></main></div>
-<nav class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')"><span>🏠</span>หน้าหลัก</button><button data-p="summary" onclick="go('summary')"><span>📊</span>สรุป</button><button class="fab" onclick="openQuickMenu()" title="เมนูลัด">＋</button><button data-p="chat" onclick="go('chat')"><span>💬</span>แชต<i class="navcount chatCount hide">0</i></button><button data-p="schedule" onclick="go('schedule')"><span>🗺️</span>Schedule</button></nav></div>
+<nav class="mobileNav"><button data-p="dashboard" onclick="go('dashboard')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg><span data-i18n="nav_home">หน้าหลัก</span></button><button data-p="summary" onclick="go('summary')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V4M19 20v-7"/><path d="M3 20h18"/></svg><span data-i18n="nav_summary">สรุป</span></button><button class="fab" onclick="openQuickMenu()" title="เมนูลัด">＋</button><button data-p="chat" onclick="go('chat')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/></svg><span data-i18n="nav_chat">แชต</span><i class="navcount chatCount hide">0</i></button><button data-p="schedule" onclick="go('schedule')"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span data-i18n="nav_schedule">Schedule</span></button></nav></div>
 <div id="mb" class="modalback" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div><div id="toast" class="toast"></div>
 
 <script src="js/core.js?v=18"></script>

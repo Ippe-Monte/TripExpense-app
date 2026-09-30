@@ -1,7 +1,8 @@
 // =====================================================================
 // invites.js — Code, QR, ลิงก์เชิญ, เชิญทางอีเมล, การตั้งค่าเข้าร่วม, คำขอ/อนุมัติ, กล่องแจ้งเตือน 🔔
 // =====================================================================
-const POLICY={open:['🟢','เปิด','ใช้ Code แล้วเข้าร่วมได้ทันที'],password:['🔑','รหัสผ่าน','ต้องใช้ Code และรหัสผ่าน'],invite_only:['✉️','เชิญเท่านั้น','ใช้ Code ไม่ได้ ต้องได้รับคำเชิญหรือลิงก์เชิญ']};
+function POLICY_(){return {open:['🟢',tr('pol_open'),LANG==='en'?'Use the code to join instantly':'ใช้ Code แล้วเข้าร่วมได้ทันที'],password:['🔑',tr('pol_password'),LANG==='en'?'Requires the code and a password':'ต้องใช้ Code และรหัสผ่าน'],invite_only:['✉️',tr('pol_invite'),LANG==='en'?'Code cannot be used — invite or invite link required':'ใช้ Code ไม่ได้ ต้องได้รับคำเชิญหรือลิงก์เชิญ']}}
+Object.defineProperty(window,'POLICY',{get:POLICY_});
 function policyBadge(p){const x=POLICY[p]||POLICY.open;return `<span class="pill pol-${esc(p||'open')}" title="${esc(x[2])}">${x[0]} ${x[1]}</span>`}
 let inbox={invites:[],approvals:[],my_requests:[]};
 
