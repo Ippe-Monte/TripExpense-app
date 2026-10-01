@@ -2,7 +2,13 @@
 // i18n_map.js — พจนานุกรมไทย→อังกฤษ สำหรับข้อความของระบบทั้งแอป
 // ใช้กับโหมด EN เท่านั้น · ข้อความที่ผู้ใช้พิมพ์เองจะไม่ถูกแตะต้อง
 // =====================================================================
-const TH_EN = {
+const TH_EN = {"Trip ปัจจุบัน":"Current trip","✔ Trip ปัจจุบัน":"✔ Current trip","แผนการเดินทาง":"Itinerary","ค่าใช้จ่ายของวัน":"Day's expenses",
+"ไม่มีแผนการเดินทางในวันนี้":"No itinerary for this day","ไม่มีค่าใช้จ่ายในวันนี้":"No expenses on this day","ก่อนเดินทาง":"Before the trip","หลังเดินทาง":"After the trip",
+"เลือกตำแหน่งรูป":"Position your photo","เลือกตำแหน่งรูปโปรไฟล์":"Position your profile photo","เลือกตำแหน่งรูปปก Trip":"Position the trip cover","เลือกตำแหน่งรูป Group":"Position the group photo",
+"ลากเพื่อเลื่อนรูป · ใช้สองนิ้วหรือแถบเลื่อนเพื่อซูม":"Drag to move · pinch or use the slider to zoom","วงกลมคือส่วนที่จะแสดงเป็นไอคอนกลม (เช่น ในแชต)":"The circle is the part shown as the round icon (e.g. in chat)",
+"ใช้รูปนี้":"Use this photo","รีเซ็ต":"Reset","กำลังประมวลผล...":"Processing...","เปิดรูปนี้ไม่ได้ (รองรับ JPG, PNG, WebP) กรุณาเลือกรูปอื่น":"Cannot open this image (JPG, PNG, WebP supported). Please choose another.",
+"ออกจากกลุ่ม":"Leave group","เปิดอีกครั้ง":"Reopen","แชต":"Chat","เชิญ":"Invite","การเดินทาง":"Travel","เพิ่ม":"Add","ลบ Trip":"Delete trip","ออกจาก Trip":"Leave trip",
+
 // ---------- ประโยคเต็ม (กันการแปลทีละคำแล้วเพี้ยน) ----------
 "ใครออกเงินเกิน/ขาด รายการโอนคืน และบันทึกว่าชำระแล้ว":"Who overpaid or underpaid, transfers to settle, and payment records",
 "จัดการกลุ่ม (Group)":"Manage groups","เอกสาร (Document)":"Documents","เพื่อน (Friend)":"Friends","รายงานสรุป (Report)":"Reports",
