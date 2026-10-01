@@ -265,3 +265,76 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .section h2{font-size:20px}
 .card h3{font-size:16px}
 .card h4{font-size:14px}
+/* ===================== V18.3 — ไอคอนลายเส้น / ชื่อหน้า / ตัวเลือก / การ์ด Trip ===================== */
+.lic{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
+.bigicon{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 6px;border-radius:50%;background:#eaf2ff;color:var(--brand)}
+.bigicon .lic{width:30px;height:30px}
+/* ชื่อหน้า (Tab) ย้ายลงมาอยู่ใต้แถบบน */
+.pagehead{display:none}
+@media(max-width:950px){
+  .top .titles{display:none}
+  .top .spacer{display:none}
+  .top{justify-content:flex-end}
+  .tripswitch,.tripswitch.selbtn{flex:1;max-width:none;min-width:0}
+  .pagehead{display:block;margin:2px 2px 12px}
+  .pagehead h1{margin:0;font-size:20px;line-height:1.3;font-weight:800;color:var(--ink)}
+  .pagehead #ps2{font-size:12.5px;color:var(--muted);margin-top:2px}
+  body[data-page="dashboard"] .pagehead,body[data-page="chat"] .pagehead{display:none}
+  .segtabs,.chattabs{top:60px}
+}
+/* การ์ดเมนูลัด */
+.quickgrid{gap:10px}
+.quicktile{gap:8px;padding:14px 6px;font-size:12px;line-height:1.3;text-align:center}
+.quicktile .qicon{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#e8f1ff;color:var(--brand)}
+.quicktile .qicon .lic{width:22px;height:22px}
+.quicktile .qname{display:block}
+.qkrow{display:flex!important;align-items:center;gap:12px;padding:10px 4px!important;font-size:14px!important}
+.qkrow .qkic{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#e8f1ff;color:var(--brand);flex:none}
+.qkrow .qkic .lic{width:17px;height:17px}
+.qkrow input{flex:none}
+/* ปุ่มลัดหน้าหลัก / การ์ดสถิติ / เมนูโปรไฟล์ / กระดิ่ง */
+.shortcuts button span{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#e8f1ff;color:var(--brand);font-size:0}
+.shortcuts button span .lic{width:19px;height:19px}
+.sicon{color:var(--c);font-size:0}.sicon .lic{width:19px;height:19px}
+.menuitem .mi{color:var(--brand);font-size:0}.menuitem .mi .lic{width:18px;height:18px}
+.bell{color:#475569;display:inline-grid;place-items:center}.bell .lic{width:19px;height:19px}
+.iconbtn .lic{width:18px;height:18px}
+.avcam{font-size:0;color:#475569}
+/* การ์ด Trip หน้าจัดการทริป: รูปอยู่บน ชื่ออยู่ใต้รูป */
+.card.trip .cover{height:96px;border-radius:14px}
+.card.trip .cover::before{display:none}
+.trip-title{margin:10px 0 2px}.trip-title small{font-size:11px;color:var(--muted)}
+.trip-title h3{margin:2px 0 0;font-size:16px;line-height:1.3;overflow-wrap:anywhere}
+.pills button{display:inline-flex;align-items:center;gap:6px}
+.pills .caticon{box-shadow:none;width:20px!important;height:20px!important}
+/* ปุ่มตัวเลือก (แทน select ของระบบ) */
+.selbtn{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:14px;font-weight:600;min-width:0;line-height:1.3}
+.selbtn span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.selbtn::after{content:'';flex:none;width:7px;height:7px;border-right:2px solid #94a3b8;border-bottom:2px solid #94a3b8;transform:rotate(45deg);margin:-3px 2px 0 0}
+.selbtn:disabled{opacity:.55}
+.field .selbtn,details.more .selbtn{display:flex;width:100%;padding:12px}
+.filterbar .selbtn{font-size:13px}
+.selsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.selsheet-bg{position:absolute;inset:0;background:rgba(15,23,42,.45)}
+.selsheet-box{position:relative;width:100%;max-width:520px;max-height:72vh;display:flex;flex-direction:column;background:#fff;border-radius:22px 22px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+.selsheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px}
+.selsheet-head b{font-size:15px}
+.selsheet-list{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.selgroup{font-size:12px;font-weight:700;color:var(--muted);padding:12px 6px 4px}
+.selopt{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 12px;margin-bottom:6px;border-radius:12px;background:#f7f9fc;border:1.5px solid transparent;text-align:left;font-size:14px;line-height:1.35;color:var(--ink)}
+.selopt span{flex:1;min-width:0;overflow-wrap:anywhere}
+.selopt i{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;background:#fff}
+.selopt.on{background:#eff6ff;border-color:var(--brand)}
+.selopt.on i{border-color:var(--brand);background:radial-gradient(circle,var(--brand) 0 45%,#fff 50%)}
+@media(min-width:951px){.selsheet{align-items:center}.selsheet-box{border-radius:20px;max-height:60vh}}
+/* ไอคอนลายเส้นที่แปลงจากอีโมจิ */
+.lic-i{display:inline-flex;vertical-align:-.22em;margin:0 .15em 0 0;line-height:1}
+.lic-i .lic{width:1.1em;height:1.1em}
+.btn .lic-i .lic,.btn.sm .lic-i .lic{width:1.05em;height:1.05em}
+.featrow>div>span:first-child{color:#fff}
+.featrow>div>span:first-child .lic{width:22px;height:22px}
+.featrow>div>span:first-child .lic-i{margin:0}
+.nav .navcount{margin-left:auto}
+.segtabs .lic-i,.tabs .lic-i{margin-right:.25em}
+.pill .lic-i .lic{width:.95em;height:.95em}
+.toast .lic-i{margin-right:.35em}

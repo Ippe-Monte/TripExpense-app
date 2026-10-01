@@ -45,14 +45,14 @@ function showWelcome(){['authLogin','authRegister'].forEach(id=>$(id)?.classList
 // ---------- Header ----------
 function renderHeaderAvatar(){const el=$('hdrAvatar');if(el&&me){el.innerHTML=avatarHtml({...me,id:currentUser.id},34);hydrateMedia(el)}}
 // ---------- เมนูลัด ＋ (ปรับแต่งได้) ----------
-const QUICK_ACTIONS={expense:['💸','เพิ่มค่าใช้จ่าย',()=>openExpenseForm()],schedule:['🗺️','เพิ่ม Schedule',()=>openScheduleForm()],doc:['📄','เพิ่มเอกสาร',()=>openDocForm()],chat:['💬','แชตใน Trip',()=>curTripId?openChatFor('trip',curTripId):go('chat')],invite:['📨','เชิญเข้า Trip',()=>curTripId?openInviteModal('trip',curTripId):alert('กรุณาเลือก Trip ก่อน')],settle:['✔️','บันทึกการชำระ',()=>openSummary('overview',true)],budget:['💰','ตั้งงบประมาณ',()=>openBudgetForm()],summary:['📊','ดูสรุปค่าใช้จ่าย',()=>openSummary('overview')],join:['🔑','ใส่ Code เข้าร่วม',()=>openJoinCode()],newtrip:['🧳','สร้าง Trip ใหม่',()=>openTripForm()],friend:['🤝','เพิ่มเพื่อน',()=>go('friends')],switch:['🔄','เปลี่ยน Trip',()=>go('trips')],members:['👥','สมาชิก Trip',()=>curTripId&&openTripDetail(curTripId,'members')],report:['🖨️','รายงาน / Export',()=>go('reports')]};
+const QUICK_ACTIONS={expense:['expense','เพิ่มค่าใช้จ่าย',()=>openExpenseForm()],schedule:['schedule','เพิ่ม Schedule',()=>openScheduleForm()],doc:['documents','เพิ่มเอกสาร',()=>openDocForm()],chat:['chat','แชตใน Trip',()=>curTripId?openChatFor('trip',curTripId):go('chat')],invite:['invite','เชิญเข้า Trip',()=>curTripId?openInviteModal('trip',curTripId):alert('กรุณาเลือก Trip ก่อน')],settle:['settle','บันทึกการชำระ',()=>openSummary('overview',true)],budget:['budget','ตั้งงบประมาณ',()=>openBudgetForm()],summary:['summary','ดูสรุปค่าใช้จ่าย',()=>openSummary('overview')],join:['join','ใส่ Code เข้าร่วม',()=>openJoinCode()],newtrip:['trips','สร้าง Trip ใหม่',()=>openTripForm()],friend:['friends','เพิ่มเพื่อน',()=>go('friends')],switch:['swap','เปลี่ยน Trip',()=>go('trips')],members:['groups','สมาชิก Trip',()=>curTripId&&openTripDetail(curTripId,'members')],report:['reports','รายงาน / Export',()=>go('reports')]};
 const QUICK_DEFAULT=['expense','schedule','doc','chat','invite','settle'];
 function quickKeys(){try{const k=JSON.parse(localStorage.getItem('te_quick_'+currentUser.id)||'null');if(Array.isArray(k)&&k.length)return k.filter(x=>QUICK_ACTIONS[x])}catch(_){}return QUICK_DEFAULT}
-function openQuickMenu(){const keys=quickKeys();modal(`<div class="sheethead"><h3>เมนูลัด</h3><div class="spacer"></div><button class="btn sm ghost" onclick="openQuickCustomize()">⚙️ ปรับแต่ง</button><button class="btn secondary sm" onclick="closeModal()">ปิด</button></div><div class="quickgrid">${keys.map(k=>{const [i,n]=QUICK_ACTIONS[k];return `<button class="quicktile" onclick="runQuick('${k}')"><span>${i}</span>${n}</button>`}).join('')}</div>`,'sheet')}
+function openQuickMenu(){const keys=quickKeys();modal(`<div class="sheethead"><h3>เมนูลัด</h3><div class="spacer"></div><button class="btn sm ghost" onclick="openQuickCustomize()">${lineIcon('settings',15)} ปรับแต่ง</button><button class="btn secondary sm" onclick="closeModal()">ปิด</button></div><div class="quickgrid">${keys.map(k=>{const [i,n]=QUICK_ACTIONS[k];return `<button class="quicktile" onclick="runQuick('${k}')"><span class="qicon">${lineIcon(i)}</span><span class="qname">${n}</span></button>`}).join('')}</div>`,'sheet')}
 function runQuick(k){closeModal();try{QUICK_ACTIONS[k][2]()}catch(e){err(e)}}
-function openQuickCustomize(){const keys=new Set(quickKeys());modal(`<div class="sheethead"><h3>⚙️ ปรับแต่งเมนูลัด</h3><div class="spacer"></div><button class="btn secondary sm" onclick="openQuickMenu()">กลับ</button></div><div class="muted mini">เลือกได้สูงสุด 9 รายการ ตามลำดับที่ติ๊ก</div><div class="checklist" style="margin-top:8px">${Object.entries(QUICK_ACTIONS).map(([k,[i,n]])=>`<label><input type="checkbox" name="qk" value="${k}" ${keys.has(k)?'checked':''}> ${i} ${n}</label>`).join('')}</div><br><div class="row"><button class="btn" onclick="saveQuick()">บันทึก</button><button class="btn secondary" onclick="try{localStorage.removeItem('te_quick_'+currentUser.id)}catch(_){}openQuickMenu()">คืนค่าเริ่มต้น</button></div>`,'sheet')}
+function openQuickCustomize(){const keys=new Set(quickKeys());modal(`<div class="sheethead"><h3>ปรับแต่งเมนูลัด</h3><div class="spacer"></div><button class="btn secondary sm" onclick="openQuickMenu()">กลับ</button></div><div class="muted mini">เลือกได้สูงสุด 9 รายการ ตามลำดับที่ติ๊ก</div><div class="checklist" style="margin-top:8px">${Object.entries(QUICK_ACTIONS).map(([k,[i,n]])=>`<label class="qkrow"><input type="checkbox" name="qk" value="${k}" ${keys.has(k)?'checked':''}><span class="qkic">${lineIcon(i)}</span><span>${n}</span></label>`).join('')}</div><br><div class="row"><button class="btn" onclick="saveQuick()">บันทึก</button><button class="btn secondary" onclick="try{localStorage.removeItem('te_quick_'+currentUser.id)}catch(_){}openQuickMenu()">คืนค่าเริ่มต้น</button></div>`,'sheet')}
 function saveQuick(){const k=[...document.querySelectorAll('input[name="qk"]:checked')].map(x=>x.value);if(!k.length)return alert('เลือกอย่างน้อย 1 รายการ');if(k.length>9)return alert('เลือกได้สูงสุด 9 รายการ');try{localStorage.setItem('te_quick_'+currentUser.id,JSON.stringify(k))}catch(_){}toast('บันทึกเมนูลัดแล้ว');openQuickMenu()}
-function openJoinCode(){modal(`<div class="sheethead"><h3>🔑 เข้าร่วมด้วย Code</h3><div class="spacer"></div><button class="btn secondary sm" onclick="closeModal()">ปิด</button></div><div class="muted mini">ใส่ Code ของ Group หรือ Trip ที่ได้รับจากเพื่อน</div><div class="field"><input id="qjCode" placeholder="เช่น AB12CD34" autocapitalize="characters" style="font-size:20px;letter-spacing:3px;text-align:center" onkeydown="if(event.key==='Enter')$('qjBtn').click()"></div><button class="btn" id="qjBtn" style="width:100%" onclick="joinByCode($('qjCode').value).catch(err)">เข้าร่วม</button>`,'sheet')}
+function openJoinCode(){modal(`<div class="sheethead"><h3>เข้าร่วมด้วย Code</h3><div class="spacer"></div><button class="btn secondary sm" onclick="closeModal()">ปิด</button></div><div class="muted mini">ใส่ Code ของ Group หรือ Trip ที่ได้รับจากเพื่อน</div><div class="field"><input id="qjCode" placeholder="เช่น AB12CD34" autocapitalize="characters" style="font-size:20px;letter-spacing:3px;text-align:center" onkeydown="if(event.key==='Enter')$('qjBtn').click()"></div><button class="btn" id="qjBtn" style="width:100%" onclick="joinByCode($('qjCode').value).catch(err)">เข้าร่วม</button>`,'sheet')}
 // ---------- Donut chart ----------
 function donutSvg(parts,total,size=150,label='รวมทั้งหมด'){const r=58,C=2*Math.PI*r;let off=0;const segs=parts.filter(p=>p.v>0).map(p=>{const len=total>0?p.v/total*C:0;const s=`<circle r="${r}" cx="75" cy="75" fill="none" stroke="${p.color}" stroke-width="20" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return s}).join('');return `<svg class="donut" viewBox="0 0 150 150" width="${size}" height="${size}"><circle r="${r}" cx="75" cy="75" fill="none" stroke="#eef2f7" stroke-width="20"/>${segs}<text x="75" y="72" text-anchor="middle" class="dv">${esc(moneyShort(total))}</text><text x="75" y="92" text-anchor="middle" class="dl">${esc(label)}</text></svg>`}
 function moneyShort(v){v=Number(v||0);return '฿'+(v>=1e6?(v/1e6).toFixed(1)+'M':Math.round(v).toLocaleString('th-TH'))}
@@ -92,3 +92,146 @@ function initAutoTranslate(){
   obs.observe(document.body,{childList:true,subtree:true,characterData:true});
   if(LANG==='en')translateDOM(document.body);
 }
+
+// ชื่อรายการที่แสดง: ตัดคำนำหน้า "ค่าที่พัก - " ที่ระบบเคยสร้างอัตโนมัติออก (หมวด "ที่พัก" บอกอยู่แล้ว)
+function expName(e){const d=String(e?.detail||'').replace(/^ค่าที่พัก\s*-\s*/,'').trim();return d||catName(e?.category)}
+
+// =====================================================================
+// คลังไอคอนลายเส้น (line icons) — ใช้แทนอีโมจิทั้งแอป สีตาม currentColor
+// =====================================================================
+const LINE_ICONS={
+ home:'<path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/>',
+ summary:'<path d="M5 20V11M12 20V4M19 20v-7"/><path d="M3 20h18"/>',
+ chat:'<path d="M4 5h16v10H8l-4 4V5Z"/>',
+ schedule:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+ trips:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/>',
+ documents:'<path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z"/><path d="M14 2v5h5"/><path d="M8.5 13h7M8.5 17h7"/>',
+ budget:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14.5" r="1.1" fill="currentColor" stroke="none"/>',
+ reports:'<path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 17v4h12v-4"/>',
+ groups:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="8.3" r="2.3"/><path d="M15.3 14.8c2.6.4 4.5 2.4 4.5 5.2"/>',
+ friends:'<path d="M12 20s-7-4.4-9.3-8.8C1.1 8 2.6 5 5.7 5c1.8 0 3.1 1 4.3 2.6C11.2 6 12.5 5 14.3 5c3.1 0 4.6 3 3 6.2C19 15.6 12 20 12 20Z"/>',
+ profile:'<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c0-4.1 3.4-6.5 7.5-6.5s7.5 2.4 7.5 6.5"/>',
+ developer:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M3 12h3M18 12h3M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>',
+ expense:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
+ invite:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.4 2.7-5.5 6-5.5s6 2.1 6 5.5"/><path d="M18 8v6M15 11h6"/>',
+ settle:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>',
+ join:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>',
+ swap:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+ camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4V8Z"/><circle cx="12" cy="13" r="3.5"/>',
+ bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ history:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
+ trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
+ phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.8M12 17.2v.1"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.1"/>',
+ logout:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>',
+ search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ plane:'<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>'
+};
+function lineIcon(name,size){const d=LINE_ICONS[name];if(!d)return '';const sz=size?` style="width:${size}px;height:${size}px"`:'';return `<svg class="lic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"${sz}>${d}</svg>`}
+// แปลงอีโมจิเดิมเป็นชื่อไอคอนลายเส้น (ใช้กับโค้ดส่วนที่ยังส่งอีโมจิมา)
+const EMOJI_ICON={'🧳':'trips','👥':'groups','💰':'budget','📄':'documents','🤝':'friends','📊':'reports','📔':'history','🔔':'bell','⚙️':'settings','🗑️':'trash','📲':'phone','🛠️':'developer','❓':'help','ℹ️':'info','👤':'profile','🏠':'home','💬':'chat','🗺️':'schedule','💸':'expense','📨':'invite','✔️':'settle','🔑':'key','🔄':'swap','🖨️':'reports','🖼️':'documents'};
+function iconOf(x){return EMOJI_ICON[x]?lineIcon(EMOJI_ICON[x]):x}
+
+// =====================================================================
+// ตัวเลือกแบบ bottom-sheet — แทน dropdown ของระบบที่ตัวใหญ่และคุมขนาดไม่ได้
+// select เดิมยังอยู่ (ซ่อนไว้) ค่าและ event ทำงานเหมือนเดิมทุกอย่าง
+// =====================================================================
+function _selLabel(sel){const o=sel.options[sel.selectedIndex];return o?o.textContent.trim():''}
+function _syncSelBtn(sel){const b=sel._btn;if(!b)return;const span=b.querySelector('span');const t=_selLabel(sel);if(span._raw!==t){span._raw=t;span.textContent=t||'—'}b.disabled=!!sel.disabled}
+function enhanceSelect(sel){
+  if(sel._enh||sel.multiple||sel.dataset.native==='1')return;sel._enh=true;
+  const b=document.createElement('button');b.type='button';b.className=(sel.className||'')+' selbtn';b.innerHTML='<span></span>';
+  if(sel.id)b.id=sel.id+'_btn';
+  sel.parentNode.insertBefore(b,sel.nextSibling);sel.style.display='none';sel._btn=b;
+  sel.addEventListener('change',()=>_syncSelBtn(sel));
+  new MutationObserver(()=>_syncSelBtn(sel)).observe(sel,{childList:true,subtree:true,attributes:true,characterData:true});
+  b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openSelectSheet(sel)});
+  _syncSelBtn(sel);
+}
+function enhanceAllSelects(root){(root||document).querySelectorAll('select').forEach(enhanceSelect)}
+function closeSelectSheet(){document.getElementById('selSheet')?.remove()}
+function openSelectSheet(sel){
+  closeSelectSheet();
+  const field=sel.closest('.field');const title=(field?.querySelector('label')?.textContent||sel.title||'').trim();
+  const rows=[];const walk=(node)=>{[...node.children].forEach(c=>{if(c.tagName==='OPTGROUP'){rows.push({g:c.label});walk(c)}else if(c.tagName==='OPTION')rows.push({o:c})})};walk(sel);
+  const cur=sel.value;
+  const wrap=document.createElement('div');wrap.id='selSheet';wrap.className='selsheet';
+  if(sel.closest('[data-no-tr]'))wrap.setAttribute('data-no-tr','1');
+  wrap.innerHTML=`<div class="selsheet-bg"></div><div class="selsheet-box"><div class="selsheet-head"><b>${esc(title||'')}</b><button type="button" class="btn secondary sm">ปิด</button></div><div class="selsheet-list">${rows.map((r,i)=>r.g!==undefined?`<div class="selgroup">${esc(r.g)}</div>`:`<button type="button" class="selopt ${r.o.value===cur?'on':''}" data-i="${i}" ${r.o.disabled?'disabled':''}><span>${esc(r.o.textContent.trim())}</span><i></i></button>`).join('')}</div></div>`;
+  document.body.appendChild(wrap);
+  const close=()=>wrap.remove();
+  wrap.querySelector('.selsheet-bg').onclick=close;wrap.querySelector('.selsheet-head .btn').onclick=close;
+  wrap.querySelectorAll('.selopt').forEach(btn=>btn.onclick=()=>{const o=rows[Number(btn.dataset.i)].o;sel.selectedIndex=o.index;_syncSelBtn(sel);sel.dispatchEvent(new Event('change',{bubbles:true}));close()});
+  wrap.querySelector('.selopt.on')?.scrollIntoView?.({block:'center'});
+  if(LANG==='en'&&typeof translateDOM==='function')translateDOM(wrap);
+}
+setInterval(()=>{document.querySelectorAll('select').forEach(x=>{if(x._btn)_syncSelBtn(x)})},400);
+(function(){let t=null;const run=()=>{clearTimeout(t);t=setTimeout(()=>{enhanceAllSelects(document);document.querySelectorAll('select').forEach(x=>{if(x._btn)_syncSelBtn(x)})},0)};
+  const start=()=>{enhanceAllSelects(document);new MutationObserver(run).observe(document.body,{childList:true,subtree:true})};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start()})();
+
+// ตั้งค่า select จากโค้ดแล้วอัปเดตป้ายทันที
+function setSel(sel,v){if(!sel)return;sel.value=v;_syncSelBtn(sel)}
+
+// =====================================================================
+// แปลงอีโมจิที่เป็น "ไอคอนของระบบ" ให้เป็นไอคอนลายเส้นอัตโนมัติทั้งแอป
+// ข้ามข้อความแชต (.bubble) และช่องกรอก เพื่อไม่แตะสิ่งที่ผู้ใช้พิมพ์เอง
+// =====================================================================
+Object.assign(LINE_ICONS,{
+ check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+ eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+ clip:'<path d="M20 11.5l-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.7 1.7 0 0 1-2.4-2.4L15 7"/>',
+ mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+ image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>',
+ shield:'<path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3Z"/>',
+ crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8Z"/>',
+ pencil:'<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1Z"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ pin:'<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+ link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+ copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+ download:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
+ send:'<path d="M21 3L10 14M21 3l-7 18-4-8-8-4 19-6Z"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+ ticket:'<path d="M4 8a2 2 0 1 1 0-3.9V4h16v.1a2 2 0 0 1 0 3.9v.1a2 2 0 0 1 0 3.8v.1a2 2 0 0 1 0 3.9v.1H4v-.1a2 2 0 0 1 0-3.9"/><path d="M14 4v16" stroke-dasharray="2.4 2.4"/>',
+ block:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+ folder:'<path d="M3 6a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/>',
+ bed:'<path d="M3 18v-7a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3"/><path d="M3 14h17a1 1 0 0 1 1 1v3"/><path d="M3 18v3M21 18v3"/>',
+ call:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
+ train:'<rect x="5" y="3" width="14" height="13" rx="4"/><path d="M5 11h14M9 16l-2 4M15 16l2 4"/>',
+ car:'<path d="M4 16V11l2.2-4.4A2 2 0 0 1 8 5.5h8a2 2 0 0 1 1.8 1.1L20 11v5"/><path d="M4 16h16M6 16v2M18 16v2"/>',
+ wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14.5" r="1.1" fill="currentColor" stroke="none"/>'
+});
+const EMOJI_MAP={'👥':'groups','🔒':'lock','✔️':'check','✔':'check','🤝':'friends','📨':'invite','🔑':'key','🔔':'bell','💬':'chat','📲':'phone','📄':'documents','📎':'clip','✉️':'mail','💰':'budget','📊':'summary','🛠️':'developer','💸':'expense','🖼️':'image','📷':'camera','👁':'eye','⚙️':'settings','⚙':'settings','🧳':'trips','➕':'plus','🛡️':'shield','👤':'profile','📔':'history','🔍':'search','🏨':'bed','🔗':'link','✏️':'pencil','❓':'help','🗺️':'schedule','✕':'x','🔄':'swap','🎟️':'ticket','📞':'call','📘':'globe','🗑️':'trash','🗑':'trash','🖨️':'reports','👑':'crown','🧾':'expense','🚆':'train','🚗':'car','✈️':'plane','🛂':'documents','📁':'folder','🚫':'block','🌐':'globe','🙋':'invite','📋':'copy','📥':'download','📤':'send','📅':'schedule','🗓️':'schedule','🏠':'home','✔️':'check','👛':'wallet','📍':'pin','ℹ️':'info'};
+const _emKeys=Object.keys(EMOJI_MAP).sort((a,b)=>b.length-a.length);
+const _emRe=new RegExp(_emKeys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
+const _emTest=new RegExp(_emKeys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'));
+let _lineifying=false;
+function lineifyEmoji(root){
+  if(_lineifying)return;root=root||document.body;if(!root)return;_lineifying=true;
+  try{
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      const v=n.nodeValue;if(!v||!_emTest.test(v))return NodeFilter.FILTER_REJECT;
+      const p=n.parentElement;if(!p)return NodeFilter.FILTER_REJECT;
+      if(/^(SCRIPT|STYLE|TEXTAREA|OPTION|SELECT|INPUT|TITLE)$/i.test(p.tagName))return NodeFilter.FILTER_REJECT;
+      if(p.closest('.bubble,[data-keep-emoji]'))return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT}});
+    const nodes=[];let n;while(n=w.nextNode())nodes.push(n);
+    nodes.forEach(node=>{
+      const txt=node.nodeValue;const frag=document.createDocumentFragment();let last=0,m;_emRe.lastIndex=0;
+      while((m=_emRe.exec(txt))){
+        if(m.index>last)frag.appendChild(document.createTextNode(txt.slice(last,m.index)));
+        const sp=document.createElement('span');sp.className='lic-i';sp.innerHTML=lineIcon(EMOJI_MAP[m[0]]);frag.appendChild(sp);last=m.index+m[0].length}
+      if(last<txt.length)frag.appendChild(document.createTextNode(txt.slice(last)));
+      node.parentNode.replaceChild(frag,node)});
+    // placeholder เป็นข้อความล้วน ใส่ไอคอนไม่ได้ จึงตัดอีโมจิออก
+    root.querySelectorAll('[placeholder]').forEach(el=>{const v=el.getAttribute('placeholder');if(v&&_emTest.test(v))el.setAttribute('placeholder',v.replace(_emRe,'').trim())});
+  }finally{_lineifying=false}
+}
+(function(){let t=null;const start=()=>{lineifyEmoji(document.body);new MutationObserver(()=>{if(_lineifying)return;clearTimeout(t);t=setTimeout(()=>lineifyEmoji(document.body),20)}).observe(document.body,{childList:true,subtree:true,characterData:true})};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start()})();

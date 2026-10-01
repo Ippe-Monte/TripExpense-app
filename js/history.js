@@ -5,7 +5,7 @@ let historyData=null;
 function historyYear(t){return t.start_date?new Date(t.start_date+'T00:00:00').getFullYear():(t.closed_at?new Date(t.closed_at).getFullYear():null)}
 function thaiYear(y){return y?(y+543):'ไม่ระบุปี'}
 async function renderHistory(){const box=$('historyBox');if(!box)return;box.innerHTML='<div class="empty">กำลังโหลด...</div>';try{const {data,error}=await sb.rpc('my_travel_history');if(error)throw error;historyData=data||[];drawHistory()}catch(e){box.innerHTML=`<div class="warnbox">${esc(friendlyError(e))}</div>`}}
-function drawHistory(){const box=$('historyBox');const list=historyData||[];if(!list.length){box.innerHTML=`<div class="card empty"><div style="font-size:44px">📔</div><h3 style="margin:6px 0">ยังไม่มีทริปที่จบแล้ว</h3><div class="muted">เมื่อปิด Trip ที่เดินทางเสร็จแล้ว จะเก็บไว้ในหน้านี้เป็นความทรงจำ</div></div>`;return}
+function drawHistory(){const box=$('historyBox');const list=historyData||[];if(!list.length){box.innerHTML=`<div class="card empty"><div class="bigicon">${lineIcon('history')}</div><h3 style="margin:6px 0">ยังไม่มีทริปที่จบแล้ว</h3><div class="muted">เมื่อปิด Trip ที่เดินทางเสร็จแล้ว จะเก็บไว้ในหน้านี้เป็นความทรงจำ</div></div>`;return}
   const totalAll=list.reduce((a,t)=>a+Number(t.total||0),0),daysAll=list.reduce((a,t)=>a+Number(t.days||0),0);
   const groups={};list.forEach(t=>{const y=historyYear(t);(groups[y]=groups[y]||[]).push(t)});
   const years=Object.keys(groups).sort((a,b)=>(b==='null'?-1:b)-(a==='null'?-1:a));
