@@ -14,6 +14,7 @@ const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],
 // ข้อความที่ผู้ใช้พิมพ์เอง (ชื่อ Group/Trip, หมายเหตุ, รายละเอียดค่าใช้จ่าย ฯลฯ) จะไม่ถูกแปล
 // เก็บภาษาที่เลือกไว้ในเครื่องนี้ (localStorage) ต่อผู้ใช้ 1 คน
 // =====================================================================
+const APP_VERSION='18.6';
 let LANG=(function(){try{return localStorage.getItem('te_lang')||'th'}catch(_){return 'th'}})();
 const I18N={
  th:{ nav_home:'หน้าหลัก',nav_summary:'สรุป',nav_chat:'แชต',nav_schedule:'Schedule',nav_trips:'จัดการทริป',nav_documents:'เอกสาร',nav_budget:'งบประมาณ',nav_reports:'รายงาน',nav_groups:'กลุ่ม',nav_friends:'เพื่อน',nav_profile:'โปรไฟล์',nav_developer:'Developer',
@@ -38,7 +39,7 @@ const I18N={
  }
 };
 function tr(k){return (I18N[LANG]&&I18N[LANG][k])??(I18N.th[k])??k}
-function applyLangStatic(root){(root||document).querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n)});(root||document).querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=tr(el.dataset.i18nPh)});document.documentElement.lang=LANG==='en'?'en':'th';document.querySelectorAll('.langChip').forEach(el=>el.textContent=LANG.toUpperCase())}
+function applyLangStatic(root){(root||document).querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n)});(root||document).querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=tr(el.dataset.i18nPh)});document.documentElement.lang=LANG==='en'?'en':'th';document.querySelectorAll('.appver').forEach(el=>el.textContent=APP_VERSION);document.querySelectorAll('.langChip').forEach(el=>el.textContent=LANG.toUpperCase())}
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('te_lang',l)}catch(_){}location.reload()}
 function toggleLang(){setLang(LANG==='th'?'en':'th')}
 const titles={dashboard:['t_dashboard','s_dashboard'],summary:['t_summary','s_summary'],groups:['t_groups','s_groups'],trips:['t_trips','s_trips'],schedule:['t_schedule','s_schedule'],documents:['t_documents','s_documents'],budget:['t_budget','s_budget'],reports:['t_reports','s_reports'],settings:['t_settings','s_settings'],developer:['t_developer','s_developer'],chat:['t_chat','s_chat'],friends:['t_friends','s_friends'],profile:['t_profile','s_profile'],history:['t_history','s_history']};

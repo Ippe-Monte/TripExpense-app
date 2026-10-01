@@ -24,7 +24,7 @@ const TH_EN = {
 "ใส่ได้ทั้ง Group Code และ Trip Code · เข้าร่วม Group แล้ว ไปที่หน้า Trips เพื่อเข้าร่วมหรือขอเข้าร่วม Trip ใน Group":"Accepts both group and trip codes · after joining a group, go to Trips to join or request a trip",
 
 // ---------- ทั่วไป / ปุ่ม ----------
-"ปิด":"Close","บันทึก":"Save","ลบ":"Delete","แก้ไข":"Edit","เพิ่ม":"Add","ยกเลิก":"Cancel","กลับ":"Back",
+"ปิด":"Close","เวอร์ชัน":"Version","บันทึก":"Save","ลบ":"Delete","แก้ไข":"Edit","เพิ่ม":"Add","ยกเลิก":"Cancel","กลับ":"Back",
 "ยอมรับ":"Accept","ปฏิเสธ":"Decline","ดู":"View","แชร์":"Share","เลือก":"Select","ทั้งหมด":"All",
 "กำลังโหลด...":"Loading...","กำลังบันทึก...":"Saving...","กำลังคำนวณ...":"Calculating...",
 "กำลังอัปโหลดรูป...":"Uploading image...","กำลังอัปโหลดใบเสร็จ...":"Uploading receipt...","กำลังอัปโหลดไฟล์...":"Uploading file...",
