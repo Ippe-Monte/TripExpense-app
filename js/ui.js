@@ -33,7 +33,7 @@ function pickImage(){return new Promise(res=>{const i=document.createElement('in
 // อัปโหลดรูป แล้วคืน path ใหม่ (ลบรูปเก่าให้)
 async function uploadMedia(folder,file,w,h,oldPath,cropped){const f=cropped?file:await cropImage(file,w,h);const path=`${folder}/${uniqId()}.jpg`;const {error}=await sb.storage.from('avatars').upload(path,f,{contentType:'image/jpeg',upsert:false});if(error)throw error;if(oldPath&&oldPath!==path)sb.storage.from('avatars').remove([oldPath]).catch(()=>{});return path}
 async function changeMyAvatar(){try{const picked=await pickImage();if(!picked)return;const file=await openCropper(picked,{w:400,h:400,guide:'round',title:'เลือกตำแหน่งรูปโปรไฟล์'});if(!file)return;toast('กำลังอัปโหลดรูป...');const path=await uploadMedia(`users/${currentUser.id}`,file,400,400,me?.avatar_url,true);const {error}=await sb.from('profiles').update({avatar_url:path,updated_at:new Date().toISOString()}).eq('id',currentUser.id);if(error)throw error;me.avatar_url=path;await render();renderProfilePage();toast('เปลี่ยนรูปโปรไฟล์แล้ว')}catch(e){err(e)}}
-async function removeMyAvatar(){if(!me?.avatar_url||!confirm('ลบรูปโปรไฟล์?'))return;try{const old=me.avatar_url;const {error}=await sb.from('profiles').update({avatar_url:null}).eq('id',currentUser.id);if(error)throw error;sb.storage.from('avatars').remove([old]).catch(()=>{});me.avatar_url=null;await render();renderProfilePage()}catch(e){err(e)}}
+async function removeMyAvatar(){if(!me?.avatar_url||!confirm('ลบรูปโปรไฟล์?'))return;try{const old=me.avatar_url;const {error}=await sb.from('profiles').update({avatar_url:null}).eq('id',currentUser.id);if(error)throw error;sb.storage.from('avatars').remove([old]).catch(()=>{});me.avatar_url=null;await render();renderProfilePage();if($('settings')?.classList.contains('active'))renderProfile();toast('ลบรูปโปรไฟล์แล้ว')}catch(e){err(e)}}
 async function changeTripPhoto(tid){try{const t=tripById(tid);if(!t||!canAdmin(tid))return;const picked=await pickImage();if(!picked)return;const file=await openCropper(picked,{w:1200,h:640,guide:'none',title:'เลือกตำแหน่งรูปปก Trip'});if(!file)return;toast('กำลังอัปโหลดรูปปก...');const path=await uploadMedia(`trips/${tid}`,file,1200,640,t.photo_path,true);const {error}=await sb.from('trips').update({photo_path:path,updated_at:new Date().toISOString()}).eq('id',tid);if(error)throw error;await render();toast('เปลี่ยนรูปปก Trip แล้ว');if($('modal').innerHTML)closeModal()}catch(e){err(e)}}
 async function changeGroupPhoto(gid){try{const g=cache.groups.find(x=>x.id===gid);if(!g)return;const picked=await pickImage();if(!picked)return;const file=await openCropper(picked,{w:1200,h:640,guide:'circle',title:'เลือกตำแหน่งรูป Group'});if(!file)return;toast('กำลังอัปโหลดรูป...');const path=await uploadMedia(`groups/${gid}`,file,1200,640,g.photo_path,true);const {error}=await sb.from('groups').update({photo_path:path}).eq('id',gid);if(error)throw error;await render();toast('เปลี่ยนรูป Group แล้ว');openGroupEdit(gid)}catch(e){err(e)}}
 function openGroupEdit(gid){const g=cache.groups.find(x=>x.id===gid);if(!g)return;modal(`<div class="section"><h3>✏️ แก้ไข Group</h3><div class="spacer"></div><button class="btn secondary" onclick="closeModal()">ปิด</button></div><div style="text-align:center">${photoHtml(g.photo_path,'👥',96,'round')}<div><button class="btn sm secondary" style="margin-top:8px" onclick="changeGroupPhoto('${gid}')">📷 เปลี่ยนรูป Group</button></div></div><div class="field"><label>ชื่อ Group</label><input id="grpName" maxlength="80" value="${esc(g.name)}"></div><button class="btn" id="grpSaveBtn" onclick="saveGroupName('${gid}')">บันทึก</button>`)}
@@ -54,7 +54,12 @@ function openQuickCustomize(){const keys=new Set(quickKeys());modal(`<div class=
 function saveQuick(){const k=[...document.querySelectorAll('input[name="qk"]:checked')].map(x=>x.value);if(!k.length)return alert('เลือกอย่างน้อย 1 รายการ');if(k.length>9)return alert('เลือกได้สูงสุด 9 รายการ');try{localStorage.setItem('te_quick_'+currentUser.id,JSON.stringify(k))}catch(_){}toast('บันทึกเมนูลัดแล้ว');openQuickMenu()}
 function openJoinCode(){modal(`<div class="sheethead"><h3>เข้าร่วมด้วย Code</h3><div class="spacer"></div><button class="btn secondary sm" onclick="closeModal()">ปิด</button></div><div class="muted mini">ใส่ Code ของ Group หรือ Trip ที่ได้รับจากเพื่อน</div><div class="field"><input id="qjCode" placeholder="เช่น AB12CD34" autocapitalize="characters" style="font-size:20px;letter-spacing:3px;text-align:center" onkeydown="if(event.key==='Enter')$('qjBtn').click()"></div><button class="btn" id="qjBtn" style="width:100%" onclick="joinByCode($('qjCode').value).catch(err)">เข้าร่วม</button>`,'sheet')}
 // ---------- Donut chart ----------
-function donutSvg(parts,total,size=150,label='รวมทั้งหมด'){const r=58,C=2*Math.PI*r;let off=0;const segs=parts.filter(p=>p.v>0).map(p=>{const len=total>0?p.v/total*C:0;const s=`<circle r="${r}" cx="75" cy="75" fill="none" stroke="${p.color}" stroke-width="20" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return s}).join('');return `<svg class="donut" viewBox="0 0 150 150" width="${size}" height="${size}"><circle r="${r}" cx="75" cy="75" fill="none" stroke="#eef2f7" stroke-width="20"/>${segs}<text x="75" y="72" text-anchor="middle" class="dv">${esc(moneyShort(total))}</text><text x="75" y="92" text-anchor="middle" class="dl">${esc(label)}</text></svg>`}
+function donutSvg(parts,total,size,label){size=size||150;label=label||'รวมทั้งหมด';const r=58,C=2*Math.PI*r,gap=parts.filter(p=>p.v>0).length>1?1.8:0;let off=0;
+  const segs=parts.filter(p=>p.v>0).map(p=>{const share=total>0?p.v/total*C:0,len=Math.max(1.2,share-gap);const s=`<circle r="${r}" cx="75" cy="75" fill="none" stroke="${p.color}" stroke-width="20" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=share;return s}).join('');
+  const txt=moneyDonut(total),fs=txt.length<=7?19:txt.length<=9?16:13.5;
+  return `<svg class="donut" viewBox="0 0 150 150" width="${size}" height="${size}" role="img" aria-label="${esc(label)} ${esc(txt)}"><circle r="${r}" cx="75" cy="75" fill="none" stroke="#eef2f7" stroke-width="20"/>${segs}<text x="75" y="76" text-anchor="middle" class="dv" style="font-size:${fs}px">${esc(txt)}</text><text x="75" y="93" text-anchor="middle" class="dl">${esc(label)}</text></svg>`}
+// ตัวเลขกลางโดนัท: "฿ 28,450" (ล้านขึ้นไปย่อเป็น M)
+function moneyDonut(v){v=Number(v||0);return v>=1e6?'฿ '+(v/1e6).toFixed(1)+'M':'฿ '+Math.round(v).toLocaleString('th-TH')}
 function moneyShort(v){v=Number(v||0);return '฿'+(v>=1e6?(v/1e6).toFixed(1)+'M':Math.round(v).toLocaleString('th-TH'))}
 
 // =====================================================================
@@ -64,7 +69,30 @@ function moneyShort(v){v=Number(v||0);return '฿'+(v>=1e6?(v/1e6).toFixed(1)+'M
 // =====================================================================
 let _trKeys=null,_translating=false;
 function trKeys(){if(!_trKeys)_trKeys=Object.keys(TH_EN).sort((a,b)=>b.length-a.length);return _trKeys}
-function trText(s){let out=s;for(const k of trKeys()){if(out.includes(k))out=out.split(k).join(TH_EN[k])}return out}
+// แปลข้อความ (กันภาษาปนจนอ่านไม่ออก เช่น "Dateอยู่overช่วง"):
+//  1) ทั้งข้อความตรงพจนานุกรมพอดี → แปลทั้งก้อน
+//  2) แม่แบบตัวเลข: "2 คน" → "# คน" → "# people" (ตัวเลข/ยอดเงินแทนด้วย # แล้วใส่กลับ)
+//  3) แยกด้วย " · " แล้วแปลทีละส่วน (ส่วนที่แปลไม่ได้คงเป็นไทย — เช่นชื่อที่ผู้ใช้ตั้ง)
+//  4) ส่วนที่ยังไม่ตรง: แทนเฉพาะวลียาว ≥4 ตัวอักษร และถ้าได้ภาษาปนในประโยคเดียว → คืนต้นฉบับทั้งประโยค
+const _THAI=/[\u0E00-\u0E7F]/,_LAT=/[A-Za-z]{2,}/,_NUM=/฿?-?\d[\d,]*(?:\.\d+)?/g;
+function _trPiece(t){
+  if(TH_EN[t]!==undefined)return TH_EN[t];
+  const nums=t.match(_NUM);
+  if(nums){const tpl=t.replace(_NUM,'#');if(TH_EN[tpl]!==undefined){let i=0;let r=TH_EN[tpl].replace(/#/g,()=>nums[i++]??'#');
+    // เอกพจน์: "1 items" → "1 item", "1 days" → "1 day", "1 people" → "1 person", "1 transfers" → "1 transfer"
+    r=r.replace(/(^|[^\d.,])1 (items|days|transfers)\b/g,(m,a,w)=>a+'1 '+w.slice(0,-1)).replace(/(^|[^\d.,])1 people\b/g,(m,a)=>a+'1 person');return r}}
+  let out=t;for(const k of trKeys()){if(k.length<4||k.includes('#'))continue;if(out.includes(k))out=out.split(k).join(TH_EN[k])}
+  if(_THAI.test(out.replace(/฿/g,''))&&_LAT.test(out)&&out!==t)return t;
+  return out}
+function trText(s){
+  const t=s.trim();if(!t)return s;
+  const lead=s.slice(0,s.indexOf(t)),tail=s.slice(s.indexOf(t)+t.length);
+  if(TH_EN[t]!==undefined)return lead+TH_EN[t]+tail;
+  // ลองแม่แบบ/ประโยคทั้งก้อนก่อน แล้วค่อยแยกส่วนด้วย " · "
+  const whole=_trPiece(t);if(whole!==t)return lead+whole+tail;
+  const parts=t.split(' · ');
+  const out=parts.length>1?parts.map(_trPiece).join(' · '):t;
+  return lead+out+tail}
 const SKIP_TAGS={SCRIPT:1,STYLE:1,TEXTAREA:1,SVG:1};
 function translateDOM(root){
   if(LANG!=='en'||_translating)return;

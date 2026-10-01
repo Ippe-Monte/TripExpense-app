@@ -14,7 +14,7 @@ const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],
 // ข้อความที่ผู้ใช้พิมพ์เอง (ชื่อ Group/Trip, หมายเหตุ, รายละเอียดค่าใช้จ่าย ฯลฯ) จะไม่ถูกแปล
 // เก็บภาษาที่เลือกไว้ในเครื่องนี้ (localStorage) ต่อผู้ใช้ 1 คน
 // =====================================================================
-const APP_VERSION='18.7';
+const APP_VERSION='18.8';
 let LANG=(function(){try{return localStorage.getItem('te_lang')||'th'}catch(_){return 'th'}})();
 const I18N={
  th:{ nav_home:'หน้าหลัก',nav_summary:'สรุป',nav_chat:'แชต',nav_schedule:'Schedule',nav_trips:'จัดการทริป',nav_documents:'เอกสาร',nav_budget:'งบประมาณ',nav_reports:'รายงาน',nav_groups:'กลุ่ม',nav_friends:'เพื่อน',nav_profile:'โปรไฟล์',nav_developer:'Developer',
@@ -85,7 +85,25 @@ const ERR_TEXT={NOT_AUTHENTICATED:'กรุณาเข้าสู่ระบ
 function friendlyError(e){const m=e?.message||String(e),c=e?.code||'';if(ERR_TEXT[m])return ERR_TEXT[m];if(c==='PGRST202'||/could not find the function/i.test(m))return 'ไม่พบฟังก์ชันในฐานข้อมูล กรุณารันไฟล์ sql/v14_security.sql ใน Supabase SQL Editor ก่อน\n('+m+')';if(c==='42P01'||c==='PGRST205'||/does not exist|could not find the table/i.test(m))return 'ไม่พบตาราง/คอลัมน์ในฐานข้อมูล กรุณารันไฟล์ sql/v14_security.sql ใน Supabase SQL Editor ก่อน\n('+m+')';if(c==='42501'||/row-level security|permission denied/i.test(m))return isClosed()?'Trip นี้ปิดแล้ว จึงแก้ไขข้อมูลไม่ได้':'คุณไม่มีสิทธิ์ทำรายการนี้ (อาจเป็นรายการที่คนอื่นสร้าง หรือต้องเป็น Admin)';if(/trips_date_range_chk/.test(m))return 'วันกลับต้องไม่ก่อนวันเริ่ม';if(c==='23502'||/violates not-null constraint/i.test(m))return 'ข้อมูลในฐานข้อมูลขาดค่าที่จำเป็น\n('+m+')';if(/Database error saving new user/i.test(m))return 'สมัครสมาชิกไม่สำเร็จ อีเมลนี้อาจถูกใช้สมัครไปแล้ว ลองเข้าสู่ระบบ หรือตรวจสอบอีเมลยืนยันในกล่องจดหมาย';if(/User already registered/i.test(m))return 'อีเมลนี้สมัครไว้แล้ว กรุณาเข้าสู่ระบบ';if(/Invalid login credentials/i.test(m))return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';if(/Email not confirmed/i.test(m))return 'ยังไม่ได้ยืนยันอีเมล กรุณาตรวจสอบกล่องจดหมาย';if(/Password should be at least/i.test(m))return 'รหัสผ่านสั้นเกินไป';if(/rate limit|too many/i.test(m))return 'ทำรายการบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่';return m}
 function err(e){console.error(e);alert(friendlyError(e))}
 function ready(){return SUPABASE_URL.startsWith('http')&&!SUPABASE_PUBLISHABLE_KEY.startsWith('YOUR_')}
-function go(p){if(p==='expenses')p='summary';if(p==='more')p='profile';if(p==='developer'&&!isDev)p='dashboard';document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(p).classList.add('active');document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('active',x.dataset.p===p));$('pt').textContent=tr(titles[p][0]);$('ps').textContent=tr(titles[p][1]);if($('pt2')){$('pt2').textContent=tr(titles[p][0]);$('ps2').textContent=tr(titles[p][1])}if(p==='developer')renderDeveloper();if(p==='settings')renderProfile();if(p==='chat')renderChatPage();if(p==='summary')renderSummary();if(p==='profile')renderProfilePage();if(p==='history')renderHistory();document.body.dataset.page=p;if(p==='friends')renderFriends();window.scrollTo(0,0)}
+// หน้าย่อยที่เข้าจากเมนูโปรไฟล์: มีปุ่มย้อนกลับ + ไม่แสดงตัวเลือก Trip ที่มุมซ้ายบน (บนมือถือ)
+const SUBPAGES=['trips','groups','documents','friends','reports','history','settings','developer'];
+const NOTRIP_PAGES=['profile',...SUBPAGES];
+// ปุ่มหลักของแต่ละหน้า: อยู่ในแถบหัวข้อที่ติดอยู่กับที่ (cls 'w' = ซ่อนเมื่อแก้ไขไม่ได้)
+const PAGE_ACTIONS={
+  trips:[{l:'＋ สร้าง Trip',f:"openTripForm()"}],
+  groups:[{l:'＋ สร้าง Group',f:"createGroup()"}],
+  documents:[{l:'＋ เพิ่มเอกสาร',f:"openDocForm()",w:1}],
+  reports:[{l:'PDF / Print',f:"printReport()",sec:1},{l:'Excel',f:"exportReportXLSX()"}]
+};
+const _navStack=[];let _curPage=null,_goingBack=false;
+function goBack(){let prev=_navStack.pop();while(prev&&prev===_curPage)prev=_navStack.pop();_goingBack=true;go(prev||'profile');_goingBack=false}
+function renderPageActions(p){const el=$('pageActions');if(!el)return;el.innerHTML=(PAGE_ACTIONS[p]||[]).map(a=>`<button type="button" class="btn sm${a.sec?' secondary':''}${a.w?' w':''}" onclick="${a.f}">${a.l}</button>`).join('')}
+function go(p){if(p==='expenses')p='summary';if(p==='more')p='profile';if(p==='developer'&&!isDev)p='dashboard';
+  if(_curPage&&_curPage!==p&&!_goingBack){_navStack.push(_curPage);if(_navStack.length>12)_navStack.shift()}_curPage=p;
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(p).classList.add('active');document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('active',x.dataset.p===p));
+  $('pt').textContent=tr(titles[p][0]);$('ps').textContent=tr(titles[p][1]);if($('pt2')){$('pt2').textContent=tr(titles[p][0]);$('ps2').textContent=tr(titles[p][1])}
+  document.body.classList.toggle('subpage',SUBPAGES.includes(p));document.body.classList.toggle('notrip',NOTRIP_PAGES.includes(p));renderPageActions(p);
+  if(p==='developer')renderDeveloper();if(p==='settings')renderProfile();if(p==='chat')renderChatPage();if(p==='summary')renderSummary();if(p==='profile')renderProfilePage();if(p==='history')renderHistory();document.body.dataset.page=p;if(p==='friends')renderFriends();window.scrollTo(0,0)}
 // ---------- โหลดข้อมูล: รายการ Trip ทั้งหมดของฉัน + ข้อมูลละเอียดเฉพาะ Trip ปัจจุบัน ----------
 async function loadAll(){
   const {data:gm,error:ge}=await sb.from('group_members').select('group_id,role,groups(id,name,code,owner_id,join_policy,photo_path)').eq('user_id',currentUser.id);if(ge)throw ge;

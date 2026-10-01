@@ -419,3 +419,93 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .cropper-zoom input{flex:1;accent-color:var(--brand)}
 .cropper-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:12px}
 @media(min-width:951px){.cropper{align-items:center}.cropper-box{border-radius:20px}.cropper-vp{height:340px}}
+/* ===================== V18.8 — จัดหน้ามือถือตามตารางแก้ไข (หัวข้อ/แท็บ/ปุ่มหลักอยู่กับที่ + ปุ่มย้อนกลับ) ===================== */
+:root{--hdr:60px;--phead:48px}
+.backbtn{display:none}
+/* ---------- โดนัท + คำอธิบายสีด้านขวา (ตามรูปตัวอย่าง) ---------- */
+.donutwrap{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:nowrap}
+.donutwrap .donut{flex:none;width:132px;height:132px}
+.donut .dv{font-weight:800;fill:var(--ink)}
+.donut .dl{font-size:9.5px;fill:#6b7a90}
+.legend{flex:1;min-width:0;max-width:340px;display:grid;gap:9px}
+.legend .lg{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12.5px}
+.legend .lg i{width:10px;height:10px;border-radius:50%}
+.legend .lg span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend .lg b{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+@media(min-width:951px){.donutwrap .donut{width:168px;height:168px}.donutwrap{gap:28px}.legend .lg{font-size:14px}}
+.catcard .section{margin-bottom:12px}
+.avatarbox{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+@media(max-width:950px){
+  /* ---------- แถบหัวข้อหน้า: ติดอยู่ใต้แถบบนเสมอ + ปุ่มหลักอยู่ขวา ---------- */
+  .content{padding-top:6px}
+  .pagehead{display:flex;align-items:center;gap:10px;position:sticky;top:var(--hdr);z-index:7;height:var(--phead);margin:0 -14px 6px;padding:0 14px;background:var(--bg)}
+  .pagehead h1{flex:1;min-width:0;margin:0;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pagehead #ps2{display:none}
+  .pageactions{display:flex;gap:8px;flex:none}
+  .pageactions .btn{white-space:nowrap}
+  /* แท็บ (สรุป/Schedule) ติดอยู่ใต้แถบหัวข้อ · วงแหวนพื้นหลังกันเนื้อหาโผล่ตามขอบตอนเลื่อน */
+  .segtabs{top:calc(var(--hdr) + var(--phead));box-shadow:0 0 0 10px var(--bg)}
+  .chattabs{top:var(--hdr)}
+  /* การ์ดโปรไฟล์ (รูป + ชื่อ + ปากกา) ติดอยู่ใต้แถบหัวข้อ */
+  #profile .profilehead{position:sticky;top:calc(var(--hdr) + var(--phead));z-index:5}
+  /* หน้าในส่วนโปรไฟล์: เอาตัวเลือก Trip ออก ใช้ปุ่มย้อนกลับแทนที่มุมซ้ายบน */
+  body.notrip .tripswitch{display:none!important}
+  body.subpage .backbtn{display:inline-grid;margin-right:auto}
+  /* ปุ่มหลักย้ายขึ้นไปอยู่ในแถบหัวข้อแล้ว จึงซ่อนตัวซ้ำในเนื้อหาหน้า */
+  #trips>.section>.btn,#groups>.section>.btn,#documents>.section>.btn,#reports>.section>.btn{display:none}
+  .donutwrap .donut{width:124px;height:124px}
+  .donutwrap{gap:12px}
+}
+@media(max-width:340px){.donutwrap .donut{width:108px;height:108px}.legend .lg{font-size:11.5px;gap:6px}}
+/* การ์ดสถิติหน้าหลัก: กันที่ให้ไอคอนมุมขวา ตัวเลขยาวต้องไม่ทับ */
+.statcard{padding-right:14px}
+.statcard .muted:first-of-type{padding-right:46px}
+.statcard b{display:block;max-width:100%;font-size:clamp(15px,5.2vw,22px);line-height:1.25;margin-top:6px}
+.statcard .sicon{top:12px;right:12px;width:34px;height:34px}
+/* การ์ดสถิติ: แถวบน = ป้ายชื่อ + ไอคอน (เรียงข้างกัน) · ตัวเลขอยู่แถวถัดลงมา เต็มความกว้าง ไม่มีทางทับไอคอน */
+.statcard{display:flex;flex-direction:column}
+.statcard .sicon{position:static;order:-1;align-self:flex-end;margin:0 0 -34px 0;width:32px;height:32px;flex:none}
+.statcard .muted:first-of-type{padding-right:40px;min-height:32px;display:flex;align-items:center;margin-top:0}
+.statcard b{margin-top:2px}
+/* วงแหวนรองแท็บ: ใช้เฉพาะบน/ล่าง (ไม่ล้นไปด้านข้าง) กันเนื้อหาโผล่ตอนเลื่อนแต่ไม่เห็นขอบมน */
+@media(max-width:950px){.segtabs{box-shadow:0 -6px 0 var(--bg),0 8px 0 var(--bg)}}
+/* เมนูโปรไฟล์: ชื่อเมนูอยู่บน คำอธิบายรองอยู่ใต้ชื่อ (ไม่แย่งที่กันจนชื่อถูกตัด) */
+.menuitem .mlabel{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left}
+.menuitem .mtitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menuitem .msub{font-size:11.5px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menuitem span:nth-child(2){white-space:normal}
+/* หัวข้อกลุ่มที่อยู่ลอยๆ (เช่น "Trip ที่ปิดแล้ว") ต้องไม่ใหญ่กว่าหัวข้อในการ์ด */
+.page>h3,.page>div>h3,.page>br+h3,#tripsList h3,.page h3:not(.card h3):not(.section h3){font-size:16px;line-height:1.35;margin:14px 0 8px}
+/* ตัวเลขการ์ดสรุป (งบประมาณ/รายงาน): ขนาดสอดคล้องกับการ์ดอื่น และย่อตามจอ กันยอดหลักล้านล้น */
+.metric b,.card.metric b{font-size:clamp(18px,6vw,24px);line-height:1.25;overflow-wrap:anywhere}
+/* รายการแผนการเดินทาง: เวลาเด่นด้านบน · ปุ่มเป็นไอคอนเล็กชิดขวาแถวเดียว (รูปแบบเดียวกับรายการค่าใช้จ่าย) */
+.schitem{padding:12px 2px}
+.schhead{display:flex;align-items:flex-start;gap:8px}
+.schmain{flex:1;min-width:0}
+.schwhen{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--brand)}
+.schtitle{font-size:15px;font-weight:700;margin-top:3px;overflow-wrap:anywhere;color:var(--ink)}
+.schacts{display:flex;gap:6px;flex:none}
+.iconbtn.sm{width:32px;height:32px;border-radius:10px}.iconbtn.sm .lic{width:16px;height:16px}
+.iconbtn.del{color:#dc2626;background:#fef2f2;border-color:#fecaca}
+.schline{display:flex;align-items:flex-start;gap:6px;font-size:13px;margin-top:5px;line-height:1.4}
+.schline .lic{margin-top:2px;flex:none}
+.schlinked{display:flex;align-items:center;gap:6px;margin-top:7px;padding:8px 10px;border-radius:10px;background:#f6f9fd;font-size:13px}
+.schlinked .lic{color:var(--brand);flex:none}
+/* คู่ช่องสั้นในฟอร์ม (วันที่/เวลา · จาก/ไป · วันเริ่ม/วันกลับ) คงเป็น 2 คอลัมน์บนมือถือ */
+.grid2.keep2{gap:10px}
+.grid2.keep2 .field input,.grid2.keep2 .field .selbtn{min-width:0;width:100%}
+.grid2.keep2 input[type=date],.grid2.keep2 input[type=time]{padding-left:10px;padding-right:6px;font-size:14px}
+/* แท็บในหน้าต่างฟอร์ม: ไม่ต้องมีวงแหวนรอง (ใช้เฉพาะแท็บที่ติดหน้าจอของหน้าหลัก) */
+.modal .segtabs{box-shadow:none!important;position:static!important;top:auto!important}
+/* การ์ดสถิติในหน้ารายละเอียด Trip: 3 ช่องแถวเดียว (ค่าใช้จ่ายรวม / รายการ / สมาชิก) */
+.modal .statgrid,.statgrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px}
+.statgrid .stat{padding:10px 8px;min-width:0;text-align:center}
+.statgrid .stat .muted{font-size:11.5px;line-height:1.3;display:block}
+.statgrid .stat b{font-size:clamp(14px,4.6vw,18px);line-height:1.3;display:block;margin-top:3px;overflow-wrap:anywhere}
+/* ยอดเงินในช่องแคบ: ห้ามหักกลางตัวเลข — ย่อขนาดแทน */
+.statgrid .stat b{overflow-wrap:normal;word-break:keep-all;white-space:nowrap;font-size:clamp(12px,4vw,17px)}
+/* หัวข้อการ์ด + ปุ่มลิงก์ขวา: หัวข้อยาวให้ย่อ/ตัดคำได้ ปุ่มไม่ตกบรรทัดใหม่ (ภาษาอังกฤษยาวกว่าไทย) */
+.card>.section{display:flex;align-items:center;flex-wrap:nowrap;gap:10px}
+.card>.section>h3,.card>.section>div:first-child{min-width:0;flex:1}
+.card>.section>h3{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card>.section>.btn{flex:none;white-space:nowrap}
