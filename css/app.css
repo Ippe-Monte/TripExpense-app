@@ -509,3 +509,55 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .card>.section>h3,.card>.section>div:first-child{min-width:0;flex:1}
 .card>.section>h3{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card>.section>.btn{flex:none;white-space:nowrap}
+/* ===================== V18.9 — โปรไฟล์สมาชิก / ปุ่มเพิ่มเพื่อน ===================== */
+.memtap{cursor:pointer;-webkit-tap-highlight-color:rgba(22,119,255,.08)}
+.memtap:active{opacity:.7}
+.fa{display:inline-flex;align-items:center;flex:none}
+.fa:empty{display:none}
+.badge.okbadge{background:#dcfce7;color:#15803d}
+.memsheet{z-index:70}
+.memprof-body{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mp-top{text-align:center;padding:6px 0 14px}
+.mp-avatar{display:inline-block;line-height:0;cursor:zoom-in;transition:transform .15s}
+.mp-avatar .avatar{box-shadow:0 6px 18px rgba(20,40,90,.18)}
+.mp-avatar.big .avatar{width:240px!important;height:240px!important;font-size:100px!important;border-radius:26px}
+.mp-name{margin:10px 0 0;font-size:19px;line-height:1.3;overflow-wrap:anywhere}
+.mp-badges{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px}
+.mp-card{background:#f6f9fd;border-radius:16px;padding:12px 14px;margin-bottom:6px}
+.mp-card h4{margin:0 0 6px;font-size:13px;color:var(--muted);font-weight:700}
+.mp-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #e8eef6}
+.mp-row:first-of-type{border-top:0}
+.mp-ic{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#e8f1ff;color:var(--brand);flex:none;font-size:0}
+.mp-ic .lic{width:18px;height:18px}
+.mp-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mp-main small{font-size:11.5px;color:var(--muted)}
+.mp-main a{font-size:15px;font-weight:600;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+.mp-none{padding:8px 0;line-height:1.5}
+/* ===== แถวสมาชิก (Trip / Group): 2 ชั้น =====
+   ชั้นบน = รูป + ชื่อ/บทบาท/ข้อมูลติดต่อ · ชั้นล่าง (.memacts) = ป้ายเพื่อน + เมนูบทบาท + ปุ่มนำออก เรียงแถวเดียว ตัดบรรทัดได้
+   ใช้ grid 2 คอลัมน์ (รูป | เนื้อหา) เพื่อให้ทุกอย่างหลังรูปเริ่มที่ตำแหน่งเดียวกัน */
+.listitem>.row:has(>.memtap){display:grid!important;grid-template-columns:36px minmax(0,1fr);column-gap:10px;row-gap:8px;align-items:start}
+.listitem>.row:has(>.memtap)>.memtap:first-child{grid-column:1;grid-row:1}
+.listitem>.row:has(>.memtap)>.memtap:nth-child(2){grid-column:2;grid-row:1;min-width:0!important;max-width:none}
+.listitem>.row:has(>.memtap)>.memacts{grid-column:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.listitem>.row:has(>.memtap)>.memacts:not(:has(*:not(.fa:empty))){display:none}
+.memacts .fa:empty{display:none}
+.memacts .btn,.memacts .fa{flex:0 0 auto}
+.memacts .selbtn{padding:7px 10px;font-size:13px}
+.listitem .memtap>b{overflow-wrap:anywhere}
+.listitem .memtap .muted{font-size:12.5px;line-height:1.4}
+.listitem .contacts{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:5px}
+.listitem .contacts a{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+/* ชั้นล่างของแถวสมาชิก: ชิ้นส่วนกะทัดรัดเพื่อให้ ป้ายเพื่อน + เมนูบทบาท + นำออก พอดีแถวเดียวบนจอ 360px */
+.memacts{gap:6px}
+.memacts .btn.sm{padding:6px 10px;font-size:12.5px;white-space:nowrap}
+.memacts .badge{padding:5px 9px;font-size:12px;white-space:nowrap}
+.memacts .selbtn{padding:6px 8px;font-size:12.5px;gap:4px;min-width:0}
+.memacts .selbtn::after{width:6px;height:6px;margin:-3px 0 0 0}
+/* หัวหน้าต่าง (modal): ชื่อยาวต้องไม่ดันปุ่ม "ปิด" ตกบรรทัด — ชื่อย่อด้วย … ปุ่มอยู่มุมขวาบนเสมอ */
+.modal>.section:first-child{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:10px}
+.modal>.section:first-child>div:first-child{flex:1;min-width:0}
+.modal>.section:first-child h3{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 0 3px}
+.modal>.section:first-child .muted{white-space:normal;overflow-wrap:anywhere;font-size:12.5px;line-height:1.45}
+.modal>.section:first-child>.spacer{display:none}
+.modal>.section:first-child>.btn{flex:none;white-space:nowrap}

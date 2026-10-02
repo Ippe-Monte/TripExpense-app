@@ -2,7 +2,13 @@
 // i18n_map.js — พจนานุกรมไทย→อังกฤษ สำหรับข้อความของระบบทั้งแอป
 // ใช้กับโหมด EN เท่านั้น · ข้อความที่ผู้ใช้พิมพ์เองจะไม่ถูกแตะต้อง
 // =====================================================================
-const TH_EN = {"ค้างชำระ # รายการ":"# outstanding","เต็ม #":"Full #","คืน #":"refunded #","# คน":"# people","# วัน":"# days","# รายการ":"# items","# รายการโอน":"# transfers","จากทั้งหมด # รายการ":"of # items","คืนแล้ว #":"refunded #","หักเงินคืน #":"less refunds #",
+const TH_EN = {"· คุณ":"· you","บทบาทของคุณ:":"Your role:","การนำออกจาก Group ไม่ได้นำออกจาก Trip ที่เข้าร่วมอยู่แล้ว":"Removing someone from a group does not remove them from trips they already joined",
+"แสดงเฉพาะสมาชิกใน Group ที่ยังไม่อยู่ใน Trip นี้":"Only group members who are not yet in this trip are shown",
+"ถ้าต้องการเพิ่มคนใหม่ ให้ส่ง Group Code":"To add someone new, send them the Group Code","ให้เขาเข้าร่วม Group ก่อน":"so they can join the group first",
+"สมาชิกทุกคนใน Group อยู่ใน Trip นี้แล้ว":"Every group member is already in this trip","ไม่มีสมาชิก":"No members",
+"โปรไฟล์สมาชิก":"Member profile","ยังไม่ได้แชร์ข้อมูลติดต่อ":"No contact info shared","ข้อมูลที่เปิดเฉพาะเพื่อนจะแสดงเมื่อเป็นเพื่อนกัน":"Details shared with friends only appear once you are friends",
+"＋ เพิ่มเพื่อน":"+ Add friend","เป็นเพื่อนกัน":"Friends","ยอมรับเป็นเพื่อน":"Accept friend request","รอตอบรับ":"Pending","แตะเพื่อดูรูปขยาย":"Tap to enlarge","LINE ID":"LINE ID","คัดลอก LINE ID แล้ว":"LINE ID copied",
+"ค้างชำระ # รายการ":"# outstanding","เต็ม #":"Full #","คืน #":"refunded #","# คน":"# people","# วัน":"# days","# รายการ":"# items","# รายการโอน":"# transfers","จากทั้งหมด # รายการ":"of # items","คืนแล้ว #":"refunded #","หักเงินคืน #":"less refunds #",
 "จ่าย # · ส่วนของตัวเอง #":"Paid # · own share #","จ่าย #":"Paid #","ส่วนของตัวเอง #":"own share #","เต็ม # · คืน #":"Full # · refunded #","Trip ที่ปิดแล้ว (#)":"Closed trips (#)","ทริปที่จบแล้ว #":"Completed trips #",
 "ทุกประเภท":"All types","คัดลอก":"Copy","ยังไม่ระบุสถานที่":"No destination set","แผนที่":"Map","เร็วๆ นี้":"Coming soon","-- ไม่เชื่อม --":"-- Not linked --","-- ไม่มี --":"-- None --",
 "วันที่อยู่ในช่วง Trip":"Days within the trip","สร้าง QR ไม่ได้ (ตรวจสอบอินเทอร์เน็ต)":"Can't create the QR code (check your connection)",
