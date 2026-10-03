@@ -3,6 +3,15 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.5 — Map follows the item you tap; Google link wins over old coordinates; add buttons on wide screens
+**No SQL change.**
+- **Tap an item, the map goes to its place.** On the map tab each item is tappable: the map flies to that item's position (street level), its pin is highlighted, its card gets a green frame and the map is brought into view. Buttons inside a card (แก้ไข, ปักหมุด…) do not change the selection. On opening, the first item with a position is selected (the map no longer zooms out to every stop). New button "ดูทุกจุดของวัน".
+- **The Google link wins over an old saved position.** If an item's saved position is more than 300 m from where its Google link points (for example a wrong position was saved earlier), a note says how many km apart and offers "ดูตำแหน่งจากลิงก์" / "ใช้ตำแหน่งจากลิงก์". An item that has a link but no saved position shows the link's place straight away with "บันทึกตำแหน่งนี้". "ปักหมุด" now starts at the link's place.
+- **The user's own position is never pre-selected as a place** when nothing can be found: the map opens at their position but no pin is placed and "ใช้ตำแหน่งนี้" stays disabled until they tap the map. (In 2.0.3–2.0.4 it was pre-selected, so it could be saved as the place's coordinates by mistake.)
+- **Form:** pasting a new link replaces the old coordinates, except coordinates the user typed themselves; coordinates a previous link filled in are dropped when the link changes.
+- **Wide screens:** the title row (and its add button) only exists up to 950 px wide, so a dedicated button was added: "＋ เพิ่ม" on the Travel tab, "＋ เพิ่มสถานที่" on the map tab, never two at once. The sticky tabs/day chips now sit exactly under the (taller) desktop top bar.
+- English text added.
+
 ## 2.0.4 — Short Google Maps links, clearer pin layout
 **Optional, recommended:** deploy the Edge Function `resolve-map-link` (see `edge-functions/`). Without it everything still works as in 2.0.3.
 - **Short links (maps.app.goo.gl, from Google Maps' Share button) have no coordinates inside**, so the browser cannot read them. The Edge Function follows the link on the server and returns the place's coordinates. The app uses it (1) a moment after a link is pasted — the coordinates box fills itself, (2) when saving, (3) when ปักหมุด is pressed on an item that has a link but no coordinates. If the function is not installed (404), or the network fails, the app falls back to searching the place name, then to the current position, and never blocks saving.

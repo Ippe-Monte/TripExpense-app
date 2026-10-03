@@ -693,3 +693,13 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 #schedule.pinmode .leafmap{height:clamp(220px,calc(100vh - var(--hdr) - var(--phead) - var(--ssh,70px) - var(--navh,0px) - 130px),380px)}
 /* 2.0.4: แถบยืนยันเว้นระยะเหนือเมนูล่างพอให้พ้นปุ่ม "สำรวจ" ที่นูนขึ้นมา */
 #pinBarBox{bottom:calc(var(--navh,0px) + 30px)}
+
+/* 2.0.5 · ปุ่มเพิ่มบนจอกว้าง · แตะรายการเพื่อดูสถานที่บนแผนที่ */
+.deskonly{display:flex;justify-content:flex-end;margin:0 0 10px}
+@media(max-width:950px){.deskonly{display:none}}
+@media(min-width:951px){.schedsticky{top:var(--hdr)}#leafWrap{scroll-margin-top:calc(var(--hdr) + var(--ssh,120px) + 8px)}}
+.stop{cursor:pointer}
+.stop.sel{outline:2.5px solid #16a34a;outline-offset:-2.5px;background:#f3fbf6}
+.stoppin.sel{background:#16a34a;transform:scale(1.2)}
+.stoppin.linkpin{background:#fff;color:#0f5fe0;border-color:#0f5fe0}
+@media(min-width:951px){.schedsticky{top:var(--tophh,74px)}#leafWrap{scroll-margin-top:calc(var(--tophh,74px) + var(--ssh,120px) + 8px)}}   /* จอกว้าง: แถบบนสูงกว่ามือถือ ใช้ความสูงจริงที่วัดได้ */
