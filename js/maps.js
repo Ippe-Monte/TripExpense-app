@@ -10,13 +10,37 @@ function makeLeafMap(elId,L){const m=L.map(elId,{zoomControl:true,attributionCon
 function fitPins(m,L,pts){if(pts.length===1)m.setView(pts[0],15);else m.fitBounds(L.latLngBounds(pts),{padding:[28,28],maxZoom:16});setTimeout(()=>m.invalidateSize(),50)}
 
 // ---------- ช่องกรอกลิงก์ตำแหน่ง (ใช้ทั้งฟอร์มเพิ่มและแก้ไข: prefix 's' หรือ 'es') ----------
+// ---------- ลิงก์ Google Maps ที่ไม่มีพิกัดในตัว (ลิงก์สั้น maps.app.goo.gl จากปุ่ม "แชร์"): เบราว์เซอร์อ่านไม่ได้ จึงให้ Edge Function "resolve-map-link" ตามลิงก์ให้ ----------
+const _resCache=new Map();let _resOff=false,_locTimers={};
+function isGoogleMapsHost(u){try{return /^(maps\.app\.goo\.gl|goo\.gl|g\.co|share\.google|maps\.google\.[a-z.]{2,7}|(www\.)?google\.[a-z.]{2,7})$/i.test(new URL(u).hostname)}catch(e){return false}}
+async function resolveMapLink(url){
+  const u=normalizeMapUrl(url);if(!u||!isGoogleMapsHost(u))return null;
+  const p=parseLatLng(u);if(p)return p;
+  if(_resOff)return null;if(_resCache.has(u))return _resCache.get(u);
+  try{
+    const call=sb.functions.invoke('resolve-map-link',{body:{url:u}});
+    const {data,error}=await Promise.race([call,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),10000))]);
+    if(error){if((error.context&&error.context.status===404)||/not found/i.test(error.message||''))_resOff=true;return null}   // 404 = ยังไม่ได้ติดตั้งฟังก์ชัน → ไม่ถามซ้ำในรอบนี้
+    const r=data&&data.ok&&_validLat(+data.lat)&&_validLng(+data.lng)?{lat:+data.lat,lng:+data.lng}:null;
+    _resCache.set(u,r);return r}catch(e){return null}}
+async function locEnsureCoords(o){if(o&&o.location_url&&o.location_lat==null){const r=await resolveMapLink(o.location_url);if(r){o.location_lat=r.lat;o.location_lng=r.lng}}return o}
+function scheduleLocResolve(p){
+  clearTimeout(_locTimers[p]);const raw=($(p+'l')?.value||'').trim(),url=raw?normalizeMapUrl(raw):null;
+  if(!url||parseLatLng(url)||($(p+'c')?.value||'').trim()||!isGoogleMapsHost(url)||_resOff)return;
+  _locTimers[p]=setTimeout(()=>locResolveNow(p,url),700)}
+async function locResolveNow(p,url){
+  const el=$(p+'lp');if(el){el.innerHTML='<span class="locnote">กำลังหาพิกัดจากลิงก์...</span>';if(typeof translateDOM==='function'&&LANG==='en')translateDOM(el)}
+  const r=await resolveMapLink(url);
+  const now=normalizeMapUrl(($(p+'l')?.value||'').trim());if(now!==url)return;                     // ผู้ใช้เปลี่ยนลิงก์ไประหว่างรอ
+  const c=$(p+'c');if(r&&c&&!c.value.trim())c.value=r.lat+', '+r.lng;
+  locPrev(p,true)}
 function locPrevHtml(url,coords){
   const u=String(url||'').trim(),c=String(coords||'').trim();if(!u&&!c)return '';
   if(u&&!normalizeMapUrl(u))return '<span class="locbad">ลิงก์ไม่ถูกต้อง ต้องขึ้นต้นด้วย https://</span>';
   if(c&&!parseLatLng(c))return '<span class="locbad">พิกัดไม่ถูกต้อง ตัวอย่าง 13.9126, 100.6070</span>';
   const ll=(c&&parseLatLng(c))||(u&&parseLatLng(normalizeMapUrl(u)));
   if(ll)return `<span class="locok">${lineIcon('pincheck',16)} พบพิกัด ${ll.lat}, ${ll.lng} · ปักหมุดบนแผนที่ได้</span>`;
-  return '<span class="locnote">ลิงก์นี้ไม่มีพิกัด · เปิดนำทางได้ แต่ปักหมุดบนแผนที่ในแอปไม่ได้ ใส่พิกัดในช่องด้านล่างถ้าต้องการ</span>'}
+  return '<span class="locnote">ลิงก์นี้ไม่มีพิกัด · เปิดนำทางได้ แต่ปักหมุดบนแผนที่ในแอปไม่ได้ ใส่พิกัดในช่องด้านล่างถ้าต้องการ'+(_resOff?' · ยังไม่ได้ติดตั้งตัวอ่านลิงก์สั้นบนเซิร์ฟเวอร์':'')+'</span>'}
 function _coordText(s){return s&&s.location_lat!=null&&s.location_lng!=null?s.location_lat+', '+s.location_lng:''}
 // ฟอร์ม Schedule จัดเป็น 3 ส่วนตามลำดับ: ชื่อสถานที่+พิกัด → หมวดหมู่ → ลิงก์ตำแหน่ง (prefix 's' = ฟอร์มเพิ่ม, 'es' = ฟอร์มแก้ไข)
 function locNameCoordHtml(p,s){
@@ -34,7 +58,7 @@ function catFieldHtml(p,s){
 function syncPlaceCat(p){const v=($(p+'cat')?.value||'').trim();$(p+'cat')?.closest('.catfield')?.querySelectorAll('.pchip').forEach(b=>{const on=b.dataset.cat===v;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
 function pickPlaceCat(p,btn){const i=$(p+'cat');i.value=i.value.trim()===btn.dataset.cat?'':btn.dataset.cat;syncPlaceCat(p)}     // แตะซ้ำ = ยกเลิกการเลือก
 function readCat(p){const v=($(p+'cat')?.value||'').trim();if(v.length>40)throw new Error('หมวดหมู่สถานที่ยาวเกิน 40 ตัวอักษร');return {place_category:v||null}}
-function locPrev(p){const el=$(p+'lp');if(el)el.innerHTML=locPrevHtml($(p+'l')?.value,$(p+'c')?.value)}
+function locPrev(p,noResolve){const el=$(p+'lp');if(el)el.innerHTML=locPrevHtml($(p+'l')?.value,$(p+'c')?.value);if(!noResolve)scheduleLocResolve(p)}
 function pasteLoc(p){
   const i=$(p+'l');if(!i)return;
   if(!navigator.clipboard?.readText)return toast('วางไม่ได้ ลองกดค้างที่ช่องแล้ววางเอง');
@@ -54,10 +78,10 @@ function stopButtonsHtml(s,withEdit){
 function setSchedTab(t){
   const map=t==='map';if(!map)_pin=null;$('schedListView')?.classList.toggle('hide',map);$('schedMapView')?.classList.toggle('hide',!map);
   $('tabListBtn')?.classList.toggle('active',!map);$('tabMapBtn')?.classList.toggle('active',map);
-  if(!map&&$('schedChips'))$('schedChips').innerHTML='';
+  if(!map){if($('schedChips'))$('schedChips').innerHTML='';$('schedule')?.classList.remove('pinmode')}
   renderPageActions('schedule');syncSchedSticky();
   if(map)renderScheduleMap()}
-function syncSchedSticky(){const s=$('schedSticky');if(s)document.documentElement.style.setProperty('--ssh',s.offsetHeight+'px')}
+function syncSchedSticky(){const st=document.documentElement.style,s=$('schedSticky');if(s)st.setProperty('--ssh',s.offsetHeight+'px');const nav=document.querySelector('.mobileNav');st.setProperty('--navh',(nav&&getComputedStyle(nav).position==='fixed'?nav.offsetHeight:0)+'px')}
 function setSchedMapDay(d){schedMapDay=d;_pin=null;renderScheduleMap()}
 // ---------- ปักหมุดเองบนแผนที่ ----------
 // เริ่มปักหมุดแล้วแผนที่ซูมเข้า (ระดับ 17 เหมือนเปิดลิงก์ใน Google Maps) พร้อมหมุดตั้งต้น:
@@ -67,7 +91,7 @@ function setSchedMapDay(d){schedMapDay=d;_pin=null;renderScheduleMap()}
 // แล้วแตะบนแผนที่เพื่อย้าย และกด "ใช้ตำแหน่งนี้" เพื่อบันทึก
 function _pinMsg(){
   if(!_pin)return '';if(_pin.busy)return _pin.busy;if(_pin.err)return _pin.err;
-  return {saved:'ตำแหน่งที่บันทึกไว้ · แตะบนแผนที่เพื่อย้ายหมุด',link:'ตำแหน่งจากลิงก์ Google Maps · แตะบนแผนที่เพื่อย้ายหมุด',name:'ค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน) · แตะบนแผนที่เพื่อแก้ตำแหน่ง',here:'ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด',herefb:'ไม่พบสถานที่จากลิงก์ จึงแสดงตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด'}[_pin.src]||'แตะบนแผนที่เพื่อวางหมุด'}
+  return {saved:'ตำแหน่งที่บันทึกไว้ · แตะบนแผนที่เพื่อย้ายหมุด',link:'ตำแหน่งจากลิงก์ Google Maps · แตะบนแผนที่เพื่อย้ายหมุด',name:'ลิงก์สั้นอ่านพิกัดไม่ได้ จึงค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน) · แตะบนแผนที่เพื่อแก้ตำแหน่ง',here:'ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด',herefb:'ไม่พบสถานที่จากลิงก์ จึงแสดงตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด'}[_pin.src]||'แตะบนแผนที่เพื่อวางหมุด'}
 function renderPinBar(){
   const b=$('pinBarBox');if(!b)return;if(!_pin){b.innerHTML='';return}
   b.innerHTML=`<div class="pinbar"><div><b><span>ปักหมุด:</span> ${esc(_pin.name)}</b><div class="mini">${esc(_pinMsg())}${_pin.ll?' · '+esc(_pin.ll.lat+', '+_pin.ll.lng):''}</div></div><div class="pinacts"><button type="button" class="btn sm" id="pinOk" ${_pin.ll?'':'disabled'} onclick="confirmPin()">ใช้ตำแหน่งนี้</button><button type="button" class="btn secondary sm" onclick="cancelPin()">ยกเลิก</button></div></div>`;
@@ -79,7 +103,7 @@ function placePinMarker(L){
 function setPinPos(lat,lng,src,zoom){
   if(!_pin||!_schedMap||!window.L)return;
   _pin.ll={lat:Math.round(lat*1e6)/1e6,lng:Math.round(lng*1e6)/1e6};_pin.src=src;_pin.busy='';_pin.err='';
-  placePinMarker(window.L);_schedMap.setView([_pin.ll.lat,_pin.ll.lng],zoom||17,{animate:true});renderPinBar()}
+  placePinMarker(window.L);_schedMap.invalidateSize();_schedMap.setView([_pin.ll.lat,_pin.ll.lng],zoom||17,{animate:true});renderPinBar()}
 function _getHere(){return new Promise(res=>{if(!navigator.geolocation)return res(null);navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(null),{enableHighAccuracy:true,timeout:10000,maximumAge:30000})})}
 async function _pinUseHere(src){
   const id=_pin.id;_pin.busy='กำลังหาตำแหน่งปัจจุบัน...';renderPinBar();
@@ -94,13 +118,18 @@ async function geocodeName(q){
     const lat=+h.lat,lng=+h.lon;return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null}catch(e){return null}}
 async function startPin(id){
   const s=cache.schedules.find(x=>x.id===id);if(!s||!canEditRow(s))return;
-  _pin={id,name:stopName(s),ll:null,marker:null,src:'',busy:'',err:''};renderPinBar();_schedMap?.getContainer().classList.add('pinning');
-  $('pinBarBox')?.scrollIntoView({block:'start',behavior:'smooth'});
+  _pin={id,name:stopName(s),ll:null,marker:null,src:'',busy:'',err:''};
+  $('schedule')?.classList.add('pinmode');syncSchedSticky();renderPinBar();
+  if(_schedMap){_schedMap.getContainer().classList.add('pinning');_schedMap.invalidateSize()}
+  $('leafWrap')?.scrollIntoView({block:'start',behavior:'smooth'});
   if(!_schedMap||!window.L)return;
   let k=s.location_lat!=null&&s.location_lng!=null?{lat:s.location_lat,lng:s.location_lng,src:'saved'}:null;
   if(!k&&s.location_url){const p=parseLatLng(s.location_url);if(p)k={lat:p.lat,lng:p.lng,src:'link'}}
   if(k)return setPinPos(k.lat,k.lng,k.src,17);
   if(s.location_url){
+    _pin.busy='กำลังหาพิกัดจากลิงก์...';renderPinBar();
+    const r=await resolveMapLink(s.location_url);if(!_pin||_pin.id!==id)return;
+    if(r)return setPinPos(r.lat,r.lng,'link',17);
     _pin.busy='กำลังค้นหาสถานที่จากลิงก์...';renderPinBar();
     const t=curTrip(),q=[s.location_name||s.to_place||s.activity,t?.destination].filter(Boolean).join(' '),hit=q?await geocodeName(q):null;
     if(!_pin||_pin.id!==id)return;
@@ -125,8 +154,8 @@ async function renderScheduleMap(){
   const pts=stops.map((s,i)=>({s,i:i+1,ll:s.location_lat!=null&&s.location_lng!=null?[s.location_lat,s.location_lng]:null}));
   const list=pts.length?pts.map(({s,i,ll})=>`<div class="card stop"><div class="row" style="flex-wrap:nowrap;gap:12px;align-items:center"><span class="stopnum">${i}</span><div style="flex:1;min-width:0"><b>${esc(stopName(s))}</b><div class="mini muted">${s.schedule_time?esc(String(s.schedule_time).slice(0,5))+' · ':''}${ll?'มีพิกัด':'ไม่มีพิกัด'}</div></div></div>${stopButtonsHtml(s,true)}</div>`).join(''):'<div class="card empty">ยังไม่มีรายการในวันนี้</div>';
   if(ch)ch.innerHTML=`<div class="daychips" role="tablist" aria-label="เลือกวัน">${chips}</div>`;
-  box.innerHTML=`<div id="pinBarBox"></div><div id="leafWrap"><div id="leafMap" class="leafmap"></div></div><div id="leafNote" class="mini muted" style="margin:6px 2px"></div>${list}`;
-  syncSchedSticky();renderPinBar();
+  box.innerHTML=`<div id="leafWrap"><div id="leafMap" class="leafmap"></div></div><div id="pinBarBox"></div><div id="leafNote" class="mini muted" style="margin:6px 2px"></div>${list}`;
+  $('schedule')?.classList.toggle('pinmode',!!_pin);syncSchedSticky();renderPinBar();
   const withLL=pts.filter(p=>p.ll);
   if(!pts.length){$('leafWrap').classList.add('hide');return}
   try{

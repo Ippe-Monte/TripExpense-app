@@ -9,6 +9,7 @@ function parseLatLng(text){
   const pats=[new RegExp('!3d'+N+'!4d'+N),                                     // หมุดของสถานที่จริง (แม่นกว่า @ ที่เป็นจุดกึ่งกลางหน้าจอ)
               new RegExp('[?&](?:q|query|ll|destination|daddr|center)='+N+'[,\\s]\\s*'+N),
               new RegExp('@'+N+',\\s*'+N),
+              new RegExp('/place/'+N+',\\s*'+N+'(?:[/?#@]|$)'),                         // /maps/place/18.8048,98.9217
               new RegExp('^geo:'+N+','+N,'i'),
               new RegExp('^'+N+'\\s*[,\\s]\\s*'+N+'$')];
   for(const re of pats){const m=s.match(re);if(m){const lat=parseFloat(m[1]),lng=parseFloat(m[2]);if(_validLat(lat)&&_validLng(lng))return {lat,lng}}}

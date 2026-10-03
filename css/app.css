@@ -683,3 +683,13 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 #pinBarBox{scroll-margin-top:calc(var(--hdr) + var(--phead) + var(--ssh,120px) + 8px)}
 /* ข้อความในแถบปักหมุดสูงคงที่ (3 บรรทัด) เพื่อให้แผนที่ใต้แถบไม่ขยับเมื่อข้อความเปลี่ยนหลังแตะ */
 .pinbar .mini{min-height:calc(3 * 1.45em);line-height:1.45}
+
+/* 2.0.4 · ปักหมุด: แผนที่อยู่บน แถบยืนยันอยู่ใต้แผนที่และลอยเหนือเมนูล่างเสมอ · ซ่อนชิปวันระหว่างปักเพื่อให้แผนที่ใหญ่ขึ้น */
+#pinBarBox{position:sticky;bottom:calc(var(--navh,0px) + 14px);z-index:6}
+#pinBarBox .pinbar{margin:10px 0 0;box-shadow:0 6px 18px rgba(24,34,48,.18)}
+.pinbar .mini{min-height:0}
+#leafWrap{scroll-margin-top:calc(var(--hdr) + var(--phead) + var(--ssh,120px) + 8px)}
+#schedule.pinmode #schedChips{display:none}
+#schedule.pinmode .leafmap{height:clamp(220px,calc(100vh - var(--hdr) - var(--phead) - var(--ssh,70px) - var(--navh,0px) - 130px),380px)}
+/* 2.0.4: แถบยืนยันเว้นระยะเหนือเมนูล่างพอให้พ้นปุ่ม "สำรวจ" ที่นูนขึ้นมา */
+#pinBarBox{bottom:calc(var(--navh,0px) + 30px)}

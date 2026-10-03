@@ -569,4 +569,8 @@ const TH_EN = {"· คุณ":"· you","บทบาทของคุณ:":"You
 "แตะบนแผนที่เพื่อวางหมุดเอง":"Tap the map to place the pin yourself",
 "ไม่พบสถานที่จากลิงก์ จึงแสดงตำแหน่งปัจจุบันของคุณ":"Place not found from the link, so showing your current position",
 "＋ เพิ่มสถานที่":"＋ Add place",
+// ===== 2.0.4 =====
+"กำลังหาพิกัดจากลิงก์...":"Finding coordinates from the link...",
+"ลิงก์สั้นอ่านพิกัดไม่ได้ จึงค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน)":"The short link has no readable coordinates, so the place name was searched (may be off)",
+"ยังไม่ได้ติดตั้งตัวอ่านลิงก์สั้นบนเซิร์ฟเวอร์":"The short-link reader is not installed on the server yet",
 };

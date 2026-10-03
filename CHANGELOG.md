@@ -3,6 +3,13 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.4 — Short Google Maps links, clearer pin layout
+**Optional, recommended:** deploy the Edge Function `resolve-map-link` (see `edge-functions/`). Without it everything still works as in 2.0.3.
+- **Short links (maps.app.goo.gl, from Google Maps' Share button) have no coordinates inside**, so the browser cannot read them. The Edge Function follows the link on the server and returns the place's coordinates. The app uses it (1) a moment after a link is pasted — the coordinates box fills itself, (2) when saving, (3) when ปักหมุด is pressed on an item that has a link but no coordinates. If the function is not installed (404), or the network fails, the app falls back to searching the place name, then to the current position, and never blocks saving.
+- Links of the form `/maps/place/18.8,98.9` are now read in the browser too.
+- **Pin mode layout:** the map sits right under the sticky header and is taller; the day chips are hidden while pinning; the confirm bar is below the map and floats above the bottom menu (and clear of the raised "สำรวจ" button), so "ใช้ตำแหน่งนี้" is always reachable, also on short phones.
+- English text added.
+
 ## 2.0.3 — Schedule header layout and smarter pin start
 **No SQL change.**
 - **Schedule page (phone):** the heading + description + big "＋ เพิ่ม" card is gone; the one add button sits in the title row. On the map tab that button becomes **"＋ เพิ่มสถานที่"** (adds a place for the day shown) and the big in-page button is removed.
