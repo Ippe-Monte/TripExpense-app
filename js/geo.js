@@ -7,7 +7,7 @@ function parseLatLng(text){
   try{s=decodeURIComponent(s)}catch(e){}
   const N='(-?\\d{1,3}(?:\\.\\d+)?)';
   const pats=[new RegExp('!3d'+N+'!4d'+N),                                     // หมุดของสถานที่จริง (แม่นกว่า @ ที่เป็นจุดกึ่งกลางหน้าจอ)
-              new RegExp('[?&](?:q|query|ll|destination|daddr|center)='+N+'[,\\s]\\s*'+N),
+              new RegExp('[?&](?:q|query|ll|destination|daddr)='+N+'[,\\s]\\s*'+N),               // (center= ไม่รับ: เป็นกึ่งกลางหน้าจอ)
               new RegExp('@'+N+',\\s*'+N),
               new RegExp('/place/'+N+',\\s*'+N+'(?:[/?#@]|$)'),                         // /maps/place/18.8048,98.9217
               new RegExp('^geo:'+N+','+N,'i'),

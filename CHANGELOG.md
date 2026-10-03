@@ -3,6 +3,15 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.6 — Plus codes, and a stricter short-link reader
+**Redeploy the Edge Function** (`edge-functions/resolve-map-link/index.ts`, replace the old code and Deploy). No SQL change.
+- **Plus code support.** The coordinates box is now "พิกัด หรือ Plus code": paste what Google Maps shows for a place. A full code (8FVC9G8F+6W) is read at once. A short code with a city (QG83+VC กรุงเทพ) looks the city up and recovers the exact place; with no city the trip's destination, then another place of the trip, is the reference; if nothing can be used, or the typed city is not found, it says so instead of guessing. Decoding is done inside the app (Open Location Code), no server needed.
+- **Check what the app understood.** Wherever a position is known, the preview shows its Plus code and a "ตรวจใน Google Maps" link, and every stop card shows its Plus code next to "มีพิกัด" — compare it with the Plus code Google shows for the place.
+- **Pin bar:** a "Plus code" button opens a box to paste a code and jump straight to it; the box opens by itself, and the bar turns amber, when the place could not be found from the link.
+- **Stricter server function.** It now accepts only the place's own pin (`!3d…!4d…`, `q=`/`ll=`/`destination=` in the redirect addresses, and the static-map `markers=` in the page). It no longer reads `@lat,lng` or `center=` from a page, which are the map's default view and not the place — the likely reason for "the position is where I am". `center=` is no longer read from pasted links either.
+- **Diagnostics.** When a short link cannot be read, a "คัดลอกรายละเอียดการตรวจลิงก์" button copies the steps Google took (status, host, short path) so the reader can be adapted.
+- English text added.
+
 ## 2.0.5 — Map follows the item you tap; Google link wins over old coordinates; add buttons on wide screens
 **No SQL change.**
 - **Tap an item, the map goes to its place.** On the map tab each item is tappable: the map flies to that item's position (street level), its pin is highlighted, its card gets a green frame and the map is brought into view. Buttons inside a card (แก้ไข, ปักหมุด…) do not change the selection. On opening, the first item with a position is selected (the map no longer zooms out to every stop). New button "ดูทุกจุดของวัน".

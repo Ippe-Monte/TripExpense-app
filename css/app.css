@@ -703,3 +703,10 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .stoppin.sel{background:#16a34a;transform:scale(1.2)}
 .stoppin.linkpin{background:#fff;color:#0f5fe0;border-color:#0f5fe0}
 @media(min-width:951px){.schedsticky{top:var(--tophh,74px)}#leafWrap{scroll-margin-top:calc(var(--tophh,74px) + var(--ssh,120px) + 8px)}}   /* จอกว้าง: แถบบนสูงกว่ามือถือ ใช้ความสูงจริงที่วัดได้ */
+
+/* 2.0.6 · Plus code */
+.pinbar .pinpc{flex:1 1 100%;display:flex;gap:8px}
+.pinbar .pinpc input{flex:1;min-width:0;min-height:44px}
+.pinbar.warn{background:#fff7e0;border-color:#e0a800}
+#schedule.pinmode .leafmap{height:clamp(200px,calc(100vh - var(--hdr) - var(--phead) - var(--ssh,70px) - var(--navh,0px) - 200px),380px)}
+.locok a{font-weight:700;text-decoration:underline}
