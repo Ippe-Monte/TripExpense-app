@@ -3,6 +3,15 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.2 — Pin by tapping, place categories, date-filtered expense links, one-calendar trip dates
+**SQL to run first (small, safe to run twice):** `sql/v20_2_place_category.sql`. If it has not been run, the app still saves Schedule items but skips the category and says so.
+- **Map tab — tap to pin.** Every stop you may edit has "ปักหมุด" (no position yet) or "ย้ายหมุด" (move it). Tap the map, see a green temporary pin and its coordinates, then "ใช้ตำแหน่งนี้". The map is shown even when no stop of that day has coordinates. Nothing is saved when you cancel or change day.
+- **Expense form — "เชื่อมกับ Schedule" shows only items on the expense date** (time is optional, items are sorted by time) and refreshes when the date changes. An item that was linked earlier on another day stays selectable, marked "(คนละวัน)". Same in the edit form.
+- **Expense form — payer and split.** Payer starts as the signed-in user (others can be chosen); the "หารกับใครบ้าง" heading now shows the state: "ทุกคนเท่ากัน (N คน)" or "เลือกเอง M จาก N คน".
+- **"การเดินทาง" form re-ordered:** date/time → activity → from/to → **place name + coordinates** → **place category** (buttons: โรงแรม/ที่พัก, ร้านอาหาร, คาเฟ่, ห้างสรรพสินค้า, วัด + a box to type another) → location link → details. The hotel name, hotel price and hotel payer fields are removed (enter lodging costs in the expense form and link them to the Schedule item). Old items keep their hotel name and any expense already linked.
+- **Create/Edit Trip: one calendar.** Tap the first day, then the return day; the days between are painted green. Tapping an earlier day swaps them, tapping the same day twice makes a one-day trip.
+- English text added for all of the above.
+
 ## 2.0.1 — Map tab: add and edit places
 - The Schedule **map tab** now has **"＋ เพิ่มสถานที่ของวันนี้"** (opens the add form with the selected day already filled in) and an **แก้ไข** button on every stop (opens the edit form with place name, link and coordinates filled in).
 - After saving, the map refreshes by itself and stays on the same day and tab; a new or moved pin appears at once.
