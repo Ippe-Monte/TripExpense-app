@@ -54,41 +54,79 @@ function stopButtonsHtml(s,withEdit){
 function setSchedTab(t){
   const map=t==='map';if(!map)_pin=null;$('schedListView')?.classList.toggle('hide',map);$('schedMapView')?.classList.toggle('hide',!map);
   $('tabListBtn')?.classList.toggle('active',!map);$('tabMapBtn')?.classList.toggle('active',map);
+  if(!map&&$('schedChips'))$('schedChips').innerHTML='';
+  renderPageActions('schedule');syncSchedSticky();
   if(map)renderScheduleMap()}
+function syncSchedSticky(){const s=$('schedSticky');if(s)document.documentElement.style.setProperty('--ssh',s.offsetHeight+'px')}
 function setSchedMapDay(d){schedMapDay=d;_pin=null;renderScheduleMap()}
-// ---------- ปักหมุดเองบนแผนที่ (แตะบนแผนที่เพื่อวางหมุดให้จุดที่ยังไม่มีพิกัด หรือย้ายหมุดที่มีอยู่) ----------
+// ---------- ปักหมุดเองบนแผนที่ ----------
+// เริ่มปักหมุดแล้วแผนที่ซูมเข้า (ระดับ 17 เหมือนเปิดลิงก์ใน Google Maps) พร้อมหมุดตั้งต้น:
+//   1) มีพิกัดอยู่แล้ว (บันทึกไว้ หรืออ่านได้จากลิงก์เต็ม)      → หมุดที่ตำแหน่งนั้น
+//   2) มีลิงก์แต่เป็นลิงก์สั้น (ถอดพิกัดในเบราว์เซอร์ไม่ได้)       → ค้นหาจากชื่อสถานที่ (OpenStreetMap) ถ้าไม่พบ → ตำแหน่งปัจจุบันของผู้ใช้
+//   3) ไม่มีลิงก์                                              → ตำแหน่งปัจจุบันของผู้ใช้
+// แล้วแตะบนแผนที่เพื่อย้าย และกด "ใช้ตำแหน่งนี้" เพื่อบันทึก
+function _pinMsg(){
+  if(!_pin)return '';if(_pin.busy)return _pin.busy;if(_pin.err)return _pin.err;
+  return {saved:'ตำแหน่งที่บันทึกไว้ · แตะบนแผนที่เพื่อย้ายหมุด',link:'ตำแหน่งจากลิงก์ Google Maps · แตะบนแผนที่เพื่อย้ายหมุด',name:'ค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน) · แตะบนแผนที่เพื่อแก้ตำแหน่ง',here:'ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด',herefb:'ไม่พบสถานที่จากลิงก์ จึงแสดงตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด'}[_pin.src]||'แตะบนแผนที่เพื่อวางหมุด'}
 function renderPinBar(){
   const b=$('pinBarBox');if(!b)return;if(!_pin){b.innerHTML='';return}
-  const c=_pin.ll?`${_pin.ll.lat}, ${_pin.ll.lng}`:'ยังไม่ได้แตะบนแผนที่';
-  b.innerHTML=`<div class="pinbar"><div><b>ปักหมุด: ${esc(_pin.name)}</b><div class="mini">แตะบนแผนที่เพื่อวางหมุด · ${esc(c)}</div></div><div class="pinacts"><button type="button" class="btn sm" id="pinOk" ${_pin.ll?'':'disabled'} onclick="confirmPin()">ใช้ตำแหน่งนี้</button><button type="button" class="btn secondary sm" onclick="cancelPin()">ยกเลิก</button></div></div>`;
+  b.innerHTML=`<div class="pinbar"><div><b><span>ปักหมุด:</span> ${esc(_pin.name)}</b><div class="mini">${esc(_pinMsg())}${_pin.ll?' · '+esc(_pin.ll.lat+', '+_pin.ll.lng):''}</div></div><div class="pinacts"><button type="button" class="btn sm" id="pinOk" ${_pin.ll?'':'disabled'} onclick="confirmPin()">ใช้ตำแหน่งนี้</button><button type="button" class="btn secondary sm" onclick="cancelPin()">ยกเลิก</button></div></div>`;
   if(typeof translateDOM==='function'&&LANG==='en')translateDOM(b)}
-function startPin(id){
-  const s=cache.schedules.find(x=>x.id===id);if(!s||!canEditRow(s))return;
-  _pin={id,name:stopName(s),ll:null,marker:null};renderPinBar();_schedMap?.getContainer().classList.add('pinning');
-  $('pinBarBox')?.scrollIntoView({block:'start',behavior:'smooth'})}
 function placePinMarker(L){
   if(!_pin||!_pin.ll||!_schedMap)return;
   if(_pin.marker){_pin.marker.setLatLng([_pin.ll.lat,_pin.ll.lng]);return}
   _pin.marker=L.marker([_pin.ll.lat,_pin.ll.lng],{icon:L.divIcon({className:'',html:'<div class="stoppin pintmp">＋</div>',iconSize:[32,32],iconAnchor:[16,16]})}).addTo(_schedMap)}
+function setPinPos(lat,lng,src,zoom){
+  if(!_pin||!_schedMap||!window.L)return;
+  _pin.ll={lat:Math.round(lat*1e6)/1e6,lng:Math.round(lng*1e6)/1e6};_pin.src=src;_pin.busy='';_pin.err='';
+  placePinMarker(window.L);_schedMap.setView([_pin.ll.lat,_pin.ll.lng],zoom||17,{animate:true});renderPinBar()}
+function _getHere(){return new Promise(res=>{if(!navigator.geolocation)return res(null);navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(null),{enableHighAccuracy:true,timeout:10000,maximumAge:30000})})}
+async function _pinUseHere(src){
+  const id=_pin.id;_pin.busy='กำลังหาตำแหน่งปัจจุบัน...';renderPinBar();
+  const h=await _getHere();if(!_pin||_pin.id!==id)return;
+  if(h)setPinPos(h.lat,h.lng,src,17);
+  else{_pin.busy='';_pin.err='ใช้ตำแหน่งปัจจุบันไม่ได้ (ไม่อนุญาตหรือสัญญาณไม่พอ) · แตะบนแผนที่เพื่อวางหมุดเอง';renderPinBar()}}
+// ค้นหาชื่อสถานที่ด้วย OpenStreetMap Nominatim (ผู้ใช้กดเองครั้งละ 1 คำขอ ตามนโยบายการใช้งาน) — ส่งเฉพาะชื่อสถานที่ ไม่ส่งข้อมูลผู้ใช้
+async function geocodeName(q){
+  try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000);
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language='+(LANG==='en'?'en':'th')+'&q='+encodeURIComponent(q),{signal:ac.signal,headers:{'Accept':'application/json'}});clearTimeout(tm);
+    if(!r.ok)return null;const j=await r.json(),h=Array.isArray(j)&&j[0];if(!h)return null;
+    const lat=+h.lat,lng=+h.lon;return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null}catch(e){return null}}
+async function startPin(id){
+  const s=cache.schedules.find(x=>x.id===id);if(!s||!canEditRow(s))return;
+  _pin={id,name:stopName(s),ll:null,marker:null,src:'',busy:'',err:''};renderPinBar();_schedMap?.getContainer().classList.add('pinning');
+  $('pinBarBox')?.scrollIntoView({block:'start',behavior:'smooth'});
+  if(!_schedMap||!window.L)return;
+  let k=s.location_lat!=null&&s.location_lng!=null?{lat:s.location_lat,lng:s.location_lng,src:'saved'}:null;
+  if(!k&&s.location_url){const p=parseLatLng(s.location_url);if(p)k={lat:p.lat,lng:p.lng,src:'link'}}
+  if(k)return setPinPos(k.lat,k.lng,k.src,17);
+  if(s.location_url){
+    _pin.busy='กำลังค้นหาสถานที่จากลิงก์...';renderPinBar();
+    const t=curTrip(),q=[s.location_name||s.to_place||s.activity,t?.destination].filter(Boolean).join(' '),hit=q?await geocodeName(q):null;
+    if(!_pin||_pin.id!==id)return;
+    return hit?setPinPos(hit.lat,hit.lng,'name',17):_pinUseHere('herefb')}
+  return _pinUseHere('here')}
 function pinMapClick(e){
   if(!_pin||!window.L)return;
-  _pin.ll={lat:Math.round(e.latlng.lat*1e6)/1e6,lng:Math.round(e.latlng.lng*1e6)/1e6};placePinMarker(window.L);renderPinBar()}
+  _pin.ll={lat:Math.round(e.latlng.lat*1e6)/1e6,lng:Math.round(e.latlng.lng*1e6)/1e6};_pin.src='tap';_pin.busy='';_pin.err='';placePinMarker(window.L);renderPinBar()}
 function cancelPin(){_pin=null;renderScheduleMap()}
 async function confirmPin(){
   if(!_pin||!_pin.ll)return;const {id,ll}=_pin;
   try{const {error}=await sb.from('schedules').update({location_lat:ll.lat,location_lng:ll.lng,updated_at:new Date().toISOString()}).eq('id',id);if(error)throw error;
     _pin=null;toast('ปักหมุดแล้ว');await render()}catch(e){err(e)}}
 async function renderScheduleMap(){
-  const box=$('schedMapBox');if(!box)return;const t=curTrip();
-  if(!t){box.innerHTML='<div class="card empty">เลือก Trip ก่อน</div>';return}
-  const days=tripDates(t);if(!days.length){box.innerHTML='<div class="card empty">Trip นี้ยังไม่ได้ระบุวันเดินทาง</div>';return}
+  const box=$('schedMapBox'),ch=$('schedChips');if(!box)return;const t=curTrip();
+  if(ch)ch.innerHTML='';
+  if(!t){box.innerHTML='<div class="card empty">เลือก Trip ก่อน</div>';syncSchedSticky();return}
+  const days=tripDates(t);if(!days.length){box.innerHTML='<div class="card empty">Trip นี้ยังไม่ได้ระบุวันเดินทาง</div>';syncSchedSticky();return}
   if(!schedMapDay||!days.includes(schedMapDay))schedMapDay=days.includes(today())?today():days[0];
   const stops=cache.schedules.filter(s=>s.trip_id===t.id&&s.schedule_date===schedMapDay).sort((a,b)=>String(a.schedule_time||'99').localeCompare(String(b.schedule_time||'99')));
   const chips=days.map((d,i)=>`<button type="button" class="daychip${d===schedMapDay?' active':''}" onclick="setSchedMapDay('${d}')">${i+1}<small>${esc(fmtDate(d,{day:'numeric',month:'short'}))}</small></button>`).join('');
   const pts=stops.map((s,i)=>({s,i:i+1,ll:s.location_lat!=null&&s.location_lng!=null?[s.location_lat,s.location_lng]:null}));
   const list=pts.length?pts.map(({s,i,ll})=>`<div class="card stop"><div class="row" style="flex-wrap:nowrap;gap:12px;align-items:center"><span class="stopnum">${i}</span><div style="flex:1;min-width:0"><b>${esc(stopName(s))}</b><div class="mini muted">${s.schedule_time?esc(String(s.schedule_time).slice(0,5))+' · ':''}${ll?'มีพิกัด':'ไม่มีพิกัด'}</div></div></div>${stopButtonsHtml(s,true)}</div>`).join(''):'<div class="card empty">ยังไม่มีรายการในวันนี้</div>';
-  box.innerHTML=`<div class="daychips" role="tablist" aria-label="เลือกวัน">${chips}</div>${canWrite()?`<button type="button" class="btn addplace" onclick="openAdd('${schedMapDay}','schedule')">＋ เพิ่มสถานที่ของวันนี้</button>`:''}<div id="pinBarBox"></div><div id="leafWrap"><div id="leafMap" class="leafmap"></div></div><div id="leafNote" class="mini muted" style="margin:6px 2px"></div>${list}`;
-  renderPinBar();
+  if(ch)ch.innerHTML=`<div class="daychips" role="tablist" aria-label="เลือกวัน">${chips}</div>`;
+  box.innerHTML=`<div id="pinBarBox"></div><div id="leafWrap"><div id="leafMap" class="leafmap"></div></div><div id="leafNote" class="mini muted" style="margin:6px 2px"></div>${list}`;
+  syncSchedSticky();renderPinBar();
   const withLL=pts.filter(p=>p.ll);
   if(!pts.length){$('leafWrap').classList.add('hide');return}
   try{
@@ -100,5 +138,5 @@ async function renderScheduleMap(){
       if(any.length)fitPins(_schedMap,L,any.map(s=>[s.location_lat,s.location_lng]));else{_schedMap.setView([13.5,100.9],6);setTimeout(()=>_schedMap.invalidateSize(),50)}}
     _schedMap.on('click',pinMapClick);
     if(!withLL.length)$('leafNote').textContent=canWrite()?'ยังไม่มีพิกัดของวันนี้ · กด "ปักหมุด" ที่จุดใดจุดหนึ่ง แล้วแตะบนแผนที่เพื่อวางหมุด หรือวางลิงก์เต็ม/ใส่พิกัดในฟอร์ม':'ยังไม่มีพิกัดของวันนี้';
-    if(_pin){_schedMap.getContainer().classList.add('pinning');placePinMarker(L)}
+    if(_pin){_schedMap.getContainer().classList.add('pinning');_pin.marker=null;placePinMarker(L)}
   }catch(e){$('leafWrap').classList.add('hide');$('leafNote').textContent='โหลดแผนที่ไม่ได้ (อาจออฟไลน์) แต่ยังกด "เปิดใน Maps" ได้'}}

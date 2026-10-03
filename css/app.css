@@ -675,3 +675,11 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .rgacts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .sharenote:not(:empty)::before{content:' · '}
 #pinBarBox{scroll-margin-top:172px}   /* เลื่อนมาหาแถบปักหมุดแล้วต้องไม่ไปอยู่ใต้ส่วนหัวและแท็บที่ติดบนจอ */
+
+/* 2.0.3 · Schedule: แถบชื่อหน้า + แท็บ + ชิปวัน ตรึงไม่เลื่อนตาม (ตัวตรึงต้องเป็นลูกตรงของหน้า) */
+.schedsticky{position:sticky;top:calc(var(--hdr) + var(--phead));z-index:6;background:var(--bg);margin:0 -14px 6px;padding:0 14px}
+.schedsticky .segtabs{margin-bottom:8px}
+.schedsticky .daychips{padding-bottom:8px}
+#pinBarBox{scroll-margin-top:calc(var(--hdr) + var(--phead) + var(--ssh,120px) + 8px)}
+/* ข้อความในแถบปักหมุดสูงคงที่ (3 บรรทัด) เพื่อให้แผนที่ใต้แถบไม่ขยับเมื่อข้อความเปลี่ยนหลังแตะ */
+.pinbar .mini{min-height:calc(3 * 1.45em);line-height:1.45}

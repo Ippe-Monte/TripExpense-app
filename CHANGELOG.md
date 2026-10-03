@@ -3,6 +3,14 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.3 — Schedule header layout and smarter pin start
+**No SQL change.**
+- **Schedule page (phone):** the heading + description + big "＋ เพิ่ม" card is gone; the one add button sits in the title row. On the map tab that button becomes **"＋ เพิ่มสถานที่"** (adds a place for the day shown) and the big in-page button is removed.
+- **Sticky header:** top bar, title row, the two tabs and (on the map tab) the day chips stay fixed while the page scrolls.
+- **Pin start (ปักหมุด / ย้ายหมุด):** the map now zooms in (street level, like opening the link in Google Maps) with a starting pin: the saved position or the position inside a full Google Maps link; for a short link (maps.app.goo.gl, no coordinates inside) the place name is searched on OpenStreetMap, and if it is not found, or there is no link at all, the pin starts at the user's current position. Tap the map to move it, "ใช้ตำแหน่งนี้" to save. If the current position cannot be read the bar says so and a tap still works.
+- The pin bar keeps a fixed height, so the map no longer jumps after the first tap. When the pin button is pressed while scrolled down, the bar comes up below the sticky header.
+- English text added.
+
 ## 2.0.2 — Pin by tapping, place categories, date-filtered expense links, one-calendar trip dates
 **SQL to run first (small, safe to run twice):** `sql/v20_2_place_category.sql`. If it has not been run, the app still saves Schedule items but skips the category and says so.
 - **Map tab — tap to pin.** Every stop you may edit has "ปักหมุด" (no position yet) or "ย้ายหมุด" (move it). Tap the map, see a green temporary pin and its coordinates, then "ใช้ตำแหน่งนี้". The map is shown even when no stop of that day has coordinates. Nothing is saved when you cancel or change day.

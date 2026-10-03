@@ -556,4 +556,17 @@ const TH_EN = {"· คุณ":"· you","บทบาทของคุณ:":"You
 "ทุกคนเท่ากัน (# คน)":"Equal split among everyone (# people)",
 "เลือกเอง # จาก # คน":"Chosen: # of # people",
 "กรุณาเลือกอย่างน้อย # คน":"Please choose at least # person",
+// ===== 2.0.3 =====
+"ตำแหน่งที่บันทึกไว้":"Saved position",
+"แตะบนแผนที่เพื่อย้ายหมุด":"Tap the map to move the pin",
+"ตำแหน่งจากลิงก์ Google Maps":"Position from the Google Maps link",
+"ค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน)":"Found by place name (may be off)",
+"แตะบนแผนที่เพื่อแก้ตำแหน่ง":"Tap the map to correct it",
+"ตำแหน่งปัจจุบันของคุณ":"Your current position",
+"กำลังค้นหาสถานที่จากลิงก์...":"Looking up the place from the link...",
+"กำลังหาตำแหน่งปัจจุบัน...":"Finding your current position...",
+"ใช้ตำแหน่งปัจจุบันไม่ได้ (ไม่อนุญาตหรือสัญญาณไม่พอ)":"Current position unavailable (not allowed or weak signal)",
+"แตะบนแผนที่เพื่อวางหมุดเอง":"Tap the map to place the pin yourself",
+"ไม่พบสถานที่จากลิงก์ จึงแสดงตำแหน่งปัจจุบันของคุณ":"Place not found from the link, so showing your current position",
+"＋ เพิ่มสถานที่":"＋ Add place",
 };

@@ -14,7 +14,7 @@ const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],
 // ข้อความที่ผู้ใช้พิมพ์เอง (ชื่อ Group/Trip, หมายเหตุ, รายละเอียดค่าใช้จ่าย ฯลฯ) จะไม่ถูกแปล
 // เก็บภาษาที่เลือกไว้ในเครื่องนี้ (localStorage) ต่อผู้ใช้ 1 คน
 // =====================================================================
-const APP_VERSION='2.0.2';
+const APP_VERSION='2.0.3';
 let LANG=(function(){try{return localStorage.getItem('te_lang')||'th'}catch(_){return 'th'}})();
 const I18N={
  th:{ t_portfolio:'แผนที่การเที่ยวของฉัน',s_portfolio:'เหรียญพิชิตและหมุดที่เคยไป',t_offers:'ข้อเสนอจากระบบ',s_offers:'ข้อเสนอท่องเที่ยวที่เคยแสดง',t_explore:'สำรวจ',s_explore:'ที่พัก ตั๋ว การเดินทาง ดีล และอื่นๆ',t_admin:'Developer',s_admin:'สถิติรวมและตั้งค่าโฆษณา แคมเปญ พันธมิตร',nav_explore:'สำรวจ', nav_home:'หน้าหลัก',nav_summary:'สรุป',nav_chat:'แชต',nav_schedule:'Schedule',nav_trips:'จัดการทริป',nav_documents:'เอกสาร',nav_budget:'งบประมาณ',nav_reports:'รายงาน',nav_groups:'กลุ่ม',nav_friends:'เพื่อน',nav_profile:'โปรไฟล์',nav_developer:'Developer',
@@ -95,9 +95,11 @@ const PAGE_ACTIONS={portfolio:[{l:'＋ เช็กอิน',f:"openCheckin()"}
   documents:[{l:'＋ เพิ่มเอกสาร',f:"openDocForm()",w:1}],
   reports:[{l:'PDF / Print',f:"printReport()",sec:1},{l:'Excel',f:"exportReportXLSX()"}]
 };
+// Schedule: ปุ่มที่แถบชื่อหน้าเปลี่ยนตามแท็บ — ตารางเดินทาง = เพิ่มรายการ · แผนที่ = เพิ่มสถานที่ของวันที่เลือก (เฉพาะเมื่อแก้ Trip ได้)
+PAGE_ACTIONS.schedule=()=>{const map=$('schedMapView')&&!$('schedMapView').classList.contains('hide');return map?(canWrite()?[{l:'＋ เพิ่มสถานที่',f:"openAdd(schedMapDay,'schedule')",w:1}]:[]):[{l:'＋ เพิ่ม',f:"openAdd(null,'schedule')",w:1}]};
 const _navStack=[];let _curPage=null,_goingBack=false;
 function goBack(){let prev=_navStack.pop();while(prev&&prev===_curPage)prev=_navStack.pop();_goingBack=true;go(prev||'profile');_goingBack=false}
-function renderPageActions(p){const el=$('pageActions');if(!el)return;el.innerHTML=(PAGE_ACTIONS[p]||[]).map(a=>`<button type="button" class="btn sm${a.sec?' secondary':''}${a.w?' w':''}" onclick="${a.f}">${a.l}</button>`).join('')}
+function renderPageActions(p){const el=$('pageActions');if(!el)return;el.innerHTML=((typeof PAGE_ACTIONS[p]==='function'?PAGE_ACTIONS[p]():PAGE_ACTIONS[p])||[]).map(a=>`<button type="button" class="btn sm${a.sec?' secondary':''}${a.w?' w':''}" onclick="${a.f}">${a.l}</button>`).join('')}
 function go(p){if(p==='expenses')p='summary';if(p==='more')p='profile';if(p==='developer'&&!isDev)p='dashboard';
   if(_curPage&&_curPage!==p&&!_goingBack){_navStack.push(_curPage);if(_navStack.length>12)_navStack.shift()}_curPage=p;
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(p).classList.add('active');document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('active',x.dataset.p===p));
@@ -133,7 +135,7 @@ async function loadTripData(tid){
     (async()=>{try{const {data,error}=await sb.from('settlement_payments').select('*').eq('trip_id',tid).order('paid_at',{ascending:false});if(error)throw error;cache.payments=data||[]}catch(x){console.warn('settlement_payments',x);cache.paymentError=x}})()];
   tasks.push((async()=>{try{cache.refunds=eids.length?await selectIn('expense_refunds','*','expense_id',eids):[]}catch(x){console.warn('expense_refunds',x);cache.refundError=x;cache.refunds=[]}})());
   await Promise.all(tasks);annotateRefunds()}
-async function render(){try{await loadAll();renderTripSwitcher();applyAccessClasses();renderDashboard();renderGroups();renderTrips();renderScheduleSelectors();if(!calInit){calInit=true;calCursor=initialCalendarDate()}renderCalendar(calCursor||today());renderScheduleList();renderSummary();renderDocFilters();renderDocuments();renderBudgetSelectors();renderReportSelectors();renderHeaderAvatar();applyLangStatic();if(isDev&&$('developer').classList.contains('active'))renderDeveloper();if($('profile')?.classList.contains('active'))renderProfilePage();hydrateMedia(document);if($('schedMapView')&&!$('schedMapView').classList.contains('hide'))renderScheduleMap();loadInbox();loadChatUnread();subscribeChat();loadFriendsLite()}catch(e){err(e)}}
+async function render(){try{await loadAll();renderTripSwitcher();applyAccessClasses();renderDashboard();renderGroups();renderTrips();renderScheduleSelectors();if(!calInit){calInit=true;calCursor=initialCalendarDate()}renderCalendar(calCursor||today());renderScheduleList();renderSummary();renderDocFilters();renderDocuments();renderBudgetSelectors();renderReportSelectors();renderHeaderAvatar();applyLangStatic();if(isDev&&$('developer').classList.contains('active'))renderDeveloper();if($('profile')?.classList.contains('active'))renderProfilePage();hydrateMedia(document);if($('schedMapView')&&!$('schedMapView').classList.contains('hide'))renderScheduleMap();if(_curPage==='schedule')renderPageActions('schedule');loadInbox();loadChatUnread();subscribeChat();loadFriendsLite()}catch(e){err(e)}}
 // ---------- Auth ----------
 async function register(){if(authBusy)return;authBusy=true;const btn=$('regBtn');if(btn){btn.disabled=true;btn.textContent='กำลังสร้างบัญชี...'}try{const email=$('regEmail').value.trim(),pass=$('regPass').value,name=$('regName').value.trim();if(!email||!pass||!name)return alert('กรุณากรอกข้อมูลให้ครบ');if(pass.length<8)return alert('รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร');const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:APP_URL}});if(error)throw error;if(data.session){toast('สมัครสมาชิกสำเร็จ');await boot()}else{alert('สมัครสมาชิกสำเร็จ กรุณาตรวจสอบ Email เพื่อยืนยันบัญชี แล้วเข้าสู่ระบบ');showLogin()}}catch(e){err(e)}finally{authBusy=false;if(btn){btn.disabled=false;btn.textContent='สร้างบัญชี'}}}
 async function login(){if(authBusy)return;authBusy=true;const btn=$('loginBtn');if(btn){btn.disabled=true;btn.textContent='กำลังเข้าสู่ระบบ...'}try{const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPass').value});if(error)throw error;await boot()}catch(e){err(e)}finally{authBusy=false;if(btn){btn.disabled=false;btn.textContent='เข้าสู่ระบบ'}}}
