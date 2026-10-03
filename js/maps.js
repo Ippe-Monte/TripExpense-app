@@ -33,9 +33,9 @@ function readLoc(p){
   if(!ll&&url)ll=parseLatLng(url);
   return {location_url:url,location_name:($(p+'n')?.value||'').trim()||null,location_lat:ll?ll.lat:null,location_lng:ll?ll.lng:null}}
 function stopName(s){return s.location_name||s.to_place||s.activity||s.hotel_name||'-'}
-function stopButtonsHtml(s){
-  const u=mapsOpenUrl(s);
-  return `<div class="schline stopbtns">${u?`<a class="locbtn" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${lineIcon('pin',16)}เปิดใน Maps</a>`:''}<button type="button" class="locbtn" onclick="openCheckin('${s.id}')">${lineIcon('pincheck',16)}เช็กอิน</button></div>`}
+function stopButtonsHtml(s,withEdit){
+  const u=mapsOpenUrl(s),ed=withEdit&&canEditRow(s)?`<button type="button" class="locbtn" onclick="editSchedule('${s.id}')">${lineIcon('pencil',16)}แก้ไข</button>`:'';
+  return `<div class="schline stopbtns">${u?`<a class="locbtn" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${lineIcon('pin',16)}เปิดใน Maps</a>`:''}<button type="button" class="locbtn" onclick="openCheckin('${s.id}')">${lineIcon('pincheck',16)}เช็กอิน</button>${ed}</div>`}
 
 // ---------- แท็บแผนที่ใน Schedule ----------
 function setSchedTab(t){
@@ -51,8 +51,8 @@ async function renderScheduleMap(){
   const stops=cache.schedules.filter(s=>s.trip_id===t.id&&s.schedule_date===schedMapDay).sort((a,b)=>String(a.schedule_time||'99').localeCompare(String(b.schedule_time||'99')));
   const chips=days.map((d,i)=>`<button type="button" class="daychip${d===schedMapDay?' active':''}" onclick="setSchedMapDay('${d}')">${i+1}<small>${esc(fmtDate(d,{day:'numeric',month:'short'}))}</small></button>`).join('');
   const pts=stops.map((s,i)=>({s,i:i+1,ll:s.location_lat!=null&&s.location_lng!=null?[s.location_lat,s.location_lng]:null}));
-  const list=pts.length?pts.map(({s,i,ll})=>`<div class="card stop"><div class="row" style="flex-wrap:nowrap;gap:12px;align-items:center"><span class="stopnum">${i}</span><div style="flex:1;min-width:0"><b>${esc(stopName(s))}</b><div class="mini muted">${s.schedule_time?esc(String(s.schedule_time).slice(0,5))+' · ':''}${ll?'มีพิกัด':'ไม่มีพิกัด'}</div></div></div>${stopButtonsHtml(s)}</div>`).join(''):'<div class="card empty">ยังไม่มีรายการในวันนี้</div>';
-  box.innerHTML=`<div class="daychips" role="tablist" aria-label="เลือกวัน">${chips}</div><div id="leafWrap"><div id="leafMap" class="leafmap"></div></div><div id="leafNote" class="mini muted" style="margin:6px 2px"></div>${list}`;
+  const list=pts.length?pts.map(({s,i,ll})=>`<div class="card stop"><div class="row" style="flex-wrap:nowrap;gap:12px;align-items:center"><span class="stopnum">${i}</span><div style="flex:1;min-width:0"><b>${esc(stopName(s))}</b><div class="mini muted">${s.schedule_time?esc(String(s.schedule_time).slice(0,5))+' · ':''}${ll?'มีพิกัด':'ไม่มีพิกัด'}</div></div></div>${stopButtonsHtml(s,true)}</div>`).join(''):'<div class="card empty">ยังไม่มีรายการในวันนี้</div>';
+  box.innerHTML=`<div class="daychips" role="tablist" aria-label="เลือกวัน">${chips}</div>${canWrite()?`<button type="button" class="btn addplace" onclick="openAdd('${schedMapDay}','schedule')">＋ เพิ่มสถานที่ของวันนี้</button>`:''}<div id="leafWrap"><div id="leafMap" class="leafmap"></div></div><div id="leafNote" class="mini muted" style="margin:6px 2px"></div>${list}`;
   const withLL=pts.filter(p=>p.ll);
   if(!withLL.length){$('leafWrap').classList.add('hide');$('leafNote').textContent=pts.length?'ยังไม่มีพิกัดของวันนี้ · วางลิงก์ Google Maps แบบเต็ม หรือใส่พิกัดในฟอร์มของรายการ เพื่อปักหมุดบนแผนที่':'';return}
   try{

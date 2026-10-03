@@ -643,3 +643,6 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .dayname{font-weight:700;font-size:12.5px}.monbarwrap{height:10px;border-radius:5px;background:#e6ecf5;overflow:hidden}.monbar{display:block;height:10px;background:var(--brand)}
 .dayn{grid-column:2}
 .monrow{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid var(--line)}.monname{font-weight:700;overflow-wrap:anywhere}
+
+/* V2.0.1 · แท็บแผนที่: เพิ่ม/แก้ไขสถานที่ */
+.addplace{width:100%;min-height:44px;margin:0 0 10px}

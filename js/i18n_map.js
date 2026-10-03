@@ -525,4 +525,5 @@ const TH_EN = {"· คุณ":"· you","บทบาทของคุณ:":"You
 "รหัสติดตาม:":"Tracking ID:",
 "เพิ่มแบนเนอร์":"Add banner",
 "สำรวจ":"Explore",
+"＋ เพิ่มสถานที่ของวันนี้":"＋ Add a place for this day",
 };

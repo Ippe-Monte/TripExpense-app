@@ -3,6 +3,12 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.1 — Map tab: add and edit places
+- The Schedule **map tab** now has **"＋ เพิ่มสถานที่ของวันนี้"** (opens the add form with the selected day already filled in) and an **แก้ไข** button on every stop (opens the edit form with place name, link and coordinates filled in).
+- After saving, the map refreshes by itself and stays on the same day and tab; a new or moved pin appears at once.
+- Permissions follow the list: an ordinary member edits only stops they created, a trip admin edits all, and nobody can add or edit when the trip is closed (opening in Maps and check-in still work).
+- English text added. No SQL change.
+
 ## 2.0.0 — Phase 2A (first version in the new numbering; follows V19.0)
 **New**
 - Centre button of the bottom bar is now **สำรวจ (Explore)** with 8 tabs (stays, tickets, cars/transfers, deals, insurance, eSIM, tours, reviews). Tabs that are not built yet say "เร็วๆ นี้". `FEATURES.exploreHub=false` in `js/explore.js` brings the old ＋ quick menu back.
