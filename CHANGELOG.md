@@ -3,6 +3,12 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.0.7 — The link reader now says why it failed
+**No SQL change, and the Edge Function is unchanged.**
+- **No more silent failures.** In 2.0.6, when the call to `resolve-map-link` was refused (401), crashed (500) or could not be reached (network, CORS, wrong function name), the form only said "this link has no coordinates", with no reason and no button. Now the preview (and the amber pin bar) shows a line "ผลตรวจ: …" — for example "the function refused the call (401) — usually authentication (Verify JWT)", "the server function failed (500)", "the function could not be reached (network, CORS or a wrong function name)", "the function took longer than 10 seconds", or, when the function answered but Google gave no coordinates, "Google did not send coordinates for this link (no_coordinates)".
+- **The copy button always appears on a failure** and the copied details now include the HTTP status, the error name and the server's own message (for example `Invalid JWT`), as well as the steps Google took when the function did answer.
+- The English text of the "this link has no coordinates · it can open navigation…" note was missing for the current wording; added.
+
 ## 2.0.6 — Plus codes, and a stricter short-link reader
 **Redeploy the Edge Function** (`edge-functions/resolve-map-link/index.ts`, replace the old code and Deploy). No SQL change.
 - **Plus code support.** The coordinates box is now "พิกัด หรือ Plus code": paste what Google Maps shows for a place. A full code (8FVC9G8F+6W) is read at once. A short code with a city (QG83+VC กรุงเทพ) looks the city up and recovers the exact place; with no city the trip's destination, then another place of the trip, is the reference; if nothing can be used, or the typed city is not found, it says so instead of guessing. Decoding is done inside the app (Open Location Code), no server needed.

@@ -20,7 +20,12 @@ async function resolveMapLink(url){
   try{
     const call=sb.functions.invoke('resolve-map-link',{body:{url:u}});
     const {data,error}=await Promise.race([call,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),10000))]);
-    if(error){if((error.context&&error.context.status===404)||/not found/i.test(error.message||''))_resOff=true;return null}   // 404 = ยังไม่ได้ติดตั้งฟังก์ชัน → ไม่ถามซ้ำในรอบนี้
+    if(error){                                                  // เรียกฟังก์ชันไม่สำเร็จ (401/403/404/5xx หรือเรียกไม่ถึง): บันทึกเหตุผลจริงไว้ให้แสดง ไม่ปล่อยเงียบ
+      const st=error.context&&error.context.status||null;let body='';
+      try{if(error.context&&typeof error.context.text==='function')body=String(await error.context.text()).slice(0,300)}catch(e){}
+      _resLast={url:u,ok:false,error:'invoke_error',status:st,name:error.name||'',message:String(error.message||'').slice(0,200),body};
+      if(st===404||/not found/i.test(error.message||''))_resOff=true;   // 404 = ยังไม่ได้ติดตั้งฟังก์ชัน → ไม่ถามซ้ำในรอบนี้
+      return null}
     const r=data&&data.ok&&_validLat(+data.lat)&&_validLng(+data.lng)?{lat:+data.lat,lng:+data.lng}:null;
     _resLast={url:u,ok:!!r,error:data&&data.error||null,source:data&&data.source||null,trace:data&&data.trace||null};
     _resCache.set(u,r);return r}catch(e){_resLast={url:u,ok:false,error:String(e&&e.message||e)};return null}}
@@ -41,6 +46,18 @@ async function locResolveNow(p,url){
   const now=normalizeMapUrl(($(p+'l')?.value||'').trim());if(now!==url)return;                     // ผู้ใช้เปลี่ยนลิงก์ไประหว่างรอ
   const c=$(p+'c');if(r&&c&&c.dataset.touched!=='1'){c.value=r.lat+', '+r.lng;c.dataset.auto='1'}   // ลิงก์ใหม่ชนะพิกัดเก่า (ยกเว้นที่ผู้ใช้พิมพ์เอง)
   locPrev(p,true)}
+// เหตุผลที่อ่านลิงก์ไม่ได้ (จากผลเรียกฟังก์ชันล่าสุด) — แสดงให้ผู้ใช้เห็นแทนการปล่อยเงียบ
+function _whyText(){
+  const r=_resLast;if(!r||r.ok)return '';const st=r.status,e=r.error;
+  if(e==='invoke_error'){
+    if(st===401)return 'ฟังก์ชันปฏิเสธการเรียก ('+st+') — มักเกี่ยวกับการยืนยันตัวตน (Verify JWT)';
+    if(st===403)return 'ฟังก์ชันไม่อนุญาตการเรียก ('+st+')';
+    if(st===404)return '';                                  // มีข้อความ "ยังไม่ได้ติดตั้ง…" แยกอยู่แล้ว
+    if(st>=500)return 'ฟังก์ชันบนเซิร์ฟเวอร์ผิดพลาด ('+st+')';
+    if(!st)return 'เรียกฟังก์ชันไม่ถึง (เครือข่าย, CORS หรือชื่อฟังก์ชันผิด)';
+    return 'ฟังก์ชันตอบผิดปกติ ('+st+')'}
+  if(e==='timeout')return 'ฟังก์ชันตอบช้าเกิน 10 วินาที';
+  return {no_coordinates:'Google ไม่ส่งพิกัดมาในลิงก์นี้ (no_coordinates)',blocked_redirect:'ลิงก์พาไปนอกโดเมน Google จึงไม่ตามต่อ',fetch_failed:'เซิร์ฟเวอร์เปิดลิงก์ไม่สำเร็จ',bad_url:'ลิงก์นี้ไม่ใช่ลิงก์ Google Maps ที่รองรับ',too_many_redirects:'ลิงก์เปลี่ยนทางมากเกินไป'}[e]||'เรียกฟังก์ชันไม่สำเร็จ'}
 function copyResolveInfo(){
   const t=JSON.stringify({version:typeof APP_VERSION!=='undefined'?APP_VERSION:'',..._resLast},null,1),done=()=>toast('คัดลอกแล้ว ส่งให้ผู้พัฒนาได้');
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>prompt('คัดลอกข้อความนี้',t));else prompt('คัดลอกข้อความนี้',t)}
@@ -77,8 +94,8 @@ function locPrevHtml(url,coords){
   if(c&&!parseLatLng(c))return '<span class="locbad">พิกัดไม่ถูกต้อง ตัวอย่าง 13.9126, 100.6070 หรือ Plus code เช่น WCFG+MP กรุงเทพ</span>';
   const ll=(c&&parseLatLng(c))||(u&&parseLatLng(normalizeMapUrl(u)));
   if(ll)return _locOkHtml(ll);
-  const nu=normalizeMapUrl(u),diag=_resLast&&!_resLast.ok&&nu&&_resLast.url===nu?' <button type="button" class="locbtn" onclick="copyResolveInfo()">คัดลอกรายละเอียดการตรวจลิงก์</button>':'';
-  return '<span class="locnote">ลิงก์นี้ไม่มีพิกัด · เปิดนำทางได้ แต่ปักหมุดบนแผนที่ในแอปไม่ได้ ใส่พิกัดหรือ Plus code ในช่องด้านบนถ้าต้องการ'+(_resOff?' · ยังไม่ได้ติดตั้งตัวอ่านลิงก์สั้นบนเซิร์ฟเวอร์':'')+'</span>'+diag}
+  const nu=normalizeMapUrl(u),failed=_resLast&&!_resLast.ok&&nu&&_resLast.url===nu,why=failed?_whyText():'',diag=failed?' <button type="button" class="locbtn" onclick="copyResolveInfo()">คัดลอกรายละเอียดการตรวจลิงก์</button>':'';
+  return '<span class="locnote">ลิงก์นี้ไม่มีพิกัด · เปิดนำทางได้ แต่ปักหมุดบนแผนที่ในแอปไม่ได้ ใส่พิกัดหรือ Plus code ในช่องด้านบนถ้าต้องการ'+(_resOff?' · ยังไม่ได้ติดตั้งตัวอ่านลิงก์สั้นบนเซิร์ฟเวอร์':'')+(why?' · ผลตรวจ: '+esc(why):'')+'</span>'+diag}
 function _coordText(s){return s&&s.location_lat!=null&&s.location_lng!=null?s.location_lat+', '+s.location_lng:''}
 // ฟอร์ม Schedule จัดเป็น 3 ส่วนตามลำดับ: ชื่อสถานที่+พิกัด → หมวดหมู่ → ลิงก์ตำแหน่ง (prefix 's' = ฟอร์มเพิ่ม, 'es' = ฟอร์มแก้ไข)
 function locNameCoordHtml(p,s){
@@ -133,7 +150,8 @@ function setSchedMapDay(d){schedMapDay=d;_pin=null;renderScheduleMap()}
 function _pinMsg(){
   if(!_pin)return '';if(_pin.busy)return _pin.busy;if(_pin.err)return _pin.err;
   const km=_pin.diff?_km(_pin.diff):'';
-  return {saved:'ตำแหน่งที่บันทึกไว้ · แตะบนแผนที่เพื่อย้ายหมุด',link:'ตำแหน่งจากลิงก์ Google Maps · แตะบนแผนที่เพื่อย้ายหมุด',linkdiff:'ตำแหน่งจากลิงก์ Google Maps (ต่างจากพิกัดเดิม '+km+' กม.) · แตะบนแผนที่เพื่อย้ายหมุด',name:'ลิงก์สั้นอ่านพิกัดไม่ได้ จึงค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน) · แตะบนแผนที่เพื่อแก้ตำแหน่ง',here:'ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด',plus:'ตำแหน่งจาก Plus code · แตะบนแผนที่เพื่อย้ายหมุด',nohit:'ไม่พบสถานที่จากลิงก์ · แผนที่อยู่ที่ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่ที่สถานที่จริงเพื่อวางหมุด'}[_pin.src]||'แตะบนแผนที่เพื่อวางหมุด'}
+  const base=({saved:'ตำแหน่งที่บันทึกไว้ · แตะบนแผนที่เพื่อย้ายหมุด',link:'ตำแหน่งจากลิงก์ Google Maps · แตะบนแผนที่เพื่อย้ายหมุด',linkdiff:'ตำแหน่งจากลิงก์ Google Maps (ต่างจากพิกัดเดิม '+km+' กม.) · แตะบนแผนที่เพื่อย้ายหมุด',name:'ลิงก์สั้นอ่านพิกัดไม่ได้ จึงค้นหาจากชื่อสถานที่ (อาจคลาดเคลื่อน) · แตะบนแผนที่เพื่อแก้ตำแหน่ง',here:'ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่เพื่อย้ายหมุด',plus:'ตำแหน่งจาก Plus code · แตะบนแผนที่เพื่อย้ายหมุด',nohit:'ไม่พบสถานที่จากลิงก์ · แผนที่อยู่ที่ตำแหน่งปัจจุบันของคุณ · แตะบนแผนที่ที่สถานที่จริงเพื่อวางหมุด'})[_pin.src]||'แตะบนแผนที่เพื่อวางหมุด';
+  const w=(_pin.src==='name'||_pin.src==='nohit')?_whyText():'';return w?base+' · ผลตรวจ: '+w:base}
 function renderPinBar(){
   const b=$('pinBarBox');if(!b)return;if(!_pin){b.innerHTML='';return}
   const warn=_pin.src==='nohit'||_pin.err,open=_pin.pcOpen||warn;                 // ช่อง Plus code พับเก็บในสถานะปกติ (ให้แผนที่ใหญ่) และกางเองเมื่อหาสถานที่ไม่เจอ
