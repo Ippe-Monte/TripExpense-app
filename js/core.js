@@ -14,7 +14,7 @@ const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],
 // ข้อความที่ผู้ใช้พิมพ์เอง (ชื่อ Group/Trip, หมายเหตุ, รายละเอียดค่าใช้จ่าย ฯลฯ) จะไม่ถูกแปล
 // เก็บภาษาที่เลือกไว้ในเครื่องนี้ (localStorage) ต่อผู้ใช้ 1 คน
 // =====================================================================
-const APP_VERSION='2.1.3';
+const APP_VERSION='2.1.4';
 let LANG=(function(){try{return localStorage.getItem('te_lang')||'th'}catch(_){return 'th'}})();
 const I18N={
  th:{ t_portfolio:'แผนที่การเที่ยวของฉัน',s_portfolio:'เหรียญพิชิตและหมุดที่เคยไป',t_offers:'ข้อเสนอจากระบบ',s_offers:'ข้อเสนอท่องเที่ยวที่เคยแสดง',t_explore:'สำรวจ',s_explore:'ที่พัก ตั๋ว การเดินทาง ดีล และอื่นๆ',t_admin:'Developer',s_admin:'สถิติรวมและตั้งค่าโฆษณา แคมเปญ พันธมิตร',nav_explore:'สำรวจ', nav_home:'หน้าหลัก',nav_summary:'สรุป',nav_chat:'แชต',nav_schedule:'Schedule',nav_trips:'จัดการทริป',nav_documents:'เอกสาร',nav_budget:'งบประมาณ',nav_reports:'รายงาน',nav_groups:'กลุ่ม',nav_friends:'เพื่อน',nav_profile:'โปรไฟล์',nav_developer:'Developer',

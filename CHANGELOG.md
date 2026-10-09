@@ -3,6 +3,13 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.1.4 — Settlement: no more negative satang after paying in full
+**No SQL change, no Supabase change, stored data untouched.** Only the on-screen calculation changed.
+- **Cause.** Each person's share of an expense is saved rounded to 2 decimals (for example 12,394 / 3 = 4,131.3333 is saved as 4,131.34), so the shares can add up to a few satang more or less than the expense (here 12,394.02 against 12,394.00). Real transfers are entered in whole satang too. The few satang left over were shown as "-฿0.02 owes more" even though nobody had to pay anything.
+- **Fix 1.** If an expense's shares differ from its amount only by rounding drift (at most 1 satang per participant), they are scaled to add up to the exact amount. Shares that really differ (custom splits) are never touched.
+- **Fix 2.** A balance of less than 5 satang is treated as settled: no transfer is proposed and the person shows "settled / ฿0.00" instead of "-฿0.00" or "-฿0.02". Anything from 5 satang up (for example a 10 satang shortfall) is still reported.
+- Tests: `tests/test_settlement_rounding.js` (8 checks, including the exact case reported) and the existing money tests.
+
 ## 2.1.3 — Partial payments: enter the amount, see what is left
 **No SQL change, no Supabase change. The settlement calculation (`calculateSettlement`) is untouched; this only changes the payment form and the transfer rows.**
 - "Record a payment" form: shows the amount due and what was already paid earlier for that pair, lets you type any amount (or tap Full / Half), and shows the remaining balance live ("Remaining after this payment: ฿X - to pay next time"). A message appears when the amount is more than the amount due, and saving asks for confirmation.
