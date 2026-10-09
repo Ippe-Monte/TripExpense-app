@@ -139,7 +139,7 @@ function openPartnerEdit(id){
    <div class="field"><label>ชื่อพันธมิตร</label><input id="pName" value="${esc(p.name||'')}" maxlength="80"></div>
    <div class="field"><label>ประเภท</label>${_chips('pCat',PARTNER_CAT,p.category)}</div>
    <div class="field"><label>รูปแบบลิงก์</label><input id="pLink" value="${esc(p.link_template||'')}" placeholder="https://…?aid=[รหัส]&dest={ปลายทาง}" inputmode="url" autocomplete="off"></div>
-   <div class="field"><label>รหัสติดตามของคุณ (Affiliate ID)</label><input id="pAid" value="${esc(p.affiliate_id||'')}" maxlength="120" autocomplete="off"></div>
+   <div class="field"><label>รหัสติดตามของคุณ (Tracking ID)</label><input id="pAid" value="${esc(p.affiliate_id||'')}" maxlength="120" autocomplete="off"></div>
    <div class="grid2 keep2"><div class="field"><label>ลำดับ</label><input id="pSort" type="number" value="${p.sort||0}"></div><div class="field"><label>สถานะ</label>${_swHtml('pOn',p.enabled!==false,'')}</div></div>
    <div class="mini muted" style="margin-bottom:10px">ใช้ได้กับพันธมิตรที่ส่งต่อด้วยลิงก์ ส่วนพันธมิตรที่ต้องดึงราคาผ่าน API ต้องให้นักพัฒนาเชื่อมต่อให้ครั้งเดียว</div>
    <button type="button" class="btn" onclick="savePartner('${id||''}')">${id?'บันทึก':'เพิ่มพันธมิตร'}</button>`,'sheet')}

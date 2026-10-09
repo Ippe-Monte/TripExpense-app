@@ -1,14 +1,14 @@
 {
-  "name": "TripExpense",
-  "short_name": "TripExpense",
-  "description": "จัดการทริป ตารางเดินทาง และค่าใช้จ่ายกับเพื่อน",
+  "name": "FriendTrip Go",
+  "short_name": "FriendTrip Go",
+  "description": "Your AI Travel Companion",
   "lang": "th",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1a8cff",
-  "theme_color": "#1a8cff",
+  "background_color": "#168CF5",
+  "theme_color": "#168CF5",
   "icons": [
     {
       "src": "icons/icon-192.png",

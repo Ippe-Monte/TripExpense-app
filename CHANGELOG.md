@@ -1,7 +1,28 @@
-# Changelog — TripExpense
+# Changelog — FriendTrip Go by Monte (internal name: TripExpense)
 
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
+
+## 2.1.2 — Cache name and contact email
+**No SQL change, no Supabase change.**
+- Service-worker cache is now named `friendtrip-go-<version>` (was `tripexpense-<version>`). Old `tripexpense-*` caches are deleted automatically on activation; user data (localStorage/session) is not affected.
+- Contact e-mail on `landing.html` is `monte.ai789@gmail.com`.
+- From now on release files are named `FriendTrip Go V<version>.zip` and `FriendTrip Go UPGRADE V<version>.md`.
+
+## 2.1.1 — Real FriendTrip Go logo and landing page
+**No SQL change, no Supabase change.**
+- Logo: vector mark redrawn from the supplied brand sheet and logo file (blue + green swooshes, three friends, sun, plane); app icon, PWA icons, favicon, splash and sidebar logo regenerated. Full horizontal logo saved as `img/friendtrip-go-logo.svg` (used by `landing.html`).
+- `landing.html` now based on the supplied landing page: buttons go to `index.html`; AI Travel Assistant, Booking and Points & Rewards are labelled "coming soon"; Expense & Settlement card added; "How it works" no longer implies AI is live. The supplied file was named `index.html`, which would overwrite the app, so it is published as `landing.html`.
+- "Go" in the wordmark is italic, as in the logo.
+
+## 2.1.0 — Soft Rebrand: FriendTrip Go by Monte
+**No SQL change, no Supabase change, Edge Function unchanged.** Presentation only.
+- New user-facing brand "FriendTrip Go" / "FriendTrip Go by Monte": title, PWA name and short name, splash, login/register, sidebar, About, install help, invite message, report/export names. Thai and English dictionary entries were changed together, so the language switch behaves as before.
+- Brand colours from the spec (blue `#168CF5`); temporary logo and icons (suitcase replaced by pin + plane + two friends) until final artwork is supplied.
+- New public `landing.html` (links to `index.html`). Planned features (AI Travel Assistant, Booking, Points & Rewards) are labelled "coming soon"; nothing is claimed as live.
+- Dashboard: a small "coming soon" strip (no data, no backend).
+- Admin label "Affiliate ID" is now "Tracking ID" (the database column `affiliate_id` is unchanged).
+- **Deliberately unchanged:** Supabase project and keys, all tables/RLS/RPC, `TRIP_EXPENSE_CONFIG`, `te_*` storage keys, `start_url`/`scope`, repository URL, Edge Function name, expense/settlement/allocation logic.
 
 ## 2.0.7 — The link reader now says why it failed
 **No SQL change, and the Edge Function is unchanged.**

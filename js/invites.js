@@ -11,8 +11,8 @@ function joinLink(code){return APP_URL+'?join='+encodeURIComponent(code)}
 function inviteTokenLink(token){return APP_URL+'?invite='+encodeURIComponent(token)}
 function qrSvg(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){console.warn('qr',e);return '<div class="muted mini">สร้าง QR ไม่ได้ (ตรวจสอบอินเทอร์เน็ต)</div>'}}
 async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(msg||'คัดลอกแล้ว')}catch(_){prompt('คัดลอกข้อความนี้',t)}}
-function inviteMessage(name,url,code){return `ชวนเข้าร่วม "${name}" ใน TripExpense\n${url}${code?`\nหรือใส่ Code: ${code}`:''}`}
-async function shareInvite(name,url,code){const text=inviteMessage(name,url,code);if(navigator.share){try{await navigator.share({title:'TripExpense',text});return}catch(e){if(e&&e.name==='AbortError')return}}copyText(text,'คัดลอกข้อความเชิญแล้ว นำไปวางในแชตได้เลย')}
+function inviteMessage(name,url,code){return `ชวนเข้าร่วม "${name}" ใน FriendTrip Go\n${url}${code?`\nหรือใส่ Code: ${code}`:''}`}
+async function shareInvite(name,url,code){const text=inviteMessage(name,url,code);if(navigator.share){try{await navigator.share({title:'FriendTrip Go',text});return}catch(e){if(e&&e.name==='AbortError')return}}copyText(text,'คัดลอกข้อความเชิญแล้ว นำไปวางในแชตได้เลย')}
 function shareLine(name,url,code){window.open('https://line.me/R/share?text='+encodeURIComponent(inviteMessage(name,url,code)),'_blank','noopener')}
 function shareButtons(name,url,code){const n=esc(name).replace(/'/g,'&#39;');return `<div class="row" style="gap:6px"><button class="btn sm secondary" onclick="copyText('${esc(url)}','คัดลอกลิงก์แล้ว')">🔗 คัดลอกลิงก์</button><button class="btn sm secondary" onclick="shareInvite(this.dataset.n,'${esc(url)}','${esc(code||'')}')" data-n="${esc(name)}">📤 แชร์</button><button class="btn sm line" onclick="shareLine(this.dataset.n,'${esc(url)}','${esc(code||'')}')" data-n="${esc(name)}">💬 LINE</button></div>`}
 

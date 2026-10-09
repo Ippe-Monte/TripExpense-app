@@ -1,5 +1,5 @@
 // =====================================================================
-// TripExpense V14 — core.js
+// FriendTrip Go (internal: TripExpense) — core.js
 // Supabase client, state, สิทธิ์, Trip ปัจจุบัน, การโหลดข้อมูล, auth, helpers
 // =====================================================================
 const SUPABASE_URL=window.TRIP_EXPENSE_CONFIG?.SUPABASE_URL||'';
@@ -14,12 +14,12 @@ const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],
 // ข้อความที่ผู้ใช้พิมพ์เอง (ชื่อ Group/Trip, หมายเหตุ, รายละเอียดค่าใช้จ่าย ฯลฯ) จะไม่ถูกแปล
 // เก็บภาษาที่เลือกไว้ในเครื่องนี้ (localStorage) ต่อผู้ใช้ 1 คน
 // =====================================================================
-const APP_VERSION='2.0.7';
+const APP_VERSION='2.1.2';
 let LANG=(function(){try{return localStorage.getItem('te_lang')||'th'}catch(_){return 'th'}})();
 const I18N={
  th:{ t_portfolio:'แผนที่การเที่ยวของฉัน',s_portfolio:'เหรียญพิชิตและหมุดที่เคยไป',t_offers:'ข้อเสนอจากระบบ',s_offers:'ข้อเสนอท่องเที่ยวที่เคยแสดง',t_explore:'สำรวจ',s_explore:'ที่พัก ตั๋ว การเดินทาง ดีล และอื่นๆ',t_admin:'Developer',s_admin:'สถิติรวมและตั้งค่าโฆษณา แคมเปญ พันธมิตร',nav_explore:'สำรวจ', nav_home:'หน้าหลัก',nav_summary:'สรุป',nav_chat:'แชต',nav_schedule:'Schedule',nav_trips:'จัดการทริป',nav_documents:'เอกสาร',nav_budget:'งบประมาณ',nav_reports:'รายงาน',nav_groups:'กลุ่ม',nav_friends:'เพื่อน',nav_profile:'โปรไฟล์',nav_developer:'Developer',
    t_dashboard:'หน้าหลัก',s_dashboard:'ภาพรวมของ Trip ปัจจุบัน',t_summary:'สรุปค่าใช้จ่าย',s_summary:'ภาพรวม · รายวัน · หมวดหมู่ · รายการ',t_groups:'กลุ่มของฉัน',s_groups:'Groups',t_trips:'จัดการทริป',s_trips:'Trip ของฉันและ Trip ใน Group',t_schedule:'Schedule',s_schedule:'ตารางเดินทาง',t_documents:'เอกสาร',s_documents:'เอกสารการเดินทาง',t_budget:'งบประมาณ',s_budget:'Budget',t_reports:'รายงานสรุป',s_reports:'Reports & Export',t_settings:'ข้อมูลส่วนตัว',s_settings:'ข้อมูลติดต่อและความปลอดภัย',t_developer:'Developer Console',s_developer:'ภาพรวมทั้งระบบ (ดูได้อย่างเดียว)',t_chat:'แชต',s_chat:'คุยกับสมาชิก Trip และ Group',t_friends:'เพื่อน',s_friends:'Friend Code และรายชื่อเพื่อน',t_profile:'โปรไฟล์',s_profile:'บัญชีของฉัน',t_history:'ประวัติการเดินทาง',s_history:'ทริปที่จบแล้วทั้งหมดของคุณ',
-   auth_lead:'บันทึกค่าใช้จ่ายทริปของคุณ ให้ทุกการเดินทาง..คุ้มค่ากว่าเดิม',auth_start:'เริ่มใช้งาน',auth_login:'เข้าสู่ระบบ',auth_back:'‹ กลับ',auth_email:'อีเมล',auth_pass:'รหัสผ่าน',auth_pass8:'รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)',auth_forgot:'ลืมรหัสผ่าน?',auth_signup:'สมัครสมาชิก',auth_name:'ชื่อ',auth_create:'สร้างบัญชี',auth_havelogin:'มีบัญชีแล้ว?',auth_signin_h:'เข้าสู่ระบบ',auth_signup_h:'สร้างบัญชีใหม่',
+   auth_lead:'เพราะทุกการเดินทาง...จะพิเศษกว่าเดิม เมื่อมีเพื่อนร่วมทาง',auth_start:'เริ่มใช้งาน',auth_login:'เข้าสู่ระบบ',auth_back:'‹ กลับ',auth_email:'อีเมล',auth_pass:'รหัสผ่าน',auth_pass8:'รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)',auth_forgot:'ลืมรหัสผ่าน?',auth_signup:'สมัครสมาชิก',auth_name:'ชื่อ',auth_create:'สร้างบัญชี',auth_havelogin:'มีบัญชีแล้ว?',auth_signin_h:'เข้าสู่ระบบ',auth_signup_h:'สร้างบัญชีใหม่',
    feat_track1:'บันทึกรายจ่าย',feat_track2:'ง่ายๆ',feat_sum1:'สรุปค่าใช้จ่าย',feat_sum2:'อัตโนมัติ',feat_share1:'แชร์ทริป',feat_share2:'กับเพื่อนได้',feat_go1:'เดินทาง',feat_go2:'ได้สบายใจ',
    lang_label:'ภาษา',lang_th:'ไทย',lang_en:'English',
    pol_open:'เปิด',pol_password:'รหัสผ่าน',pol_invite:'เชิญเท่านั้น',
@@ -29,7 +29,7 @@ const I18N={
  },
  en:{ t_portfolio:'My travel map',s_portfolio:'Medals and pins from your trips',t_offers:'Offers',s_offers:'Travel offers shown to you',t_explore:'Explore',s_explore:'Stays, tickets, transport, deals and more',t_admin:'Developer',s_admin:'Overview and settings for ads, campaigns and partners',nav_explore:'Explore', nav_home:'Home',nav_summary:'Summary',nav_chat:'Chat',nav_schedule:'Schedule',nav_trips:'My Trips',nav_documents:'Documents',nav_budget:'Budget',nav_reports:'Reports',nav_groups:'Groups',nav_friends:'Friends',nav_profile:'Profile',nav_developer:'Developer',
    t_dashboard:'Home',s_dashboard:"Overview of your current trip",t_summary:'Summary',s_summary:'Overview · Daily · Category · List',t_groups:'My Groups',s_groups:'Groups',t_trips:'My Trips',s_trips:'Your trips and trips in your groups',t_schedule:'Schedule',s_schedule:'Travel itinerary',t_documents:'Documents',s_documents:'Travel documents',t_budget:'Budget',s_budget:'Budget',t_reports:'Reports',s_reports:'Reports & Export',t_settings:'Profile Settings',s_settings:'Contact info & security',t_developer:'Developer Console',s_developer:'System overview (read-only)',t_chat:'Chat',s_chat:'Talk with trip and group members',t_friends:'Friends',s_friends:'Friend code and friend list',t_profile:'Profile',s_profile:'My account',t_history:'Travel History',s_history:'All your completed trips',
-   auth_lead:'Track your trip expenses so every journey is worth more.',auth_start:'Get Started',auth_login:'Log In',auth_back:'‹ Back',auth_email:'Email',auth_pass:'Password',auth_pass8:'Password (at least 8 characters)',auth_forgot:'Forgot password?',auth_signup:'Sign up',auth_name:'Name',auth_create:'Create account',auth_havelogin:'Already have an account?',auth_signin_h:'Log In',auth_signup_h:'Create a new account',
+   auth_lead:'Every journey is more special when you travel with friends.',auth_start:'Get Started',auth_login:'Log In',auth_back:'‹ Back',auth_email:'Email',auth_pass:'Password',auth_pass8:'Password (at least 8 characters)',auth_forgot:'Forgot password?',auth_signup:'Sign up',auth_name:'Name',auth_create:'Create account',auth_havelogin:'Already have an account?',auth_signin_h:'Log In',auth_signup_h:'Create a new account',
    feat_track1:'Track expenses',feat_track2:'easily',feat_sum1:'Expense',feat_sum2:'summary',feat_share1:'Share trips',feat_share2:'with friends',feat_go1:'Travel',feat_go2:'worry-free',
    lang_label:'Language',lang_th:'ไทย',lang_en:'English',
    pol_open:'Open',pol_password:'Password',pol_invite:'Invite only',
