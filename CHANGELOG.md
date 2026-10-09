@@ -3,6 +3,12 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.1.3 — Partial payments: enter the amount, see what is left
+**No SQL change, no Supabase change. The settlement calculation (`calculateSettlement`) is untouched; this only changes the payment form and the transfer rows.**
+- "Record a payment" form: shows the amount due and what was already paid earlier for that pair, lets you type any amount (or tap Full / Half), and shows the remaining balance live ("Remaining after this payment: ฿X - to pay next time"). A message appears when the amount is more than the amount due, and saving asks for confirmation.
+- Transfer rows show "Paid so far ฿P · remaining ฿R" once a partial payment has been recorded.
+- The remaining balance itself was already recomputed from the recorded payments; the form now makes it visible.
+
 ## 2.1.2 — Cache name and contact email
 **No SQL change, no Supabase change.**
 - Service-worker cache is now named `friendtrip-go-<version>` (was `tripexpense-<version>`). Old `tripexpense-*` caches are deleted automatically on activation; user data (localStorage/session) is not affected.
