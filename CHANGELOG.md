@@ -3,6 +3,13 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.1.5 — Landing page shown first to new visitors
+**No SQL change, no Supabase change, no auth change, stored data untouched.**
+- **Finding.** `landing.html` was already published, but nothing linked to it and the site root serves the app (`index.html`), so visitors never saw it.
+- **Fix.** A tiny script at the top of `index.html` sends a *brand-new* visitor on the bare address to `landing.html`. It does nothing when the URL has a query or hash (invite `?join=`, email-confirm and password-reset links), when running as an installed PWA, when a Supabase session or `te_lang` / `te_pending_join` exists, when the visitor already pressed a landing button (`ftg_entered`), or when storage is blocked.
+- Landing buttons now open `index.html?from=landing` (the existing welcome / login / register screens; no duplicate auth) and remember `ftg_entered`.
+- URLs, `start_url`, `scope`, storage keys are unchanged, so nobody is logged out.
+
 ## 2.1.4 — Settlement: no more negative satang after paying in full
 **No SQL change, no Supabase change, stored data untouched.** Only the on-screen calculation changed.
 - **Cause.** Each person's share of an expense is saved rounded to 2 decimals (for example 12,394 / 3 = 4,131.3333 is saved as 4,131.34), so the shares can add up to a few satang more or less than the expense (here 12,394.02 against 12,394.00). Real transfers are entered in whole satang too. The few satang left over were shown as "-฿0.02 owes more" even though nobody had to pay anything.
