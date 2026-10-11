@@ -3,6 +3,12 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.2 — AI Assistant: choose the date, keep the suggestions, fallback for map pins
+**Front-end only. No SQL / Supabase / auth change. The deployed Edge Functions are untouched.**
+- "Confirm adding to Schedule": every item now has a date picker (limited to the trip's dates). The default follows the plan's day; items whose plan day falls outside the trip start blank and must be given a date before confirming. Items beyond the trip length can now be selected (previously blocked).
+- Suggestions are no longer removed after adding: items stay in the chat marked "Added to the Schedule (date)", unticked, and can be ticked again to add on another date (identical date+time+name entries are still skipped by the server). Recommendation cards and the draft plan are kept in this browser (per user, local only) across reloads until "Clear chat".
+- Map pin: besides links, you can paste coordinates ("13.7563, 100.5018") or a full Google Maps link that contains coordinates — these are read in the browser without calling the server. When a short link cannot be read, the reason code is shown with the manual-coordinates steps.
+
 ## 2.2.1 — AI Assistant: paste a Google Maps link to pin each place
 **Front-end only. No SQL / Supabase / auth change. The deployed Edge Function is untouched.**
 - In "Confirm adding to Schedule", every item without coordinates now has an "Open in Google Maps" button and a "Paste Google Maps link" box, with the 5 steps always shown (open map → pick the place → Share → Copy link → paste here).

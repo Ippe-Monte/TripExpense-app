@@ -792,3 +792,9 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .ai-steps{background:#eef6ff;border:1px solid #cfe2f7;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px}.ai-steps ol{margin:6px 0 6px 20px;padding:0}.ai-steps li{margin:3px 0}
 .ai-revbody{max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}.ai-pinlist{list-style:none;margin:8px 0;padding:0}.ai-pinrow{padding:9px 0;border-top:1px solid #edf1f7}.ai-pinrow:first-child{border-top:0}
 .ai-pinact{margin:6px 0 4px}.ai-pin{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-size:16px}
+/* V2.2.2 — เลือกวันที่ต่อรายการ + วิธีสำรองเมื่ออ่านพิกัดไม่ได้ */
+.ai-pintitle{font-weight:600}
+.ai-datef{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:.86rem}
+.ai-date{flex:1;min-width:0;max-width:200px;padding:6px 8px;border:1px solid var(--line,#d6dae1);border-radius:8px;background:var(--card,#fff);color:inherit;font:inherit}
+.ai-pinrow.bad{outline:2px solid #d9534f;outline-offset:2px;border-radius:8px}
+.ai-fallback{margin-top:6px;padding:8px;border-radius:8px;background:rgba(127,127,127,.1)}

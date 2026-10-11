@@ -37,9 +37,49 @@ async function invoke(body){
   return {ok:false,code:'network',status:st||0,message:A('เชื่อมต่อผู้ช่วย AI ไม่ได้ กรุณาลองใหม่ภายหลัง','Could not reach the AI assistant. Please try again later.'),retryable:true};
 }
 
-// ---------- ประวัติแชต (เฉพาะข้อความ เก็บในเครื่องนี้ ล้างได้) ----------
-function loadHist(){try{const a=JSON.parse(lsGet(HKEY())||'[]');if(Array.isArray(a))S.msgs=a.filter(m=>m&&(m.role==='user'||m.role==='assistant')&&typeof m.text==='string').slice(-20).map(m=>({role:m.role,text:m.text.slice(0,4000)}))}catch(e){S.msgs=[]}}
-function saveHist(){lsSet(HKEY(),JSON.stringify(S.msgs.filter(m=>!m.error).slice(-20).map(m=>({role:m.role,text:m.text}))))}
+// ---------- ประวัติแชต (เก็บในเครื่องนี้ ล้างได้ด้วยปุ่ม "ล้างแชต"): ข้อความ + การ์ดสถานที่ที่แนะนำ + ตารางร่าง ----------
+const str=(v,n)=>typeof v==='string'?v.slice(0,n):'';
+const num=v=>typeof v==='number'&&isFinite(v)?v:null;
+const DRE=/^\d{4}-\d\d-\d\d$/;
+function cleanCard(c){
+  if(!c||typeof c!=='object'||!str(c.name,200).trim())return null;
+  return {name:str(c.name,200),category:CAT_TH[c.category]?c.category:'other',verified:c.verified===true,address:str(c.address,300)||null,lat:num(c.lat),lng:num(c.lng),
+    url:typeof c.url==='string'&&isMapLink(c.url)?c.url.slice(0,1000):null,rating:num(c.rating),ratings_count:num(c.ratings_count),price_level:str(c.price_level,20)||null,
+    hours:Array.isArray(c.hours)?c.hours.slice(0,8).map(x=>str(x,120)).filter(Boolean):[],why:str(c.why,600)}}
+function cleanItin(it){
+  if(!it||typeof it!=='object'||!Array.isArray(it.days))return null;
+  const used=new Set();let mx=0;
+  const days=it.days.slice(0,14).map(d=>({day:Math.max(1,Math.min(60,Math.round(Number(d&&d.day))||1)),items:(Array.isArray(d&&d.items)?d.items:[]).slice(0,30).map(x=>{
+    if(!x||!str(x.name,160).trim())return null;let id=Math.round(Number(x.id));if(!(id>0)||used.has(id))id=++mx+1000000;used.add(id);mx=Math.max(mx,id);
+    return {id,selected:x.selected!==false,name:str(x.name,160),place_name:str(x.place_name,160)||null,category:CAT_TH[x.category]?x.category:'other',verified:x.verified===true,address:str(x.address,300)||null,
+      lat:num(x.lat),lng:num(x.lng),url:typeof x.url==='string'&&isMapLink(x.url)?x.url.slice(0,1000):null,start_time:/^\d\d:\d\d$/.test(x.start_time||'')?x.start_time:null,
+      duration_min:num(x.duration_min),est_cost_thb:num(x.est_cost_thb),note:str(x.note,500),hop:num(x.hop),
+      ...(x.date===null?{date:null}:DRE.test(x.date||'')?{date:x.date}:{}),added:DRE.test(x.added||'')?x.added:null}}).filter(Boolean)})).filter(d=>d.items.length);
+  if(!days.length)return null;S.nid=Math.max(S.nid,mx+1);
+  return {title:str(it.title,200)||A('ตารางที่เสนอ','Proposed plan'),destination:str(it.destination,120)||null,end_by:/^\d\d:\d\d$/.test(it.end_by||'')?it.end_by:null,saved:false,days}}
+function loadHist(){
+  S.msgs=[];S.itin=null;
+  try{
+    const raw=JSON.parse(lsGet(HKEY())||'null');const o=Array.isArray(raw)?{msgs:raw}:(raw&&typeof raw==='object'?raw:{});
+    S.msgs=(Array.isArray(o.msgs)?o.msgs:[]).filter(m=>m&&(m.role==='user'||m.role==='assistant')&&typeof m.text==='string').slice(-20).map(m=>{
+      const r={role:m.role,text:m.text.slice(0,4000)};if(m.role!=='assistant')return r;
+      if(Array.isArray(m.questions))r.questions=m.questions.slice(0,5).map(q=>str(q,200)).filter(Boolean);
+      if(Array.isArray(m.cards))r.cards=m.cards.slice(0,12).map(cleanCard).filter(Boolean);
+      if(m.itin&&typeof m.itin==='object')r.itin={title:str(m.itin.title,200)};return r});
+    S.itin=cleanItin(o.itin);
+    if(S.itin){const lb=[...S.msgs].reverse().find(m=>m.role==='assistant');if(lb&&!lb.itin)lb.itin={title:S.itin.title}}
+    if(typeof o.dest==='string')S.dest=o.dest.slice(0,120);
+    if(!S.tripId&&typeof o.tripId==='string'&&typeof tripById==='function'){const t=tripById(o.tripId);if(t&&t.status!=='closed')S.tripId=t.id}
+  }catch(e){S.msgs=[];S.itin=null}
+}
+function saveHist(){
+  const msgs=S.msgs.filter(m=>!m.error).slice(-20);
+  if(!msgs.length&&!S.itin){lsDel(HKEY());return}
+  const pack=(keepCards)=>JSON.stringify({v:2,tripId:S.tripId||'',dest:S.dest||'',itin:S.itin,
+    msgs:msgs.map((m,i)=>{const o={role:m.role,text:m.text};if(m.role==='assistant'){if(m.questions&&m.questions.length)o.questions=m.questions;if(m.cards&&m.cards.length&&(keepCards||i>=msgs.length-4))o.cards=m.cards;if(m.itin)o.itin=m.itin}return o})});
+  let j=pack(true);if(j.length>400000)j=pack(false);
+  if(!lsSet(HKEY(),j))lsSet(HKEY(),pack(false));
+}
 function historyForServer(exceptLastUser){const a=S.msgs.filter(m=>!m.error&&m.text);if(exceptLastUser&&a.length&&a[a.length-1].role==='user')a.pop();return a.slice(-8).map(m=>({role:m.role,text:m.text.slice(0,1500)}))}
 
 // ---------- วาดหน้า ----------
@@ -83,6 +123,7 @@ function render(){
     </div>
   </div>`;
   const log=$a('aiLog');if(log&&wasBottom)log.scrollTop=log.scrollHeight;
+  saveHist();
   if(ta&&!S.busy&&ready&&document.body.dataset.page==='assistant'&&draft){const n=$a('aiInput');if(n){n.focus({preventScroll:true});n.setSelectionRange(draft.length,draft.length)}}
 }
 function logHtml(){
@@ -124,34 +165,35 @@ function itinFromServer(it){
 }
 function tripInfo(){const t=S.tripId?tripById(S.tripId):null;return t}
 function dayDate(day){const t=tripInfo();return t&&t.start_date?addDays(t.start_date,day-1):null}
-function dayInRange(day){const t=tripInfo();if(!t||!t.start_date)return true;const d=dayDate(day);return d<=tripEnd(t)}
+function effDate(d,s){return s.date!==undefined?s.date:dayDate(d.day)}          // s.date: วันที่ที่ผู้ใช้เลือกเอง (null = ยังไม่ได้เลือก) ไม่งั้นใช้ตามลำดับวันของแผน
+function inTrip(ds){const t=tripInfo();if(!ds||!DRE.test(ds))return false;if(!t||!t.start_date)return true;return ds>=t.start_date&&ds<=tripEnd(t)}
 function localConflicts(){
   const t=tripInfo();if(!t||!S.itin)return [];const out=[];
   const ex=(cache.schedules||[]).filter(s=>s.trip_id===t.id&&s.schedule_time);
-  for(const d of S.itin.days){const ds=dayDate(d.day);if(!ds)continue;
-    for(const it of d.items){if(!it.selected||!it.start_time)continue;
+  for(const d of S.itin.days){
+    for(const it of d.items){if(!it.selected||!it.start_time)continue;const ds=effDate(d,it);if(!ds)continue;
       for(const e of ex){if(e.schedule_date!==ds)continue;if(Math.abs(tmin(e.schedule_time.slice(0,5))-tmin(it.start_time))<30)out.push(A(`${fmtDate(ds)} ${it.start_time}: "${it.name}" ใกล้กับรายการเดิม "${e.activity}" (${e.schedule_time.slice(0,5)})`,`${fmtDate(ds)} ${it.start_time}: "${it.name}" is close to existing "${e.activity}" (${e.schedule_time.slice(0,5)})`))}}}
   return out;
 }
 function itinHtml(){
   const it=S.itin;if(!it)return '';const t=tripInfo();
   const warns=[...(S.warnings||[]),...localConflicts()];
-  const outOfRange=it.days.some(d=>!dayInRange(d.day));
-  const sel=it.days.reduce((n,d)=>n+d.items.filter(x=>x.selected&&dayInRange(d.day)).length,0);
+  const sel=it.days.reduce((n,d)=>n+d.items.filter(x=>x.selected).length,0);
   const canSave=!!t&&canWrite(t.id)&&sel>0&&!S.busy;
   let h=`<div class="ai-itin"><div class="ai-it-head"><b>🗓️ ${esc(it.title)}</b>${it.end_by?`<span class="mini muted"> · ${esc(A('กลับก่อน','back by'))} ${esc(it.end_by)}</span>`:''}</div>
   <div class="mini muted">${t&&t.start_date?esc(A('ทริป: ','Trip: ')+(t.name||'')+' · '+fmtDate(t.start_date)+' – '+fmtDate(tripEnd(t))):esc(A('ยังไม่ได้เลือกทริป: เลือกทริปด้านบนเพื่อกำหนดวันที่และบันทึกลง Schedule','No trip selected: pick a trip above to map dates and save to the Schedule'))}</div>`;
   for(const d of it.days){
-    const ds=dayDate(d.day),ok=dayInRange(d.day);
-    h+=`<div class="ai-day"><div class="ai-dayh">${esc(A('วันที่ ','Day '))}${d.day}${ds?` · ${esc(fmtDate(ds))}`:''}${ok?'':` <span class="aic-un">${esc(A('เกินช่วงทริป — บันทึกไม่ได้','outside the trip dates — cannot be saved'))}</span>`}</div>`;
+    const ds=dayDate(d.day),ok=!ds||inTrip(ds);
+    h+=`<div class="ai-day"><div class="ai-dayh">${esc(A('วันที่ ','Day '))}${d.day}${ds?` · ${esc(fmtDate(ds))}`:''}${ok?'':` <span class="aic-un">${esc(A('เกินช่วงทริป — เลือกวันที่เองได้ตอนกดเพิ่ม','outside the trip dates — pick a date when you add'))}</span>`}</div>`;
     d.items.forEach((s,k)=>{
       h+=`<div class="ai-row${s.selected?'':' off'}" data-id="${s.id}">
-        <label class="ai-sel"><input type="checkbox" data-ai-change="isel" data-id="${s.id}" ${s.selected?'checked':''} ${ok?'':'disabled'} aria-label="${esc(A('เลือก','select'))}"></label>
+        <label class="ai-sel"><input type="checkbox" data-ai-change="isel" data-id="${s.id}" ${s.selected?'checked':''} aria-label="${esc(A('เลือก','select'))}"></label>
         <input type="time" class="ai-time" data-ai-change="itime" data-id="${s.id}" value="${esc(s.start_time||'')}" aria-label="${esc(A('เวลา','time'))}">
         <div class="ai-rmain"><input class="ai-name" maxlength="160" data-ai-change="iname" data-id="${s.id}" value="${esc(s.name)}" aria-label="${esc(A('ชื่อกิจกรรม','activity'))}">
           <div class="mini muted">${esc(catName(s.category))} · ${s.verified?`<span class="aic-ok">✓ ${esc(A('พบใน Google Maps','on Google Maps'))}</span>`:`<span class="aic-un">${esc(A('ยังไม่ยืนยัน','unverified'))}</span>`}
           ${s.duration_min?` · ~${s.duration_min} ${esc(A('นาที (ประมาณ)','min (estimate)'))}`:''}${s.est_cost_thb!=null?` · ~฿${s.est_cost_thb} ${esc(A('(ประมาณ)','(estimate)'))}`:''}
           ${s.hop!=null?` · ${esc(A('ห่างจุดก่อนหน้า ~'+s.hop+' กม. (เส้นตรง ประมาณ)','~'+s.hop+' km from previous (straight line, estimate)'))}`:''}</div>
+          ${s.added?`<div class="mini aic-ok">✓ ${esc(A('เพิ่มลง Schedule แล้ว ('+fmtDate(s.added)+') · ติ๊กเพื่อเพิ่มอีกครั้งในวันอื่นได้','Added to the Schedule ('+fmtDate(s.added)+') · tick it to add again on another date'))}</div>`:''}
           ${s.note?`<div class="mini">${esc(s.note)}</div>`:''}</div>
         <div class="ai-rbtn">${s.url?`<a class="locbtn" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" aria-label="map">📍</a>`:`<a class="locbtn" href="${esc(searchUrl(s.name,it.destination))}" target="_blank" rel="noopener noreferrer" aria-label="search">🔎</a>`}
           <button class="locbtn" data-ai="up" data-id="${s.id}" ${k===0?'disabled':''} aria-label="up">↑</button><button class="locbtn" data-ai="down" data-id="${s.id}" ${k===d.items.length-1?'disabled':''} aria-label="down">↓</button><button class="locbtn" data-ai="rm" data-id="${s.id}" aria-label="remove">✕</button></div></div>`;
@@ -216,10 +258,10 @@ function askConsent(then){
 // ---------- ยืนยันก่อนบันทึก ----------
 function selectedPayload(){
   const t=tripInfo();const items=[];
-  for(const d of S.itin.days){const ds=dayDate(d.day);if(!ds||!dayInRange(d.day))continue;
-    for(const s of d.items){if(!s.selected)continue;const name=(s.name||'').trim();if(!name)continue;
+  for(const d of S.itin.days){
+    for(const s of d.items){if(!s.selected)continue;const ds=effDate(d,s)||null;const name=(s.name||'').trim();if(!name)continue;
       const bits=[];if(s.note)bits.push(s.note);if(s.duration_min)bits.push(A(`ใช้เวลาประมาณ ${s.duration_min} นาที (ประมาณการ)`,`about ${s.duration_min} min (estimate)`));if(s.est_cost_thb!=null)bits.push(A(`ค่าใช้จ่ายประมาณ ฿${s.est_cost_thb} ต่อคน (ประมาณการ ยังไม่ได้บันทึกเป็นค่าใช้จ่าย)`,`about THB ${s.est_cost_thb} per person (estimate, not recorded as an expense)`));if(!s.verified)bits.push(A('ยังไม่ยืนยันสถานที่กับแผนที่','place not verified on the map'));
-      items.push({_id:s.id,hasPin:s.lat!=null&&s.lng!=null,date:ds,time:s.start_time||null,activity:name,category:s.category,note:bits.join(' · ').slice(0,500),location_name:s.place_name,url:s.url,lat:s.lat,lng:s.lng,_label:`${fmtDate(ds)} ${s.start_time||'--:--'} ${name}`})}}
+      items.push({_id:s.id,hasPin:s.lat!=null&&s.lng!=null,date:ds,time:s.start_time||null,activity:name,category:s.category,note:bits.join(' · ').slice(0,500),location_name:s.place_name,url:s.url,lat:s.lat,lng:s.lng,_label:`${s.start_time||'--:--'} ${name}`})}}
   return {trip:t,items};
 }
 const pinWait=new Set();
@@ -231,48 +273,75 @@ function pinStepsHtml(){
     <li>${esc(A('กดปุ่ม "แชร์" (Share)','Tap "Share"'))}</li>
     <li>${esc(A('กด "คัดลอกลิงก์" (Copy link)','Tap "Copy link"'))}</li>
     <li>${esc(A('กลับมาที่หน้านี้ แล้ววางลิงก์ในช่อง "วางลิงก์ Google Maps" ของรายการนั้น','Come back here and paste it into that item\'s "Paste Google Maps link" box'))}</li></ol>
-    <div class="mini muted">${esc(A('ระบบจะอ่านพิกัดจากลิงก์ให้อัตโนมัติ ถ้าไม่วางลิงก์ รายการจะถูกบันทึกโดยยังไม่มีหมุดบนแผนที่','The coordinates are read from the link for you. Without a link the item is saved with no map pin.'))}</div></div>`;
+    <div class="mini muted">${esc(A('ระบบจะอ่านพิกัดจากลิงก์ให้อัตโนมัติ ถ้าไม่วางลิงก์ รายการจะถูกบันทึกโดยยังไม่มีหมุดบนแผนที่','The coordinates are read from the link for you. Without a link the item is saved with no map pin.'))}</div>
+    <div class="mini ai-fallback"><b>${esc(A('ถ้าอ่านพิกัดจากลิงก์ไม่ได้:','If the link cannot be read:'))}</b> ${esc(A('ในแผนที่ กดค้างที่ตำแหน่งนั้น (หรือคลิกขวาบนคอม) จะมีตัวเลขพิกัด เช่น 13.7563, 100.5018 — กดที่ตัวเลขเพื่อคัดลอก แล้ววางลงในช่องเดียวกันได้เลย','On the map, long-press the spot (or right-click on desktop) to see its coordinates, e.g. 13.7563, 100.5018 — tap the numbers to copy and paste them into the same box.'))}</div></div>`;
 }
-function pinRowHtml(i,dest){
-  const has=i.hasPin;
-  return `<li class="ai-pinrow" data-id="${i._id}"><div>${esc(i._label)}</div>
+function pinRowHtml(i,dest,trip){
+  const has=i.hasPin;const mn=trip&&trip.start_date?` min="${esc(trip.start_date)}" max="${esc(tripEnd(trip))}"`:'';
+  return `<li class="ai-pinrow" data-id="${i._id}"><div class="ai-pintitle">${esc(i._label)}</div>
+    <label class="ai-datef"><span>📅 ${esc(A('วันที่','Date'))}</span><input type="date" class="ai-date" data-ai-date="${i._id}" value="${esc(i.date||'')}"${mn} required aria-label="${esc(A('เลือกวันที่','Choose date'))}"></label>
+    <div class="mini aic-un" data-date-status></div>
     ${has?`<div class="aic-ok" data-pin-status>✓ ${esc(A('มีพิกัดแล้ว','Has coordinates'))}</div>`
     :`<div class="ai-pinact"><a class="locbtn" href="${esc(searchUrl(i.activity,dest))}" target="_blank" rel="noopener noreferrer">📍 ${esc(A('เปิดใน Google Maps','Open in Google Maps'))}</a></div>
-      <input class="ai-pin" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" data-ai-pin="${i._id}" placeholder="${esc(A('วางลิงก์ Google Maps ที่นี่','Paste Google Maps link here'))}" aria-label="${esc(A('วางลิงก์ Google Maps','Paste Google Maps link'))}">
+      <input class="ai-pin" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" data-ai-pin="${i._id}" placeholder="${esc(A('วางลิงก์ Google Maps หรือพิกัด (เช่น 13.7563, 100.5018)','Paste a Google Maps link or coordinates (e.g. 13.7563, 100.5018)'))}" aria-label="${esc(A('วางลิงก์ Google Maps หรือพิกัด','Paste Google Maps link or coordinates'))}">
       <div class="mini muted" data-pin-status></div>`}</li>`;
+}
+function failReason(){
+  try{const r=(typeof _resLast!=='undefined')?_resLast:null;if(!r||r.ok)return '';
+    const w=typeof _whyText==='function'?_whyText():'';const code=r.error&&r.error!=='invoke_error'?r.error:(r.status?('http '+r.status):'');
+    return (w||A('เซิร์ฟเวอร์อ่านลิงก์นี้ไม่ได้','The server could not read this link'))+(code&&!w.includes(code)?` [${code}]`:'')}catch(e){return ''}
 }
 async function pinItem(id,raw,row){
   const st=row&&row.querySelector('[data-pin-status]');const say=(t,cls)=>{if(st){st.textContent=t;st.className='mini '+(cls||'muted')}};
   const f=findItem(id);if(!f)return;
   const text=String(raw||'').trim();
   if(!text){f.it.url=null;f.it.lat=null;f.it.lng=null;f.it.place_name=null;say('');return}
+  // 1) พิมพ์/วางเป็นพิกัดตรงๆ ("13.7563, 100.5018") หรือเป็นลิงก์ Google Maps แบบเต็มที่มีพิกัดอยู่ในลิงก์ → ไม่ต้องเรียกเซิร์ฟเวอร์
+  const direct=typeof parseLatLng==='function'?parseLatLng(extractUrl(text)||text):null;
+  if(direct&&(!/^https?:/i.test(text)||isMapLink(normalizeMapUrl(extractUrl(text)||'')||''))){
+    const u0=extractUrl(text),nu=u0&&normalizeMapUrl(u0);
+    f.it.url=nu&&isMapLink(nu)?nu:'https://www.google.com/maps/search/?api=1&query='+direct.lat+','+direct.lng;
+    f.it.place_name=f.it.name;f.it.lat=direct.lat;f.it.lng=direct.lng;
+    say('✓ '+A('ปักหมุดแล้ว','Pinned')+` (${direct.lat.toFixed(5)}, ${direct.lng.toFixed(5)})`,'aic-ok');saveHist();return}
   const u0=extractUrl(text);const u=u0&&typeof normalizeMapUrl==='function'?normalizeMapUrl(u0):null;
-  if(!u||!isMapLink(u)){say(A('ลิงก์นี้ไม่ใช่ลิงก์ Google Maps (ต้องเป็นลิงก์จากปุ่ม แชร์ → คัดลอกลิงก์ ในแอป Google Maps)','This is not a Google Maps link (use Share → Copy link in Google Maps)'),'aic-un');return}
+  if(!u||!isMapLink(u)){say(A('ไม่รู้จักข้อความนี้: วางลิงก์ Google Maps (แชร์ → คัดลอกลิงก์) หรือพิกัดแบบ 13.7563, 100.5018','Not recognised: paste a Google Maps link (Share → Copy link) or coordinates like 13.7563, 100.5018'),'aic-un');return}
   say(A('กำลังอ่านพิกัดจากลิงก์…','Reading coordinates from the link…'));
   let r=null;try{r=await resolveMapLink(u)}catch(e){r=null}
   const g=findItem(id);if(!g)return;
   g.it.url=u;g.it.place_name=g.it.name;
   if(r&&typeof r.lat==='number'&&typeof r.lng==='number'){g.it.lat=r.lat;g.it.lng=r.lng;say('✓ '+A('ปักหมุดแล้ว','Pinned')+` (${r.lat.toFixed(5)}, ${r.lng.toFixed(5)})`,'aic-ok')}
-  else{g.it.lat=null;g.it.lng=null;say(A('บันทึกลิงก์ได้ แต่อ่านพิกัดไม่ได้ในตอนนี้ (หมุดบนแผนที่จะยังไม่ขึ้น) ลองวางใหม่หรือตรวจสอบลิงก์ได้','The link can be saved but coordinates could not be read now (no pin on the map yet). You can paste it again.'),'aic-un')}
+  else{g.it.lat=null;g.it.lng=null;
+    say(A('บันทึกลิงก์ไว้ได้ แต่อ่านพิกัดไม่ได้','The link is kept but coordinates could not be read')+(failReason()?' — '+failReason():'')+'. '+A('วิธีแก้: กดค้างที่ตำแหน่งในแผนที่ คัดลอกตัวเลขพิกัด (เช่น 13.7563, 100.5018) แล้ววางแทนลิงก์ในช่องนี้','Fix: long-press the spot on the map, copy the coordinates (e.g. 13.7563, 100.5018) and paste them here instead of the link'),'aic-un')}
+  saveHist();
 }
 function review(){
-  if(!S.itin)return;const {trip,items}=selectedPayload();
-  if(!trip||!canWrite(trip.id)){toast(A('เลือกทริปที่คุณแก้ไขได้ก่อน','Select a trip you can edit first'));return}
+  if(!S.itin)return;const t0=tripInfo();
+  if(!t0||!canWrite(t0.id)){toast(A('เลือกทริปที่คุณแก้ไขได้ก่อน','Select a trip you can edit first'));return}
+  // ตั้งวันที่เริ่มต้นของแต่ละรายการ: ตามลำดับวันของแผน ถ้าอยู่ในช่วงทริป ไม่งั้นว่างไว้ให้ผู้ใช้เลือกเอง
+  for(const d of S.itin.days)for(const s of d.items){if(!s.selected)continue;const e=effDate(d,s);s.date=e&&inTrip(e)?e:null}
+  const {trip,items}=selectedPayload();
   if(!items.length){toast(A('ยังไม่ได้เลือกรายการ','No items selected'));return}
-  const conf=localConflicts();const needPin=items.some(i=>!i.hasPin);const dest=S.itin.destination||'';
+  const needPin=items.some(i=>!i.hasPin);const dest=S.itin.destination||'';
+  const trange=trip.start_date?`${fmtDate(trip.start_date)} – ${fmtDate(tripEnd(trip))}`:'';
   modal(`<div class="sheethead"><h3 data-no-tr="1">${esc(A('ยืนยันเพิ่มลง Schedule','Confirm adding to Schedule'))}</h3><div class="spacer"></div><button class="btn secondary sm" data-no-tr="1" onclick="closeModal()">${esc(A('ปิด','Close'))}</button></div>
   <div data-no-tr="1" class="ai-revbody"><p>${esc(A(`จะเพิ่ม ${items.length} รายการลงทริป "${trip.name||''}"`,`Add ${items.length} item(s) to trip "${trip.name||''}"`))}</p>
+  <div class="mini muted">${esc(A('เลือกวันที่ของแต่ละรายการได้','Choose a date for each item'))}${trange?esc(' ('+trange+')'):''}</div>
+  <ul class="ai-sumlist ai-pinlist" id="aiPins">${items.map(i=>pinRowHtml(i,dest,trip)).join('')}</ul>
   ${needPin?pinStepsHtml():''}
-  <ul class="ai-sumlist ai-pinlist" id="aiPins">${items.map(i=>pinRowHtml(i,dest)).join('')}</ul>
-  ${conf.length?`<div class="ai-warns"><b>⚠️ ${esc(A('เวลาใกล้กับรายการเดิม','Close to existing items'))}</b><ul>${conf.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:''}
-  <div class="mini muted">${esc(A('รายการที่ซ้ำกับของเดิมจะถูกข้าม ระบบไม่สร้างค่าใช้จ่ายให้','Items already in the schedule are skipped. No expenses are created.'))}</div></div>
+  <div id="aiConf"></div>
+  <div class="mini muted">${esc(A('รายการที่ซ้ำกับของเดิม (วัน เวลา ชื่อเหมือนกัน) จะถูกข้าม ระบบไม่สร้างค่าใช้จ่ายให้ และรายการแนะนำจะยังอยู่ในแชตนี้','Items identical to existing ones (same date, time and name) are skipped. No expenses are created, and the suggestions stay in this chat.'))}</div></div>
   <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn secondary" data-no-tr="1" onclick="closeModal()">${esc(A('ยกเลิก','Cancel'))}</button><button class="btn" id="aiConfirm" data-no-tr="1">${esc(A('ยืนยัน เพิ่มลง Schedule','Confirm & add'))}</button></div>`,'center');
+  const updConf=()=>{const c=$a('aiConf');if(!c)return;const w=localConflicts();c.innerHTML=w.length?`<div class="ai-warns"><b>⚠️ ${esc(A('เวลาใกล้กับรายการเดิม','Close to existing items'))}</b><ul>${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''};
+  updConf();
   const box=$a('aiPins');const timers={};
   const run=el=>{const id=Number(el.dataset.aiPin),row=el.closest('.ai-pinrow');clearTimeout(timers[id]);
     const pr=pinItem(id,el.value,row);pinWait.add(pr);pr.finally(()=>pinWait.delete(pr))};
   if(box){
     box.addEventListener('input',e=>{const el=e.target.closest('[data-ai-pin]');if(!el)return;const id=Number(el.dataset.aiPin);clearTimeout(timers[id]);timers[id]=setTimeout(()=>run(el),500)});
-    box.addEventListener('change',e=>{const el=e.target.closest('[data-ai-pin]');if(el)run(el)});
+    box.addEventListener('change',e=>{
+      const dt=e.target.closest('[data-ai-date]');
+      if(dt){const f=findItem(Number(dt.dataset.aiDate));if(f){f.it.date=dt.value||null;const m=dt.closest('.ai-pinrow').querySelector('[data-date-status]');if(m)m.textContent=dt.value&&!inTrip(dt.value)?A('วันที่นี้อยู่นอกช่วงทริป','This date is outside the trip dates'):'';saveHist();updConf()}return}
+      const el=e.target.closest('[data-ai-pin]');if(el)run(el)});
     box.addEventListener('paste',e=>{const el=e.target.closest('[data-ai-pin]');if(el)setTimeout(()=>run(el),0)});
   }
   $a('aiConfirm').onclick=async()=>{
@@ -280,17 +349,24 @@ function review(){
     try{await Promise.all([...pinWait])}catch(e){}
     const p=selectedPayload();
     if(b){b.disabled=false;b.textContent=A('ยืนยัน เพิ่มลง Schedule','Confirm & add')}
+    // ทุกรายการต้องมีวันที่ที่อยู่ในช่วงทริป
+    const bad=p.items.filter(i=>!inTrip(i.date));
+    document.querySelectorAll('#aiPins .ai-pinrow').forEach(r=>{const id=Number(r.dataset.id);const isBad=bad.some(i=>i._id===id);r.classList.toggle('bad',isBad);const m=r.querySelector('[data-date-status]');if(m&&isBad)m.textContent=A('กรุณาเลือกวันที่ในช่วงทริป','Please choose a date within the trip dates')});
+    if(bad.length){toast(A('กรุณาเลือกวันที่ให้ครบทุกรายการ (ในช่วงวันที่ของทริป)','Please choose a date for every item (within the trip dates)'));const f=document.querySelector('#aiPins .ai-pinrow.bad .ai-date');if(f)f.focus();return}
     apply(trip,p.items)};
 }
 let applying=false;
 async function apply(trip,items){
   if(applying)return;applying=true;const b=$a('aiConfirm');if(b){b.disabled=true;b.textContent=A('กำลังบันทึก…','Saving…')}
+  const ids=items.map(i=>({id:i._id,date:i.date}));
   const r=await invoke({action:'apply',trip_id:trip.id,confirmed:true,items:items.map(({_label,_id,hasPin,...x})=>x)});
   applying=false;
   if(!r.ok){if(b){b.disabled=false;b.textContent=A('ยืนยัน เพิ่มลง Schedule','Confirm & add')}toast(r.message||A('บันทึกไม่สำเร็จ','Could not save'));return}
   closeModal();
   const skip=(r.skipped||[]).length;
-  if(r.inserted>0&&S.itin){for(const d of S.itin.days)d.items=d.items.filter(x=>!(x.selected&&dayInRange(d.day)));S.itin.days=S.itin.days.filter(d=>d.items.length);if(!S.itin.days.length)S.itin=null}
+  // ไม่ลบรายการแนะนำ: ทำเครื่องหมาย "เพิ่มแล้ว" และเอาติ๊กออก เพื่อให้กลับมาเพิ่มอีกครั้ง (เช่น คนละวัน) ได้
+  for(const x of ids){const f=findItem(x.id);if(f){f.it.added=x.date;f.it.selected=false}}
+  saveHist();
   S.warnings=[];
   toast(A(`เพิ่มลง Schedule แล้ว ${r.inserted} รายการ${skip?` (ข้ามที่ซ้ำ ${skip})`:''}`,`Added ${r.inserted} item(s)${skip?` (${skip} duplicates skipped)`:''}`));
   try{await window.render()}catch(e){console.error(e)}   // โหลด Schedule/แผนที่ใหม่จากฐานข้อมูล (ฟังก์ชัน render ของแอป)
@@ -305,7 +381,7 @@ function onClick(e){
   else if(a==='fillq'){const t=$a('aiInput');if(t){t.value=el.dataset.q;t.focus()}}
   else if(a==='retry'){if(Date.now()<S.retryUntil)return;send(S.lastUser,{retry:true})}
   else if(a==='regen'){if(S.lastUser)send(S.lastUser+A(' (ช่วยเสนอแผนใหม่ที่ต่างจากเดิม)',' (please propose a different plan)'),{})}
-  else if(a==='clear'){S.msgs=[];S.itin=null;S.warnings=[];lsDel(HKEY());render()}
+  else if(a==='clear'){S.msgs=[];S.itin=null;S.warnings=[];S.dest='';lsDel(HKEY());render()}
   else if(a==='recheck'){init(true)}
   else if(a==='draftadd'){const m=S.msgs[Number(el.dataset.mi)],c=m&&m.cards&&m.cards[Number(el.dataset.ci)];if(c)addDraft(c)}
   else if(a==='review')review();
@@ -316,12 +392,12 @@ function onClick(e){
 }
 function onChange(e){
   const el=e.target.closest('[data-ai-change]');if(!el)return;const a=el.dataset.aiChange;
-  if(a==='trip'){S.tripId=el.value;S.warnings=[];render()}
+  if(a==='trip'){S.tripId=el.value;S.warnings=[];if(S.itin)for(const d of S.itin.days)for(const x of d.items)delete x.date;render()}
   else if(a==='origin'){S.origin=el.value.trim().slice(0,120)}
   else{const f=findItem(Number(el.dataset.id));if(!f)return;
     if(a==='isel'){f.it.selected=el.checked;render()}
     else if(a==='itime'){f.it.start_time=/^\d\d:\d\d$/.test(el.value)?el.value:null;render()}
-    else if(a==='iname'){f.it.name=el.value.slice(0,160)}}
+    else if(a==='iname'){f.it.name=el.value.slice(0,160);saveHist()}}
 }
 function onKey(e){if(e.target&&e.target.id==='aiInput'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send(e.target.value)}}
 
