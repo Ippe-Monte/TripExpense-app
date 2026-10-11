@@ -1,0 +1,64 @@
+# FriendTrip Go — AI Travel Assistant V1 (เบต้า)
+
+เวอร์ชันแอป 2.2.0 · เพิ่มอย่างเดียว ไม่แก้ตาราง/Auth/RLS/ข้อมูลเดิม
+
+## 1) ทำงานอย่างไร
+```
+เบราว์เซอร์ (GitHub Pages)  ──JWT ของผู้ใช้──▶  Supabase Edge Function "ai-travel-assistant"  ──API key (secret ฝั่งเซิร์ฟเวอร์)──▶  Gemini (+ Google Places ถ้าตั้งค่า)
+```
+- **ไม่มี API key ในหน้าเว็บ/GitHub/คำตอบที่ส่งกลับ** คีย์อยู่ใน Supabase Secrets เท่านั้น
+- ฟังก์ชันเรียก Supabase ด้วย JWT ของผู้ใช้เอง (ไม่ใช้ service-role) → RLS ตัดสินว่าอ่าน/เขียน Schedule ได้หรือไม่
+- AI **เสนอเท่านั้น** ไม่บันทึกอะไรเอง ผู้ใช้ต้องตรวจร่างตาราง เลือกรายการ แล้วกด "ยืนยัน" จึงจะเพิ่มลง Schedule (ตาราง `schedules` เดิม, คอลัมน์เดิม)
+- ผู้ให้บริการเปลี่ยนได้ด้วย secret `AI_PROVIDER` (ค่าเริ่มต้น `gemini`; รองรับ `anthropic` ถ้าตั้งคีย์เอง) **ไม่มีการสลับไปผู้ให้บริการ/โมเดลที่เสียเงินให้อัตโนมัติ**
+
+## 2) ต้นทุน / โควตา / ข้อมูล — อ่านก่อนเปิดใช้งาน
+> ⚠️ ผมตรวจหน้า ai.google.dev ไม่ได้ในสภาพแวดล้อมนี้ ตัวเลขโควตา ราคา ชื่อโมเดล และเงื่อนไขข้อมูลของ Gemini **ยังไม่ได้ยืนยัน** กรุณาเปิดอ่านหน้าทางการด้วยตัวเองก่อนเปิดใช้งานจริง:
+> ราคา/โควตา `https://ai.google.dev/gemini-api/docs/pricing` · rate limits `https://ai.google.dev/gemini-api/docs/rate-limits` · เงื่อนไข `https://ai.google.dev/gemini-api/terms`
+
+| เรื่อง | สิ่งที่ควรรู้ |
+|---|---|
+| Gemini แพ็กเกจฟรี | ปกติมีโควตาต่อนาที/ต่อวันต่อ "โปรเจกต์" (ไม่ใช่ต่อผู้ใช้) จึงมีเพดานรวมของระบบ `AI_GLOBAL_DAILY_LIMIT` · โมเดลที่ให้ใช้ฟรีเปลี่ยนได้ ตั้งชื่อด้วย `AI_MODEL` (ค่าเริ่มต้น `gemini-2.5-flash` — ยังไม่ยืนยันว่ายังใช้ฟรีได้) |
+| ข้อมูลที่ส่งไป AI | ข้อความที่ผู้ใช้พิมพ์ + (ถ้าเลือกทริป) ตารางเดิมของทริปนั้น + จุดเริ่มต้นที่ผู้ใช้กรอก ไม่ส่งอีเมล/เบอร์/เอกสาร/ค่าใช้จ่าย · ปกติแพ็กเกจฟรีของผู้ให้บริการอาจนำข้อมูลไปปรับปรุงผลิตภัณฑ์ (ตรวจในเงื่อนไขทางการ) — แอปมีหน้าจอแจ้งและให้กดยอมรับก่อนใช้ครั้งแรก |
+| ค้นหาสถานที่จริง | เป็นบริการแยก ใช้ **Google Places API (New)** ต้องมี `GOOGLE_PLACES_API_KEY` และเปิด Billing ของ Google Cloud (มีเครดิต/โควตาฟรีตามนโยบาย Google ณ ปัจจุบัน — ยังไม่ยืนยัน) **ไม่เกี่ยวกับโควตาฟรีของ Gemini** · ถ้าไม่ตั้งค่า ระบบจะติดป้ายว่า "คำแนะนำจาก AI · ยังไม่ยืนยันกับแผนที่" ทุกรายการ |
+| เส้นทาง/เวลาเดินทาง | **ยังไม่มีผู้ให้บริการเส้นทาง** แสดงเฉพาะระยะเส้นตรงแบบประมาณ (ติดป้าย "ประมาณ") |
+| จองที่พัก/ตั๋ว | ยังไม่ทำ (ยังเป็น "เร็วๆ นี้") |
+| ตัวจำกัด | `AI_DAILY_LIMIT` ต่อผู้ใช้/วัน · `AI_GLOBAL_DAILY_LIMIT` รวม/วัน · `AI_BURST_PER_MIN` · `AI_MAX_PLACE_SEARCHES` · `AI_MAX_TURNS` · `AI_MAX_OUTPUT_TOKENS` · ข้อความ ≤1,000 ตัวอักษร · body ≤32 KB |
+| โควตาหมด | แสดงข้อความชัดเจน + ปุ่ม "ลองใหม่" (นับถอยหลัง) ไม่สลับโมเดลเอง ไม่เปิด Billing ให้ |
+
+## 3) ตัวแปร (Supabase → Edge Functions → Secrets)
+| ชื่อ | จำเป็น | ค่าเริ่มต้น | ความหมาย |
+|---|---|---|---|
+| `GEMINI_API_KEY` | ✅ | – | คีย์จาก Google AI Studio |
+| `AI_PROVIDER` | | `gemini` | `gemini` หรือ `anthropic` |
+| `AI_MODEL` | | `gemini-2.5-flash` | ชื่อโมเดล (ต้องตรวจว่ายังใช้ได้/ฟรี) |
+| `ANTHROPIC_API_KEY` | ถ้าใช้ anthropic | – | |
+| `GOOGLE_PLACES_API_KEY` | ไม่บังคับ | – | เปิดการค้นหาสถานที่จริง (มีค่าใช้จ่ายได้) |
+| `PLACES_FIELD_LEVEL` | | `basic` | `rich` = ดึงเรตติ้ง/ราคา/เวลาเปิด (SKU แพงกว่า) |
+| `ALLOWED_ORIGINS` | | `https://ippe-monte.github.io` | โดเมนที่เรียกได้ (คั่นด้วย ,) |
+| `AI_DAILY_LIMIT` | | `10` | ครั้ง/ผู้ใช้/วัน |
+| `AI_GLOBAL_DAILY_LIMIT` | | `100` | ครั้ง/วัน ทั้งระบบ (0 = ไม่จำกัด) |
+| `AI_BURST_PER_MIN` `AI_MAX_PLACE_SEARCHES` `AI_MAX_TURNS` `AI_MAX_OUTPUT_TOKENS` `AI_TIMEOUT_MS` `AI_MAX_ITINERARY_ITEMS` `AI_LONG_HOP_KM` `PLACES_MAX_RESULTS` `PLACES_TIMEOUT_MS` `GEMINI_THINKING_BUDGET` | | ดูในโค้ด `core.ts` | จูนต้นทุน/ความเร็ว |
+
+## 4) ขั้นตอนตั้งค่าสำหรับมือใหม่
+**A. สร้างคีย์ Gemini** — เข้า Google AI Studio (aistudio.google.com) ด้วยบัญชี Google → *Get API key* → *Create API key* → คัดลอกเก็บไว้ (อย่าส่งในแชต/อีเมล/GitHub) · ห้ามเปิด Billing ถ้ายังต้องการใช้แพ็กเกจฟรีล้วน
+**B. ติดตั้งฟังก์ชัน** (เลือกอย่างใดอย่างหนึ่ง)
+- *Dashboard*: Supabase → Edge Functions → *Deploy a new function* → ชื่อ `ai-travel-assistant` → วางไฟล์ในโฟลเดอร์ `supabase/functions/ai-travel-assistant/` (index.ts, core.ts, lib.ts, providers.ts) → เปิด *Verify JWT* → Deploy
+- *CLI*: `supabase login` → `supabase link --project-ref <ref>` → `supabase functions deploy ai-travel-assistant`
+**C. ใส่คีย์** — Supabase → Edge Functions → *Secrets* → *Add new secret* → Name `GEMINI_API_KEY`, Value = คีย์ (หรือ CLI: `supabase secrets set GEMINI_API_KEY=...`) · ไม่ต้อง redeploy แอปบน GitHub
+**D. (ไม่บังคับ แต่แนะนำ) ตัวนับการใช้งานแม่นยำ** — Supabase → SQL Editor → วางไฟล์ `sql/v22_ai_usage.sql` → Run (เพิ่มตาราง `ai_usage_daily` + ฟังก์ชัน `te_ai_usage_hit` เท่านั้น ไม่แตะข้อมูลเดิม รันซ้ำได้) · ถ้าไม่รัน ระบบใช้ตัวนับในหน่วยความจำที่ไม่แม่นยำนัก
+**E. (ไม่บังคับ) ค้นหาสถานที่จริง** — Google Cloud Console → เปิด *Places API (New)* → สร้าง API key → จำกัดคีย์ให้ใช้เฉพาะ Places API → ตั้งงบ/แจ้งเตือน (Budget alerts) → ใส่เป็น secret `GOOGLE_PLACES_API_KEY`
+**F. อัปโหลดแอป** — อัปโหลดไฟล์ในโซนนี้ขึ้น GitHub เหมือนรุ่นก่อน (ไม่ต้องอัปโหลด `assets/js/config.js` ทับ) แล้วรอ Pages อัปเดต
+**G. ทดสอบ** — เปิดเมนู ✨ AI Travel Assistant → ต้องไม่ขึ้นแถบเหลือง "ยังไม่ได้เปิดใช้งาน/ยังไม่ได้ตั้งค่า API key"
+
+> หมายเหตุ: GitHub Pages จะเสิร์ฟโฟลเดอร์ `supabase/` เป็นไฟล์ข้อความสาธารณะด้วย (ไม่มีความลับในนั้น) ถ้าไม่ต้องการ ให้ไม่อัปโหลดโฟลเดอร์ `supabase/` ขึ้น GitHub Pages แล้วใช้วิธี Dashboard วางโค้ดแทน
+
+## 5) สถานะการทดสอบ (ตรงตามจริง)
+- ✅ รันแล้ว: Unit/ฟังก์ชัน 44 ข้อ (ผู้ให้บริการและฐานข้อมูล **จำลองทั้งหมด**) · UI 32 ข้อด้วย Playwright (เรียก Edge Function ด้วย stub) · เปิดทุกหน้าเดิมไม่มี error · `test_settlement_rounding.js` 8/8
+- ❌ ยังไม่ได้ทดสอบกับของจริง: Gemini จริง, Google Places จริง, Edge Function บน Supabase จริง, RLS จริง, ตัวนับ SQL บนฐานข้อมูลจริง
+- รายละเอียดการเรียก Gemini (function calling, thoughtSignature) เขียนจากความรู้เดิม ต้องทดสอบจริงหลัง deploy
+
+## 6) ข้อจำกัดที่ทราบ
+ไม่มีเส้นทาง/เวลาเดินทางจริง · ไม่ตรวจเวลาเปิด-ปิดกับช่วงเวลาที่จัด · การเก็บชื่อ/พิกัดสถานที่ของ Google ลง Schedule ควรตรวจเงื่อนไข Google Maps Platform · โควตาฟรีเป็นของทั้งโปรเจกต์ · ตัวนับสำรองแบบหน่วยความจำไม่แม่นยำ · ประวัติแชตเก็บในเครื่องผู้ใช้เท่านั้น (กด "ล้างแชต" ได้) · ไม่มีการจอง
+
+## 7) แนะนำ V1.1
+ผู้ให้บริการเส้นทาง (เวลาเดินทางจริง) · ตรวจเวลาเปิด-ปิดกับตาราง · สรุปงบประมาณเสนอเป็นร่างค่าใช้จ่าย (ยืนยันก่อนเสมอ) · แคชผลค้นหาสถานที่เพื่อลดต้นทุน · แดชบอร์ดการใช้งานสำหรับ Developer

@@ -3,6 +3,13 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.0 — AI Travel Assistant V1 (beta)
+**Additive only. No change to existing tables, columns, RLS, auth, Supabase URL/keys or stored data. One OPTIONAL SQL file (`sql/v22_ai_usage.sql`) — not required, not executed by the app.**
+- New page ✨ AI Travel Assistant (Home "new" strip, Profile menu): Thai/English chat, suggested prompts, recommendation cards (Google-verified vs "AI suggestion, not verified"), editable itinerary preview (reorder / remove / edit time and name), trip picker, conflict warnings, review-and-confirm before anything is added to Schedule (existing `schedules` table, existing columns; AI never saves by itself, never creates expenses).
+- Server side: Supabase Edge Function `ai-travel-assistant` (`supabase/functions/`). AI keys stay in Supabase Secrets only. Provider is configurable (`AI_PROVIDER`, default Gemini free tier); no automatic fallback to a paid model. Per-user and global daily limits, burst limit, size limits, clear quota-exhausted message with retry. Optional Google Places search (separate key/billing); without it every place is labelled unverified.
+- Not implemented: routing/travel time (only straight-line estimates, labelled), booking, opening-hours checks.
+- Real Gemini / Places / Supabase behaviour NOT yet tested — see `docs/AI_TRAVEL_ASSISTANT_V1.md`.
+
 ## 2.1.8 — Create-Group box centred and steady when the keyboard opens
 **No SQL / Supabase / auth change.** Layout only.
 - The "Create Group" box is now in the middle of the screen on phones and tablets (it was a bottom sheet stuck to the lower edge).

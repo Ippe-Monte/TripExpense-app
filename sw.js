@@ -1,8 +1,8 @@
 // TripExpense Service Worker — โหลดจากเครือข่ายก่อนเสมอ (ได้เวอร์ชันล่าสุด) ถ้าออฟไลน์ใช้ไฟล์ที่เก็บไว้
-const V='216';
-const CACHE='friendtrip-go-2.1.8';
+const V='217';
+const CACHE='friendtrip-go-2.2.0';
 const SHELL=['./','./index.html','./manifest.webmanifest','./css/app.css?v='+V,'./icons/icon-192.png','./icons/icon-512.png','./img/logo.svg','./img/splash.svg',
-  ...['core','groups','trips','dashboard','schedule','expenses','budget','documents','reports','profile','tour','dialog','developer','invites','friends','chat','pwa','ui','summary','history','i18n_map','holidays','cropper','member','geo','provinces','promo_engine','ads','promo','maps','checkin','explore','admin','daterange','pluscode'].map(n=>`./js/${n}.js?v=${V}`)];
+  ...['core','groups','trips','dashboard','schedule','expenses','budget','documents','reports','profile','tour','dialog','developer','invites','friends','chat','assistant','pwa','ui','summary','history','i18n_map','holidays','cropper','member','geo','provinces','promo_engine','ads','promo','maps','checkin','explore','admin','daterange','pluscode'].map(n=>`./js/${n}.js?v=${V}`)];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const req=e.request;if(req.method!=='GET')return;const u=new URL(req.url);if(u.origin!==location.origin)return;
