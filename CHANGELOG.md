@@ -3,6 +3,11 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.1.8 — Create-Group box centred and steady when the keyboard opens
+**No SQL / Supabase / auth change.** Layout only.
+- The "Create Group" box is now in the middle of the screen on phones and tablets (it was a bottom sheet stuck to the lower edge).
+- `modal(html,'center')` pins the overlay to the screen height measured when it opens, so the on-screen keyboard no longer pushes the box up. Closing the box restores normal behaviour; other sheets (Help, forms, etc.) are unchanged. Re-measured after a device rotation.
+
 ## 2.1.7 — "Create a Group first" flow + in-app dialogs
 **No SQL change, no Supabase change, no auth change, stored data untouched** (the same `create_group` RPC is called).
 - New `js/dialog.js`: every `alert()` in the app now opens an in-app dialog titled **"FriendTrip Go"** instead of the browser box that said "ippe-monte.github.io บอกว่า" (that title cannot be edited in a native alert). Messages queue, Enter/Esc close, TH/EN buttons.

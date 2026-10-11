@@ -746,3 +746,8 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .ftgdlg-btns{display:flex;flex-direction:column;gap:8px}
 .ftgdlg-btns .btn{width:100%;padding:12px 14px}
 @media(min-width:420px){.ftgdlg-btns{flex-direction:row-reverse;flex-wrap:wrap}.ftgdlg-btns .btn{width:auto;flex:1 1 auto}}
+
+/* ---- Centered modal that does not move with the on-screen keyboard (V2.1.8) ---- */
+.modalback.ctr.show{align-items:center;justify-content:center;padding:18px}
+.modalback.ctr .modal.center{width:min(420px,100%);max-height:calc(100% - 36px);border-radius:22px;padding:20px}
+.modalback.ctr .modal.center .field{margin:8px 0}.modalback.ctr .modal.center .mini{font-size:12px;line-height:1.4}.modalback.ctr .modal.center .sheethead{margin-bottom:4px}

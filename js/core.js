@@ -14,7 +14,7 @@ const cache={groups:[],trips:[],roles:{},tripMembers:[],members:[],schedules:[],
 // ข้อความที่ผู้ใช้พิมพ์เอง (ชื่อ Group/Trip, หมายเหตุ, รายละเอียดค่าใช้จ่าย ฯลฯ) จะไม่ถูกแปล
 // เก็บภาษาที่เลือกไว้ในเครื่องนี้ (localStorage) ต่อผู้ใช้ 1 คน
 // =====================================================================
-const APP_VERSION='2.1.7';
+const APP_VERSION='2.1.8';
 let LANG=(function(){try{return localStorage.getItem('te_lang')||'th'}catch(_){return 'th'}})();
 const I18N={
  th:{ t_portfolio:'แผนที่การเที่ยวของฉัน',s_portfolio:'เหรียญพิชิตและหมุดที่เคยไป',t_offers:'ข้อเสนอจากระบบ',s_offers:'ข้อเสนอท่องเที่ยวที่เคยแสดง',t_explore:'สำรวจ',s_explore:'ที่พัก ตั๋ว การเดินทาง ดีล และอื่นๆ',t_admin:'Developer',s_admin:'สถิติรวมและตั้งค่าโฆษณา แคมเปญ พันธมิตร',nav_explore:'สำรวจ', nav_home:'หน้าหลัก',nav_summary:'สรุป',nav_chat:'แชต',nav_schedule:'Schedule',nav_trips:'จัดการทริป',nav_documents:'เอกสาร',nav_budget:'งบประมาณ',nav_reports:'รายงาน',nav_groups:'กลุ่ม',nav_friends:'เพื่อน',nav_profile:'โปรไฟล์',nav_developer:'Developer',
@@ -58,7 +58,10 @@ function tripRangeText(t){return t?.start_date?`${fmtRange(t)} (${tripDates(t).l
 function checkTripDates(s,e){if(s&&e&&e<s)throw new Error('วันกลับต้องไม่ก่อนวันเริ่ม')}
 function rpcId(d){if(!d)return null;if(typeof d==='string')return d;if(Array.isArray(d))return rpcId(d[0]);return d.id||d.trip_id||null}
 async function selectIn(table,cols,col,ids,size=150){const out=[];for(let i=0;i<ids.length;i+=size){const {data,error}=await sb.from(table).select(cols).in(col,ids.slice(i,i+size));if(error)throw error;out.push(...(data||[]))}return out}
-function modal(html,cls){$('modal').innerHTML=html;$('modal').className='modal'+(cls?' '+cls:'');$('mb').classList.add('show');if(typeof hydrateMedia==='function')hydrateMedia($('modal'))};function closeModal(){$('mb').classList.remove('show');$('modal').innerHTML='';$('modal').className='modal'}
+function modal(html,cls){$('modal').innerHTML=html;$('modal').className='modal'+(cls?' '+cls:'');$('mb').classList.add('show');pinModal(cls);if(typeof hydrateMedia==='function')hydrateMedia($('modal'))};function closeModal(){$('mb').classList.remove('show');$('modal').innerHTML='';$('modal').className='modal';pinModal('')}
+// modal class 'center' = กล่องกลางจอ ล็อกความสูงตามจอตอนเปิด → แป้นพิมพ์เด้งขึ้นแล้วกล่องไม่เลื่อนตาม
+function pinModal(c){const mb=$('mb');if(c&&String(c).split(' ').includes('center')){mb.classList.add('ctr');mb.style.bottom='auto';mb.style.height=window.innerHeight+'px'}else{mb.classList.remove('ctr');mb.style.bottom='';mb.style.height=''}}
+window.addEventListener('orientationchange',()=>setTimeout(()=>{const mb=$('mb');if(mb&&mb.classList.contains('ctr')&&mb.classList.contains('show'))mb.style.height=window.innerHeight+'px'},400));
 function showRegister(){['authLogin','authWelcome'].forEach(id=>$(id)?.classList.add('hide'));$('authRegister').classList.remove('hide')}
 function showLogin(){['authRegister','authWelcome'].forEach(id=>$(id)?.classList.add('hide'));$('authLogin').classList.remove('hide')}
 function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
