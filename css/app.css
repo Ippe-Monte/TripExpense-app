@@ -736,3 +736,13 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 @keyframes tourin{from{opacity:0;margin-top:6px}to{opacity:1;margin-top:0}}
 @media(prefers-reduced-motion:reduce){#tourRoot .tour-spot{transition:none}#tourRoot .tour-card{animation:none}}
 @media(min-width:420px){#tourRoot .tour-card{width:360px}}
+
+/* ---- App dialog (replaces browser alert) ---- */
+.ftgdlg-back{position:fixed;inset:0;z-index:250;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:18px}
+.ftgdlg{background:#fff;color:var(--ink);width:min(380px,100%);border-radius:20px;padding:20px 20px 16px;box-shadow:0 18px 50px rgba(15,23,42,.35);animation:tourin .16s ease-out}
+.ftgdlg-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:15px}
+.ftgdlg-head img{border-radius:6px}
+.ftgdlg-msg{white-space:pre-wrap;word-break:break-word;font-size:15px;line-height:1.55;color:#334155;margin-bottom:16px}
+.ftgdlg-btns{display:flex;flex-direction:column;gap:8px}
+.ftgdlg-btns .btn{width:100%;padding:12px 14px}
+@media(min-width:420px){.ftgdlg-btns{flex-direction:row-reverse;flex-wrap:wrap}.ftgdlg-btns .btn{width:auto;flex:1 1 auto}}

@@ -7,7 +7,7 @@ const L={
  th:{next:'ถัดไป',back:'ย้อนกลับ',skip:'ข้าม',done:'เริ่มใช้งาน',of:'จาก',close:'ปิดทัวร์',
   steps:[
    {t:'ยินดีต้อนรับสู่ FriendTrip Go 👋',b:'ทัวร์สั้นๆ ไม่ถึงนาที แนะนำปุ่มหลักที่ใช้บ่อย ข้ามได้ทุกเมื่อ และเปิดดูซ้ำได้ที่ โปรไฟล์ → ช่วยเหลือ'},
-   {t:'เริ่มจาก Trip',b:'ทุกอย่างอยู่ใน Trip: สร้างทริปแรก ตั้งชื่อและวันที่ แล้วชวนเพื่อนด้วย Code / QR / LINE สลับทริปได้ที่นี่'},
+   {t:'เริ่มจาก Trip',b:'ก่อนสร้าง Trip ต้องมี Group (กลุ่มเพื่อนร่วมทริป) ก่อน — สร้างเองหรือใส่ Code เข้ากลุ่มเพื่อน แล้วสร้างทริป ชวนเพื่อนด้วย Code / QR / LINE สลับทริปได้ที่นี่'},
    {t:'สรุป & หารเงิน',b:'ดูว่าใครจ่ายอะไร ใครต้องโอนให้ใคร พร้อมบันทึกการชำระ (จ่ายทีละส่วนก็ได้)'},
    {t:'สำรวจ',b:'ค้นหาสถานที่บนแผนที่ ปักหมุด และบันทึกที่น่าสนใจไว้ในทริป'},
    {t:'แชต',b:'คุยกับเพื่อนร่วมทริปในที่เดียว ไม่ต้องสลับแอป'},
@@ -17,7 +17,7 @@ const L={
  en:{next:'Next',back:'Back',skip:'Skip',done:'Get started',of:'of',close:'Close tour',
   steps:[
    {t:'Welcome to FriendTrip Go 👋',b:'A quick tour of the main buttons — under a minute. Skip any time; replay it from Profile → Help.'},
-   {t:'Start with a Trip',b:'Everything lives in a Trip: create your first one, set the name and dates, then invite friends by Code / QR / LINE. Switch trips here.'},
+   {t:'Start with a Trip',b:'You need a Group (your travel circle) before creating a Trip — create one or join a friend\'s with a Code, then create the trip and invite friends by Code / QR / LINE. Switch trips here.'},
    {t:'Summary & settle up',b:'See who paid what and who owes whom, and record payments (part-payments are fine).'},
    {t:'Explore',b:'Search places on the map, drop pins and keep the interesting ones in your trip.'},
    {t:'Chat',b:'Talk with your trip mates in one place — no app switching.'},

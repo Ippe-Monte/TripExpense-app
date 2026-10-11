@@ -3,6 +3,14 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.1.7 — "Create a Group first" flow + in-app dialogs
+**No SQL change, no Supabase change, no auth change, stored data untouched** (the same `create_group` RPC is called).
+- New `js/dialog.js`: every `alert()` in the app now opens an in-app dialog titled **"FriendTrip Go"** instead of the browser box that said "ippe-monte.github.io บอกว่า" (that title cannot be edited in a native alert). Messages queue, Enter/Esc close, TH/EN buttons.
+- Creating a Trip without a Group now explains what a Group is and offers: **ตกลง — ไปสร้าง Group** (opens the Groups page and the create-Group form right away), **มี Code เข้าร่วม** (Groups page, cursor in the Code box) or Cancel.
+- "Create Group" uses an in-app form (instead of the browser `prompt`) with a hint, empty-name check and double-tap protection.
+- Tour step 2 now mentions that a Group comes before a Trip.
+- Not changed: the 26 `confirm()` and remaining `prompt()` boxes still use the browser's own dialog.
+
 ## 2.1.6 — Onboarding tour (tooltip walkthrough) for new users
 **No SQL change, no Supabase change, no auth change, stored data untouched.**
 - New `js/tour.js`: an 8-step spotlight tour (welcome, Trip, Summary & settle up, Explore, Chat, Schedule, Notifications, Profile & Help) shown once after a new user's first login. TH/EN, works on phone and desktop, keyboard (←/→/Esc), Skip / Back / Next.
