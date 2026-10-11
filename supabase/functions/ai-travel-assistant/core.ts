@@ -236,7 +236,7 @@ export async function handle(body: any, hasAuth: boolean, deps: Deps): Promise<O
       return { status: 200, body: { ok: true, reply: r.answer.reply, questions: r.answer.questions, recommendations: r.answer.recommendations, itinerary: r.answer.itinerary, warnings, places_source: cfg.placesKey ? 'google_places' : 'none', usage: r.usage } };
     } catch (e: any) {
       const code = e instanceof AiError ? e.code : 'ai_unavailable'; const status = e instanceof AiError ? e.status : 502;
-      log({ evt: 'ai_chat', ok: false, provider: ai.name, code, ms: (deps.now ? deps.now() : Date.now()) - t0 });
+      log({ evt: 'ai_chat', ok: false, provider: ai.name, model: ai.provider ? ai.provider.model : null, code, detail: e instanceof AiError ? String(e.message).slice(0, 300) : null, ms: (deps.now ? deps.now() : Date.now()) - t0 });
       return fail(status, code, AI_MSG[code] || AI_MSG.ai_unavailable, { retryable: code !== 'ai_auth' && code !== 'ai_config', retry_after_s: e instanceof AiError ? e.retryAfterS : null });
     }
   }

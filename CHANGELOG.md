@@ -3,6 +3,13 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.1 — AI Assistant: paste a Google Maps link to pin each place
+**Front-end only. No SQL / Supabase / auth change. The deployed Edge Function is untouched.**
+- In "Confirm adding to Schedule", every item without coordinates now has an "Open in Google Maps" button and a "Paste Google Maps link" box, with the 5 steps always shown (open map → pick the place → Share → Copy link → paste here).
+- The pasted link (also the text Android/iOS share, name + link) is read with the app's existing `resolveMapLink` / `resolve-map-link`; coordinates and the link are saved with the Schedule item so it shows on the Map. Optional per item; nothing is guessed from the name.
+- Only Google Maps links are accepted; if coordinates cannot be read the link is still saved and the user is told no pin will show yet.
+- The confirm box scrolls on small screens so the Confirm button is always visible.
+
 ## 2.2.0 — AI Travel Assistant V1 (beta)
 **Additive only. No change to existing tables, columns, RLS, auth, Supabase URL/keys or stored data. One OPTIONAL SQL file (`sql/v22_ai_usage.sql`) — not required, not executed by the app.**
 - New page ✨ AI Travel Assistant (Home "new" strip, Profile menu): Thai/English chat, suggested prompts, recommendation cards (Google-verified vs "AI suggestion, not verified"), editable itinerary preview (reorder / remove / edit time and name), trip picker, conflict warnings, review-and-confirm before anything is added to Schedule (existing `schedules` table, existing columns; AI never saves by itself, never creates expenses).

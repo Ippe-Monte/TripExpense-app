@@ -788,3 +788,7 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
   .ai-ctrl{grid-template-columns:1fr}.ai-bub{max-width:96%}.ai-log{max-height:52vh;padding:10px}.ai-cards{grid-template-columns:1fr}
   .ai-row{grid-template-columns:auto 1fr auto;grid-template-areas:"sel time btns" "main main main"}.ai-row .ai-sel{grid-area:sel}.ai-row .ai-time{grid-area:time;width:100%;max-width:130px}.ai-row .ai-rbtn{grid-area:btns;max-width:none}.ai-row .ai-rmain{grid-area:main}
 }
+
+.ai-steps{background:#eef6ff;border:1px solid #cfe2f7;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px}.ai-steps ol{margin:6px 0 6px 20px;padding:0}.ai-steps li{margin:3px 0}
+.ai-revbody{max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}.ai-pinlist{list-style:none;margin:8px 0;padding:0}.ai-pinrow{padding:9px 0;border-top:1px solid #edf1f7}.ai-pinrow:first-child{border-top:0}
+.ai-pinact{margin:6px 0 4px}.ai-pin{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-size:16px}

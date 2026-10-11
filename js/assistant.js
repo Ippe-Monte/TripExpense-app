@@ -219,26 +219,73 @@ function selectedPayload(){
   for(const d of S.itin.days){const ds=dayDate(d.day);if(!ds||!dayInRange(d.day))continue;
     for(const s of d.items){if(!s.selected)continue;const name=(s.name||'').trim();if(!name)continue;
       const bits=[];if(s.note)bits.push(s.note);if(s.duration_min)bits.push(A(`ใช้เวลาประมาณ ${s.duration_min} นาที (ประมาณการ)`,`about ${s.duration_min} min (estimate)`));if(s.est_cost_thb!=null)bits.push(A(`ค่าใช้จ่ายประมาณ ฿${s.est_cost_thb} ต่อคน (ประมาณการ ยังไม่ได้บันทึกเป็นค่าใช้จ่าย)`,`about THB ${s.est_cost_thb} per person (estimate, not recorded as an expense)`));if(!s.verified)bits.push(A('ยังไม่ยืนยันสถานที่กับแผนที่','place not verified on the map'));
-      items.push({date:ds,time:s.start_time||null,activity:name,category:s.category,note:bits.join(' · ').slice(0,500),location_name:s.place_name,url:s.url,lat:s.lat,lng:s.lng,_label:`${fmtDate(ds)} ${s.start_time||'--:--'} ${name}`})}}
+      items.push({_id:s.id,hasPin:s.lat!=null&&s.lng!=null,date:ds,time:s.start_time||null,activity:name,category:s.category,note:bits.join(' · ').slice(0,500),location_name:s.place_name,url:s.url,lat:s.lat,lng:s.lng,_label:`${fmtDate(ds)} ${s.start_time||'--:--'} ${name}`})}}
   return {trip:t,items};
+}
+const pinWait=new Set();
+function extractUrl(t){const m=String(t||'').match(/https?:\/\/[^\s<>"']+/i);return m?m[0].replace(/[),.;]+$/,''):null}
+function pinStepsHtml(){
+  return `<div class="ai-steps"><b>${esc(A('วิธีปักหมุดสถานที่ (ทำได้ทุกรายการ ไม่บังคับ)','How to pin a place (optional, per item)'))}</b><ol>
+    <li>${esc(A('กดปุ่ม "เปิดใน Google Maps" ของรายการนั้น','Tap "Open in Google Maps" on that item'))}</li>
+    <li>${esc(A('ในแผนที่ เลือกสถานที่ที่ถูกต้องจากผลการค้นหา','In the map, pick the correct place from the results'))}</li>
+    <li>${esc(A('กดปุ่ม "แชร์" (Share)','Tap "Share"'))}</li>
+    <li>${esc(A('กด "คัดลอกลิงก์" (Copy link)','Tap "Copy link"'))}</li>
+    <li>${esc(A('กลับมาที่หน้านี้ แล้ววางลิงก์ในช่อง "วางลิงก์ Google Maps" ของรายการนั้น','Come back here and paste it into that item\'s "Paste Google Maps link" box'))}</li></ol>
+    <div class="mini muted">${esc(A('ระบบจะอ่านพิกัดจากลิงก์ให้อัตโนมัติ ถ้าไม่วางลิงก์ รายการจะถูกบันทึกโดยยังไม่มีหมุดบนแผนที่','The coordinates are read from the link for you. Without a link the item is saved with no map pin.'))}</div></div>`;
+}
+function pinRowHtml(i,dest){
+  const has=i.hasPin;
+  return `<li class="ai-pinrow" data-id="${i._id}"><div>${esc(i._label)}</div>
+    ${has?`<div class="aic-ok" data-pin-status>✓ ${esc(A('มีพิกัดแล้ว','Has coordinates'))}</div>`
+    :`<div class="ai-pinact"><a class="locbtn" href="${esc(searchUrl(i.activity,dest))}" target="_blank" rel="noopener noreferrer">📍 ${esc(A('เปิดใน Google Maps','Open in Google Maps'))}</a></div>
+      <input class="ai-pin" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" data-ai-pin="${i._id}" placeholder="${esc(A('วางลิงก์ Google Maps ที่นี่','Paste Google Maps link here'))}" aria-label="${esc(A('วางลิงก์ Google Maps','Paste Google Maps link'))}">
+      <div class="mini muted" data-pin-status></div>`}</li>`;
+}
+async function pinItem(id,raw,row){
+  const st=row&&row.querySelector('[data-pin-status]');const say=(t,cls)=>{if(st){st.textContent=t;st.className='mini '+(cls||'muted')}};
+  const f=findItem(id);if(!f)return;
+  const text=String(raw||'').trim();
+  if(!text){f.it.url=null;f.it.lat=null;f.it.lng=null;f.it.place_name=null;say('');return}
+  const u0=extractUrl(text);const u=u0&&typeof normalizeMapUrl==='function'?normalizeMapUrl(u0):null;
+  if(!u||!isMapLink(u)){say(A('ลิงก์นี้ไม่ใช่ลิงก์ Google Maps (ต้องเป็นลิงก์จากปุ่ม แชร์ → คัดลอกลิงก์ ในแอป Google Maps)','This is not a Google Maps link (use Share → Copy link in Google Maps)'),'aic-un');return}
+  say(A('กำลังอ่านพิกัดจากลิงก์…','Reading coordinates from the link…'));
+  let r=null;try{r=await resolveMapLink(u)}catch(e){r=null}
+  const g=findItem(id);if(!g)return;
+  g.it.url=u;g.it.place_name=g.it.name;
+  if(r&&typeof r.lat==='number'&&typeof r.lng==='number'){g.it.lat=r.lat;g.it.lng=r.lng;say('✓ '+A('ปักหมุดแล้ว','Pinned')+` (${r.lat.toFixed(5)}, ${r.lng.toFixed(5)})`,'aic-ok')}
+  else{g.it.lat=null;g.it.lng=null;say(A('บันทึกลิงก์ได้ แต่อ่านพิกัดไม่ได้ในตอนนี้ (หมุดบนแผนที่จะยังไม่ขึ้น) ลองวางใหม่หรือตรวจสอบลิงก์ได้','The link can be saved but coordinates could not be read now (no pin on the map yet). You can paste it again.'),'aic-un')}
 }
 function review(){
   if(!S.itin)return;const {trip,items}=selectedPayload();
   if(!trip||!canWrite(trip.id)){toast(A('เลือกทริปที่คุณแก้ไขได้ก่อน','Select a trip you can edit first'));return}
   if(!items.length){toast(A('ยังไม่ได้เลือกรายการ','No items selected'));return}
-  const conf=localConflicts();
+  const conf=localConflicts();const needPin=items.some(i=>!i.hasPin);const dest=S.itin.destination||'';
   modal(`<div class="sheethead"><h3 data-no-tr="1">${esc(A('ยืนยันเพิ่มลง Schedule','Confirm adding to Schedule'))}</h3><div class="spacer"></div><button class="btn secondary sm" data-no-tr="1" onclick="closeModal()">${esc(A('ปิด','Close'))}</button></div>
-  <div data-no-tr="1"><p>${esc(A(`จะเพิ่ม ${items.length} รายการลงทริป "${trip.name||''}"`,`Add ${items.length} item(s) to trip "${trip.name||''}"`))}</p>
-  <ul class="ai-sumlist">${items.map(i=>`<li>${esc(i._label)}</li>`).join('')}</ul>
+  <div data-no-tr="1" class="ai-revbody"><p>${esc(A(`จะเพิ่ม ${items.length} รายการลงทริป "${trip.name||''}"`,`Add ${items.length} item(s) to trip "${trip.name||''}"`))}</p>
+  ${needPin?pinStepsHtml():''}
+  <ul class="ai-sumlist ai-pinlist" id="aiPins">${items.map(i=>pinRowHtml(i,dest)).join('')}</ul>
   ${conf.length?`<div class="ai-warns"><b>⚠️ ${esc(A('เวลาใกล้กับรายการเดิม','Close to existing items'))}</b><ul>${conf.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:''}
   <div class="mini muted">${esc(A('รายการที่ซ้ำกับของเดิมจะถูกข้าม ระบบไม่สร้างค่าใช้จ่ายให้','Items already in the schedule are skipped. No expenses are created.'))}</div></div>
   <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn secondary" data-no-tr="1" onclick="closeModal()">${esc(A('ยกเลิก','Cancel'))}</button><button class="btn" id="aiConfirm" data-no-tr="1">${esc(A('ยืนยัน เพิ่มลง Schedule','Confirm & add'))}</button></div>`,'center');
-  $a('aiConfirm').onclick=()=>apply(trip,items);
+  const box=$a('aiPins');const timers={};
+  const run=el=>{const id=Number(el.dataset.aiPin),row=el.closest('.ai-pinrow');clearTimeout(timers[id]);
+    const pr=pinItem(id,el.value,row);pinWait.add(pr);pr.finally(()=>pinWait.delete(pr))};
+  if(box){
+    box.addEventListener('input',e=>{const el=e.target.closest('[data-ai-pin]');if(!el)return;const id=Number(el.dataset.aiPin);clearTimeout(timers[id]);timers[id]=setTimeout(()=>run(el),500)});
+    box.addEventListener('change',e=>{const el=e.target.closest('[data-ai-pin]');if(el)run(el)});
+    box.addEventListener('paste',e=>{const el=e.target.closest('[data-ai-pin]');if(el)setTimeout(()=>run(el),0)});
+  }
+  $a('aiConfirm').onclick=async()=>{
+    const b=$a('aiConfirm');if(b){b.disabled=true;b.textContent=A('กำลังตรวจลิงก์…','Checking links…')}
+    try{await Promise.all([...pinWait])}catch(e){}
+    const p=selectedPayload();
+    if(b){b.disabled=false;b.textContent=A('ยืนยัน เพิ่มลง Schedule','Confirm & add')}
+    apply(trip,p.items)};
 }
 let applying=false;
 async function apply(trip,items){
   if(applying)return;applying=true;const b=$a('aiConfirm');if(b){b.disabled=true;b.textContent=A('กำลังบันทึก…','Saving…')}
-  const r=await invoke({action:'apply',trip_id:trip.id,confirmed:true,items:items.map(({_label,...x})=>x)});
+  const r=await invoke({action:'apply',trip_id:trip.id,confirmed:true,items:items.map(({_label,_id,hasPin,...x})=>x)});
   applying=false;
   if(!r.ok){if(b){b.disabled=false;b.textContent=A('ยืนยัน เพิ่มลง Schedule','Confirm & add')}toast(r.message||A('บันทึกไม่สำเร็จ','Could not save'));return}
   closeModal();
