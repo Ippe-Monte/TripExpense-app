@@ -3,6 +3,10 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.3 — AI Assistant: automatic retry when Gemini is busy (HTTP 503)
+**Front-end only. No SQL / Supabase / auth change. Edge Function untouched.**
+- Function logs showed intermittent `http 503` from Gemini ("model busy"), not an app/config error. The chat now retries automatically up to 2 times (3 s, 6 s) with the same provider and model — no switch to another or paid model — and then shows a clearer message with the Retry button.
+
 ## 2.2.2 — AI Assistant: choose the date, keep the suggestions, fallback for map pins
 **Front-end only. No SQL / Supabase / auth change. The deployed Edge Functions are untouched.**
 - "Confirm adding to Schedule": every item now has a date picker (limited to the trip's dates). The default follows the plan's day; items whose plan day falls outside the trip start blank and must be given a date before confirming. Items beyond the trip length can now be selected (previously blocked).

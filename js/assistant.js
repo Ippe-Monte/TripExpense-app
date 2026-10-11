@@ -230,11 +230,13 @@ async function send(text,opts){
   S.lastUser=text;S.busy=true;if($a('aiInput'))$a('aiInput').value='';render();
   const body={action:'chat',message:text,history:historyForServer(true),trip_id:S.tripId||null,lang:(LANG==='en'?'en':'th')};
   const o=($a('aiOrigin')?.value||S.origin||'').trim();if(o)body.origin={name:o.slice(0,120)};
-  const r=await invoke(body);
+  let r=await invoke(body);
+  // Gemini (แพ็กเกจฟรี) ตอบ 503 "หนาแน่น" เป็นพักๆ → ลองซ้ำอัตโนมัติสูงสุด 2 ครั้งห่าง 3 และ 6 วินาที (ผู้ให้บริการและโมเดลเดิม ไม่สลับไปตัวอื่น)
+  for(let n=0;n<2&&!r.ok&&r.code==='ai_unavailable';n++){await new Promise(z=>setTimeout(z,3000*(n+1)));r=await invoke(body)}
   S.busy=false;
   if(!r.ok){
     if(r.retry_after_s)S.retryUntil=Date.now()+r.retry_after_s*1000;
-    S.msgs.push({role:'assistant',error:true,text:r.message||A('ขออภัย เกิดข้อผิดพลาด','Sorry, something went wrong'),retryable:r.retryable!==false&&r.code!=='ai_not_configured'});
+    S.msgs.push({role:'assistant',error:true,text:(r.code==='ai_unavailable'?A('ผู้ให้บริการ AI (Gemini) กำลังหนาแน่นหรือขัดข้องชั่วคราว ลองซ้ำอัตโนมัติแล้วแต่ยังไม่สำเร็จ กรุณากด "ลองใหม่" อีกครั้งในอีกสักครู่','The AI provider (Gemini) is busy or temporarily down. Automatic retries did not succeed; please tap Retry in a moment.'):null)||r.message||A('ขออภัย เกิดข้อผิดพลาด','Sorry, something went wrong'),retryable:r.retryable!==false&&r.code!=='ai_not_configured'});
     if(r.code==='ai_not_configured'||r.code==='not_deployed'){S.cfgState=r.code==='not_deployed'?'not_deployed':'no_key'}
     render();tickRetry();return}
   S.placesSource=r.places_source||'none';S.warnings=r.warnings||[];S.dest=r.itinerary&&r.itinerary.destination||S.dest||'';
