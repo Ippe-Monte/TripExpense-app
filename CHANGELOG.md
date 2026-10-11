@@ -3,6 +3,14 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.1.6 — Onboarding tour (tooltip walkthrough) for new users
+**No SQL change, no Supabase change, no auth change, stored data untouched.**
+- New `js/tour.js`: an 8-step spotlight tour (welcome, Trip, Summary & settle up, Explore, Chat, Schedule, Notifications, Profile & Help) shown once after a new user's first login. TH/EN, works on phone and desktop, keyboard (←/→/Esc), Skip / Back / Next.
+- Shown only to accounts created within the last 14 days that have not finished or skipped it; waits while a modal (e.g. an invite join) is open. Steps whose button is not visible on the current layout are skipped automatically.
+- "Seen" is remembered per user in this browser (`ftg_tour_<userId>` in localStorage); nothing is written to the database. If storage is blocked the tour is not shown, so it can never loop.
+- Replay any time: Profile → Help → "ดูทัวร์แนะนำการใช้งานอีกครั้ง".
+- `sw.js` precache, `index.html`, `css/app.css` (tour styles), `js/profile.js` (replay button), `js/core.js` (one call after login).
+
 ## 2.1.5 — Landing page shown first to new visitors
 **No SQL change, no Supabase change, no auth change, stored data untouched.**
 - **Finding.** `landing.html` was already published, but nothing linked to it and the site root serves the app (`index.html`), so visitors never saw it.

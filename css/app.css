@@ -714,3 +714,25 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .soonstrip{margin:14px 0 4px;padding:14px;border:1px dashed #b9d7f5;border-radius:18px;background:#F7FBFF}.soonhead{font-weight:800;color:#153B73;margin-bottom:10px;font-size:15px}.soonrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.soonitem{background:#fff;border:1px solid #dbe8f6;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:2px;font-size:13px;color:#5b7191}.soonitem b{color:#153B73;font-size:14px}.soonitem em{font-style:normal;align-self:flex-start;margin-top:4px;background:#fff3d6;color:#9a5b00;border-radius:999px;padding:1px 9px;font-weight:800;font-size:12px}@media(max-width:600px){.soonrow{grid-template-columns:1fr}}
 
 .splash h1 span,.auth-top h1 span,.sidelogo .logo span{font-style:italic}
+
+/* ---- Onboarding tour (V2.1.6) ---- */
+#tourRoot{position:fixed;inset:0;z-index:200}
+#tourRoot .tour-block{position:absolute;inset:0}
+#tourRoot.center .tour-block{background:rgba(15,23,42,.55)}
+#tourRoot .tour-spot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(15,23,42,.55),0 0 0 3px #fff,0 0 0 6px var(--brand);pointer-events:none;transition:left .22s,top .22s,width .22s,height .22s}
+#tourRoot .tour-card{position:fixed;background:#fff;color:var(--ink);border-radius:18px;padding:18px 18px 14px;box-shadow:0 18px 50px rgba(15,23,42,.35);width:calc(100vw - 24px);outline:none;animation:tourin .18s ease-out}
+#tourRoot.center .tour-card{left:50%!important;top:50%!important;transform:translate(-50%,-50%)}
+#tourRoot .tour-card h3{margin:2px 28px 6px 0;font-size:17px}
+#tourRoot .tour-card p{margin:0 0 12px;font-size:14px;line-height:1.55;color:#475569}
+#tourRoot .tour-step{font-size:11px;font-weight:800;color:var(--brand);letter-spacing:.3px}
+#tourRoot .tour-x{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:#f1f5f9;color:#475569;font-size:14px;line-height:1}
+#tourRoot .tour-dots{display:flex;gap:5px;justify-content:center;margin-bottom:10px}
+#tourRoot .tour-dots i{width:6px;height:6px;border-radius:50%;background:#cbd5e1}
+#tourRoot .tour-dots i.on{width:18px;border-radius:99px;background:var(--brand)}
+#tourRoot .tour-btns{display:flex;gap:8px;align-items:center}
+#tourRoot .tour-card[data-arrow="up"]::before,#tourRoot .tour-card[data-arrow="down"]::before{content:"";position:absolute;left:calc(var(--ax,50%) - 8px);width:16px;height:16px;background:#fff;transform:rotate(45deg)}
+#tourRoot .tour-card[data-arrow="up"]::before{top:-7px}
+#tourRoot .tour-card[data-arrow="down"]::before{bottom:-7px}
+@keyframes tourin{from{opacity:0;margin-top:6px}to{opacity:1;margin-top:0}}
+@media(prefers-reduced-motion:reduce){#tourRoot .tour-spot{transition:none}#tourRoot .tour-card{animation:none}}
+@media(min-width:420px){#tourRoot .tour-card{width:360px}}
