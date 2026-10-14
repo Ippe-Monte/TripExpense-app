@@ -3,6 +3,10 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.4 — แบนเนอร์โฆษณาของเราเต็มความกว้างการ์ด
+- แบนเนอร์ "แบนเนอร์ของเรา" (house banner) จากเดิมจำกัดกว้าง 320px ตรงกลาง → ขยายเต็มความกว้างของหน้า (สัดส่วนรูปคงเดิม) ให้เข้ากับการ์ดอื่น
+- AdSense ยังใช้ขนาดตายตัวตามข้อกำหนด Google · ไม่แก้ฐานข้อมูล/Edge Function
+
 ## 2.2.3 — AI Assistant: automatic retry when Gemini is busy (HTTP 503)
 **Front-end only. No SQL / Supabase / auth change. Edge Function untouched.**
 - Function logs showed intermittent `http 503` from Gemini ("model busy"), not an app/config error. The chat now retries automatically up to 2 times (3 s, 6 s) with the same provider and model — no switch to another or paid model — and then shows a clearer message with the Retry button.
