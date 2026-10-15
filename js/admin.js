@@ -1,6 +1,6 @@
 // admin.js — หน้า Developer (เฉพาะบัญชีใน app_admins): ภาพรวมระบบ (สถิติรวม ไม่มีข้อมูลส่วนตัว) · ช่องโฆษณา/แบนเนอร์ · แคมเปญข้อเสนอ · พันธมิตร
 // เปลี่ยนค่าได้เองโดยไม่ต้องอัปโหลดแอปใหม่ — ค่าทั้งหมดเก็บในฐานข้อมูลและแอปอ่านตอนเปิด · กุญแจ API ของพันธมิตรไม่อยู่ในหน้านี้
-let isContentAdmin=false,adminView='hub',_adm={slots:[],banners:[],camps:[],cstats:{},partners:[],adst:{},pst:{},mon:{}},_ef={},_bnFile=null;
+let isContentAdmin=false,adminView='hub',_adm={slots:[],banners:[],camps:[],cstats:{},partners:[],items:[],itemsErr:false,adst:{},pst:{},mon:{}},_ef={},_bnFile=null;
 const SLOT_SIZE_PX={'320x50':[640,100],'320x100':[640,200],'300x250':[600,500]};
 const KIND_LABEL={anniversary:'ครบรอบปี',inactive:'ไม่ได้เที่ยวนาน',season:'ช่วงฤดูกาล',general:'ดีลทั่วไป'};
 const POLICY_LABEL={once:'ครั้งเดียวเมื่อเข้าเงื่อนไข',daily:'วันละครั้ง',weekly:'สัปดาห์ละครั้ง'};
@@ -11,9 +11,10 @@ function _chips(k,opts,sel){return `<div class="pchips">${Object.entries(opts).m
 function efSet(b){_ef[b.dataset.k]=b.dataset.v;b.parentElement.querySelectorAll('.pchip').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.k==='cKind')campKindChange();if(b.dataset.k==='sSrc')slotSrcChange()}
 function adminBack(){return `<button type="button" class="btn secondary sm" onclick="adminGo('hub')">‹ ผู้ดูแล</button>`}
 function _adReset(){adsReset();document.querySelectorAll('.adslot').forEach(e=>{delete e.dataset.banner;delete e.dataset.adsense})}
-async function loadAdmin(){if(typeof _expPartners!=="undefined")_expPartners=null;
-  const since=ymd(new Date(Date.now()-30*86400000)),q=await Promise.all([sb.from('ad_slots').select('*').order('sort'),sb.from('house_banners').select('*').order('created_at',{ascending:false}),sb.from('promo_campaigns').select('*').order('created_at',{ascending:false}),sb.rpc('promo_stats'),sb.from('partners').select('*').order('sort').order('name'),sb.from('ad_stats').select('banner_id,impressions,clicks').gte('day',since),sb.from('partner_stats').select('partner_id,clicks').gte('day',since)]);
-  for(const r of q)if(r.error)throw r.error;
+async function loadAdmin(){if(typeof _expPartners!=="undefined"){_expPartners=null;_expItems=null}
+  const since=ymd(new Date(Date.now()-30*86400000)),q=await Promise.all([sb.from('ad_slots').select('*').order('sort'),sb.from('house_banners').select('*').order('created_at',{ascending:false}),sb.from('promo_campaigns').select('*').order('created_at',{ascending:false}),sb.rpc('promo_stats'),sb.from('partners').select('*').order('sort').order('name'),sb.from('ad_stats').select('banner_id,impressions,clicks').gte('day',since),sb.from('partner_stats').select('partner_id,clicks').gte('day',since),sb.from('explore_items').select('*').order('category').order('sort').order('created_at',{ascending:false})]);
+  for(const r of q.slice(0,7))if(r.error)throw r.error;
+  _adm.itemsErr=!!q[7].error;_adm.items=q[7].error?[]:(q[7].data||[]);
   _adm.slots=q[0].data||[];_adm.banners=q[1].data||[];_adm.camps=q[2].data||[];_adm.cstats=Object.fromEntries((q[3].data||[]).map(x=>[x.campaign_id,x]));_adm.partners=q[4].data||[];
   _adm.adst={};(q[5].data||[]).forEach(x=>{const a=_adm.adst[x.banner_id]=_adm.adst[x.banner_id]||{i:0,c:0};a.i+=x.impressions;a.c+=x.clicks});
   _adm.pst={};(q[6].data||[]).forEach(x=>{_adm.pst[x.partner_id]=(_adm.pst[x.partner_id]||0)+x.clicks})}
@@ -22,12 +23,12 @@ async function renderAdmin(){
   const box=$('adminBox');if(!box)return;
   if(!isContentAdmin){toast('เฉพาะผู้ดูแลระบบ');go('dashboard');return}
   try{await loadAdmin();if(adminView==='monitor')await loadMonitor()}catch(e){return err(e)}
-  box.innerHTML=({hub:adminHubHtml,monitor:adminMonitorHtml,slots:adminSlotsHtml,campaigns:adminCampsHtml,partners:adminPartnersHtml}[adminView]||adminHubHtml)()}
+  box.innerHTML=({hub:adminHubHtml,monitor:adminMonitorHtml,slots:adminSlotsHtml,campaigns:adminCampsHtml,partners:adminPartnersHtml,items:adminItemsHtml}[adminView]||adminHubHtml)()}
 function adminHubHtml(){
   const on=_adm.slots.filter(s=>s.enabled&&s.source!=='off').length,live=_adm.camps.filter(c=>c.enabled).length,pon=_adm.partners.filter(p=>p.enabled).length;
   const tile=(ic,t,cap,v)=>`<button type="button" class="card admtile" onclick="adminGo('${v}')"><span class="admic">${lineIcon(ic,22)}</span><b>${t}</b><span class="mini muted">${cap}</span></button>`;
   return `<div class="card"><h3>ตั้งค่าเองได้ ไม่ต้องแก้โค้ด</h3><div class="muted" style="margin-top:4px">เปลี่ยนแบนเนอร์ ลิงก์ และแคมเปญได้ทันที ไม่ต้องอัปโหลดแอปใหม่ ผู้ใช้เห็นผลเมื่อเปิดแอปครั้งถัดไป</div></div>
-   <div class="admgrid">${tile('summary','ภาพรวมระบบ','ผู้ใช้ การกดโฆษณา ข้อเสนอ และพันธมิตร (ไม่มีข้อมูลส่วนตัว)','monitor')}${tile('image','ช่องโฆษณา','เปิด/ปิด เลือกแหล่ง เพิ่มแบนเนอร์ได้ไม่จำกัด','slots')}${tile('bell','แคมเปญข้อเสนอ','ป๊อปอัปข้อเสนอ ดู หรือ ปิด','campaigns')}${tile('link','พันธมิตรและลิงก์','เพิ่มพันธมิตรได้ไม่จำกัด','partners')}</div>
+   <div class="admgrid">${tile('summary','ภาพรวมระบบ','ผู้ใช้ การกดโฆษณา ข้อเสนอ และพันธมิตร (ไม่มีข้อมูลส่วนตัว)','monitor')}${tile('image','ช่องโฆษณา','เปิด/ปิด เลือกแหล่ง เพิ่มแบนเนอร์ได้ไม่จำกัด','slots')}${tile('bell','แคมเปญข้อเสนอ','ป๊อปอัปข้อเสนอ ดู หรือ ปิด','campaigns')}${tile('map','รายการหน้าสำรวจ','เพิ่มที่พัก ร้านค้า ดีล พร้อมรูป ราคา และลิงก์','items')}${tile('link','พันธมิตรและลิงก์','เพิ่มพันธมิตรได้ไม่จำกัด','partners')}</div>
    <div class="card"><h3>สถานะตอนนี้</h3><div class="muted" style="line-height:1.9">ช่องโฆษณาที่เปิดอยู่ ${on}/${_adm.slots.length} · แคมเปญที่เปิด ${live} · พันธมิตรที่เปิด ${pon}</div></div>`}
 // ---------- ภาพรวมระบบ: สถิติรวมเท่านั้น ไม่มีชื่อ อีเมล ชื่อกลุ่ม/ทริป หรือยอดเงินของใคร (PDPA) ----------
 async function loadMonitor(){const {data,error}=await sb.rpc('dev_overview');if(error)throw error;_adm.mon=data||{}}
@@ -148,3 +149,28 @@ async function savePartner(id){
     const row={name,category:_ef.pCat||'other',link_template:link||null,affiliate_id:$('pAid').value.trim()||null,sort:Number($('pSort').value)||0,enabled:$('pOn').checked};
     const r=id?await sb.from('partners').update(row).eq('id',id):await sb.from('partners').insert(row);if(r.error)throw r.error;closeModal();toast('บันทึกพันธมิตรแล้ว');renderAdmin()}catch(e){err(e)}}
 async function deletePartner(id){if(!confirm('ลบพันธมิตรนี้?'))return;try{const {error}=await sb.from('partners').delete().eq('id',id);if(error)throw error;renderAdmin()}catch(e){err(e)}}
+
+// ---------- รายการหน้าสำรวจ (V2.2.7) ----------
+function adminItemsHtml(){
+  if(_adm.itemsErr)return `<div class="row" style="margin-bottom:8px">${adminBack()}</div><div class="card warnbox">ยังไม่มีตาราง explore_items ในฐานข้อมูล กรุณารันไฟล์ sql/v22_explore_items.sql ใน Supabase SQL Editor หนึ่งครั้ง แล้วกลับมาที่หน้านี้</div>`;
+  return `<div class="row" style="justify-content:space-between;margin-bottom:8px">${adminBack()}<button type="button" class="btn sm" onclick="openItemEdit(null)">＋ เพิ่มรายการ</button></div>`+(_adm.items.length?_adm.items.map(i=>`<div class="card"><div class="row" style="flex-wrap:nowrap;gap:10px;align-items:flex-start">${i.image_url?`<img src="${esc(i.image_url)}" alt="" style="width:56px;height:56px;border-radius:12px;object-fit:cover;flex:none">`:''}<div style="flex:1;min-width:0"><b>${esc(i.name)}</b><div class="mini muted">${PARTNER_CAT[i.category]||i.category}${i.price_text?' · '+esc(i.price_text):''}</div></div>${_swHtml('itOn_'+i.id,i.enabled,`toggleItem('${i.id}',this.checked)`)}</div><div class="row" style="gap:8px;margin-top:6px"><button type="button" class="btn sm secondary" onclick="openItemEdit('${i.id}')">แก้ไข</button><button type="button" class="btn sm danger" onclick="deleteItem('${i.id}')">ลบ</button></div></div>`).join(''):'<div class="card empty">ยังไม่มีรายการ กด ＋ เพิ่มรายการ</div>')+
+   `<div class="card infonote">${lineIcon('lock',18)}<span>รายการที่เปิดจะแสดงในแท็บตามประเภทของหน้าสำรวจ · รูปใส่เป็นลิงก์ https · ถ้าต้องการดึงอัตโนมัติจาก API ของพันธมิตร ต้องมี API จริงและให้นักพัฒนาเชื่อมต่อให้ครั้งเดียว</span></div>`}
+async function toggleItem(id,on){try{const {error}=await sb.from('explore_items').update({enabled:on}).eq('id',id);if(error)throw error;if(typeof _expItems!=='undefined')_expItems=null;renderAdmin()}catch(e){err(e);renderAdmin()}}
+function openItemEdit(id){
+  const i=id?_adm.items.find(x=>x.id===id):{category:'stay',enabled:true,sort:0};_ef={iCat:i.category};
+  modal(`<div class="sheethead"><h3>${id?'แก้ไขรายการ':'เพิ่มรายการใหม่'}</h3><div class="spacer"></div><button type="button" class="btn secondary sm" onclick="closeModal()">ปิด</button></div>
+   <div class="field"><label>ประเภท (แท็บที่จะแสดง)</label>${_chips('iCat',{stay:'ที่พัก',ticket:'ตั๋วเดินทาง',car:'รถ/รับส่ง',deal:'ดีล',insurance:'ประกัน',esim:'eSIM',tour:'ทัวร์',review:'รีวิว'},i.category)}</div>
+   <div class="field"><label>ชื่อ (โรงแรม/ร้านค้า)</label><input id="iName" value="${esc(i.name||'')}" maxlength="120"></div>
+   <div class="field"><label>รายละเอียดสั้นๆ</label><textarea id="iDesc" maxlength="500" style="min-height:70px">${esc(i.description||'')}</textarea></div>
+   <div class="field"><label>ลิงก์รูป (https://…)</label><input id="iImg" value="${esc(i.image_url||'')}" inputmode="url" autocomplete="off"></div>
+   <div class="field"><label>ราคา/ป้าย เช่น เริ่มต้น 1,290 บาท</label><input id="iPrice" value="${esc(i.price_text||'')}" maxlength="60"></div>
+   <div class="field"><label>ลิงก์ปลายทาง (affiliate หรือเว็บไซต์)</label><input id="iLink" value="${esc(i.link_url||'')}" inputmode="url" autocomplete="off"></div>
+   <div class="grid2 keep2"><div class="field"><label>ลำดับ</label><input id="iSort" type="number" value="${i.sort||0}"></div><div class="field"><label>สถานะ</label>${_swHtml('iOn',i.enabled!==false,'')}</div></div>
+   <button type="button" class="btn" onclick="saveItem('${id||''}')">${id?'บันทึก':'เพิ่มรายการ'}</button>`,'sheet')}
+async function saveItem(id){
+  try{const name=$('iName').value.trim();if(!name)throw new Error('กรุณาใส่ชื่อ');const img=$('iImg').value.trim(),link=$('iLink').value.trim();
+    if(img&&!_isHttp(img))throw new Error('ลิงก์รูปต้องขึ้นต้นด้วย http:// หรือ https://');if(link&&!_isHttp(link))throw new Error('ลิงก์ปลายทางต้องขึ้นต้นด้วย http:// หรือ https://');
+    const row={category:_ef.iCat||'stay',name,description:$('iDesc').value.trim()||null,image_url:img||null,price_text:$('iPrice').value.trim()||null,link_url:link||null,sort:Number($('iSort').value)||0,enabled:$('iOn').checked};
+    const r=id?await sb.from('explore_items').update(row).eq('id',id):await sb.from('explore_items').insert(row);if(r.error)throw r.error;
+    if(typeof _expItems!=='undefined')_expItems=null;closeModal();toast('บันทึกรายการแล้ว');renderAdmin()}catch(e){err(e)}}
+async function deleteItem(id){if(!confirm('ลบรายการนี้?'))return;try{const {error}=await sb.from('explore_items').delete().eq('id',id);if(error)throw error;if(typeof _expItems!=='undefined')_expItems=null;renderAdmin()}catch(e){err(e)}}

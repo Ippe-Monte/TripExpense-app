@@ -3,6 +3,12 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.7 — Developer เพิ่มรายการที่พัก/ร้านค้าในหน้าสำรวจ
+- Developer Console: เมนู "รายการหน้าสำรวจ" เพิ่ม/แก้/ลบ/เปิดปิดรายการ (ประเภท ชื่อ รายละเอียด รูป ราคา ลิงก์ ลำดับ)
+- หน้าสำรวจแสดงรายการเป็นการ์ดตามแท็บ แล้วตามด้วยการ์ดพันธมิตร
+- ต้องรัน sql/v22_explore_items.sql หนึ่งครั้ง (ถ้ายังไม่รัน หน้าสำรวจทำงานปกติ ไม่มีรายการ)
+- ยังไม่มีการดึงข้อมูลอัตโนมัติจาก API ของพันธมิตร (ยังไม่มี API)
+
 ## 2.2.6 — เอาข้อความ "ลิงก์พันธมิตร/ค่าคอมมิชชัน" ออกจากการ์ดพันธมิตรในหน้าสำรวจ
 
 ## 2.2.5 — หน้าสำรวจ: แท็บที่พักแสดงพันธมิตร (Trip.com)

@@ -805,3 +805,4 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 
 /* V2.2.4 การ์ดพันธมิตรในหน้าสำรวจ */
 .partnercard{margin-bottom:12px}.partnericon{width:48px;height:48px;border-radius:14px;background:#eaf2ff;color:#0f5fe0;display:flex;align-items:center;justify-content:center;flex:none}
+.itemcard{margin-bottom:12px;padding:12px}.itemimg{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;background:#eaf0f8}.itemprice{flex:none;background:#eaf2ff;color:#0f5fe0;font-weight:800;font-size:12.5px;padding:4px 9px;border-radius:999px;white-space:nowrap}

@@ -12,6 +12,18 @@ async function loadExplorePartners(force){
   if(_expPartners&&!force)return _expPartners;
   try{const {data,error}=await sb.from('partners').select('id,name,category,link_template,affiliate_id,sort').eq('enabled',true).order('sort');if(error)throw error;_expPartners=data||[]}
   catch(e){_expPartners=[]}return _expPartners}
+let _expItems=null;
+async function loadExploreItems(){
+  if(_expItems)return _expItems;
+  try{const {data,error}=await sb.from('explore_items').select('id,category,name,description,image_url,price_text,link_url,sort').eq('enabled',true).order('sort').order('created_at',{ascending:false});if(error)throw error;_expItems=data||[]}
+  catch(e){_expItems=[]}return _expItems}
+function itemCardHtml(i,cat){
+  const ok=/^https?:\/\//i.test(i.link_url||'');
+  return `<div class="card itemcard">${/^https?:\/\//i.test(i.image_url||'')?`<img class="itemimg" src="${esc(i.image_url)}" alt="${esc(i.name)}" loading="lazy">`:''}
+   <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;gap:10px;margin-top:${i.image_url?'10':'0'}px"><b style="min-width:0">${esc(i.name)}</b>${i.price_text?`<span class="itemprice">${esc(i.price_text)}</span>`:''}</div>
+   ${i.description?`<div class="mini muted" style="margin-top:4px;line-height:1.5">${esc(i.description)}</div>`:''}
+   ${ok?`<button type="button" class="btn" style="width:100%;margin-top:10px;min-height:44px" onclick="openExploreItem('${i.id}')">${lineIcon('ext',16)} ดูรายละเอียด</button>`:''}</div>`}
+function openExploreItem(id){const i=(_expItems||[]).find(x=>x.id===id);if(i&&/^https?:\/\//i.test(i.link_url||''))window.open(i.link_url,'_blank','noopener,noreferrer')}
 function partnerUrl(p,dest){
   let u=String(p.link_template||'').trim();if(!/^https?:\/\//i.test(u))return '';
   u=u.replace(/\[รหัส\]|\{aid\}/g,encodeURIComponent(p.affiliate_id||'')).replace(/\{ปลายทาง\}|\{dest\}/g,encodeURIComponent(dest||''));return u}
@@ -31,12 +43,12 @@ function openPartner(id){
 function renderExplore(){
   const box=$('exploreBox');if(!box)return;const cur=EXPLORE_TABS.find(t=>t.key===exploreTab)||EXPLORE_TABS[0];
   const soon=`<div class="card empty"><span class="bigicon">${lineIcon(cur.icon,40)}</span><br><b>${cur.label} · เร็วๆ นี้</b><br><span class="mini">ฟีเจอร์นี้กำลังจะมาในเร็วๆ นี้ ระหว่างนี้ลองดู "แผนที่การเที่ยวของฉัน" และลิงก์ตำแหน่งในแผนการเดินทาง</span></div>`;
-  const draw=()=>{const list=(_expPartners||[]).filter(x=>x.category===cur.key&&partnerUrl(x,'x')),body=$('exploreBody');
-    if(body&&cur.key===exploreTab)body.innerHTML=cur.ready?'':(list.length?list.map(x=>partnerCardHtml(x,cur)).join(''):soon)};
+  const draw=()=>{const list=(_expPartners||[]).filter(x=>x.category===cur.key&&partnerUrl(x,'x')),its=(_expItems||[]).filter(x=>x.category===cur.key),body=$('exploreBody');
+    if(body&&cur.key===exploreTab)body.innerHTML=cur.ready?'':((its.length||list.length)?its.map(x=>itemCardHtml(x,cur)).join('')+list.map(x=>partnerCardHtml(x,cur)).join(''):soon)};
   box.innerHTML=`<div class="exptabs" role="tablist" aria-label="หมวดสำรวจ">${EXPLORE_TABS.map(t=>`<button type="button" role="tab" aria-selected="${t.key===cur.key}" class="exptab${t.key===cur.key?' active':''}" onclick="setExploreTab('${t.key}')">${lineIcon(t.icon,20)}<span>${t.label}</span></button>`).join('')}</div>
     <div class="adslot" data-slot="explore_top"></div>
-    <div id="exploreBody">${cur.ready?'':(_expPartners?'':'<div class="card empty mini">กำลังโหลด…</div>')}</div>`;
-  if(_expPartners)draw();else loadExplorePartners().then(draw);
+    <div id="exploreBody">${cur.ready?'':((_expPartners&&_expItems)?'':'<div class="card empty mini">กำลังโหลด…</div>')}</div>`;
+  if(_expPartners&&_expItems)draw();else Promise.all([loadExplorePartners(),loadExploreItems()]).then(draw);
   hydrateAdSlots(box)}
 function applyFeatureNav(){
   const f=document.querySelector('.mobileNav .fab');if(!f)return;
