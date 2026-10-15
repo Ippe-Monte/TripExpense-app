@@ -15,7 +15,7 @@ function pickWeighted(list,rnd){
   for(const b of list){r-=Math.max(1,b.weight||1);if(r<0)return b}return list[list.length-1]}
 function houseBannerHtml(b,size){
   const [w,h]=String(size||'320x50').split('x'),img=`<img src="${esc(b.image_url)}" alt="${esc(b.alt||b.title||'โฆษณา')}" loading="lazy" style="aspect-ratio:${w}/${h}">`,tag='<span class="adtag">โฆษณา</span>';
-  return b.link_url?`<a class="adbanner" href="${esc(b.link_url)}" target="_blank" rel="sponsored noopener noreferrer" data-banner="${esc(b.id)}">${img}${tag}</a>`:`<div class="adbanner">${img}${tag}</div>`}
+  return b.link_url?`<a class="adbanner house" href="${esc(b.link_url)}" target="_blank" rel="sponsored noopener noreferrer" data-banner="${esc(b.id)}">${img}${tag}</a>`:`<div class="adbanner house">${img}${tag}</div>`}
 function _loadScriptOnce(src,attrs){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const s=document.createElement('script');s.src=src;s.async=true;Object.entries(attrs||{}).forEach(([k,v])=>s.setAttribute(k,v));s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
 async function _renderAdsense(el,slot){
   try{
