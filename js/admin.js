@@ -11,7 +11,7 @@ function _chips(k,opts,sel){return `<div class="pchips">${Object.entries(opts).m
 function efSet(b){_ef[b.dataset.k]=b.dataset.v;b.parentElement.querySelectorAll('.pchip').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.k==='cKind')campKindChange();if(b.dataset.k==='sSrc')slotSrcChange()}
 function adminBack(){return `<button type="button" class="btn secondary sm" onclick="adminGo('hub')">‹ ผู้ดูแล</button>`}
 function _adReset(){adsReset();document.querySelectorAll('.adslot').forEach(e=>{delete e.dataset.banner;delete e.dataset.adsense})}
-async function loadAdmin(){
+async function loadAdmin(){if(typeof _expPartners!=="undefined")_expPartners=null;
   const since=ymd(new Date(Date.now()-30*86400000)),q=await Promise.all([sb.from('ad_slots').select('*').order('sort'),sb.from('house_banners').select('*').order('created_at',{ascending:false}),sb.from('promo_campaigns').select('*').order('created_at',{ascending:false}),sb.rpc('promo_stats'),sb.from('partners').select('*').order('sort').order('name'),sb.from('ad_stats').select('banner_id,impressions,clicks').gte('day',since),sb.from('partner_stats').select('partner_id,clicks').gte('day',since)]);
   for(const r of q)if(r.error)throw r.error;
   _adm.slots=q[0].data||[];_adm.banners=q[1].data||[];_adm.camps=q[2].data||[];_adm.cstats=Object.fromEntries((q[3].data||[]).map(x=>[x.campaign_id,x]));_adm.partners=q[4].data||[];

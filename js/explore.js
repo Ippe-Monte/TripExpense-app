@@ -6,11 +6,37 @@ const EXPLORE_TABS=[
  {key:'insurance',icon:'shield',label:'ประกัน',ready:false},{key:'esim',icon:'sim',label:'eSIM',ready:false},{key:'tour',icon:'flag',label:'ทัวร์',ready:false},{key:'review',icon:'star',label:'รีวิว',ready:false}];
 let exploreTab='stay';
 function setExploreTab(k){exploreTab=k;renderExplore()}
+// พันธมิตร (affiliate) ที่ผู้ดูแลเพิ่มไว้ใน Developer Console → แสดงในแท็บของประเภทนั้น · V2.2.4
+let _expPartners=null;
+async function loadExplorePartners(force){
+  if(_expPartners&&!force)return _expPartners;
+  try{const {data,error}=await sb.from('partners').select('id,name,category,link_template,affiliate_id,sort').eq('enabled',true).order('sort');if(error)throw error;_expPartners=data||[]}
+  catch(e){_expPartners=[]}return _expPartners}
+function partnerUrl(p,dest){
+  let u=String(p.link_template||'').trim();if(!/^https?:\/\//i.test(u))return '';
+  u=u.replace(/\[รหัส\]|\{aid\}/g,encodeURIComponent(p.affiliate_id||'')).replace(/\{ปลายทาง\}|\{dest\}/g,encodeURIComponent(dest||''));return u}
+function partnerNeedsDest(p){return /\{ปลายทาง\}|\{dest\}/.test(p.link_template||'')}
+function partnerCardHtml(p,cat){
+  const need=partnerNeedsDest(p);
+  return `<div class="card partnercard"><div class="row" style="flex-wrap:nowrap;gap:12px;align-items:center"><span class="partnericon">${lineIcon(cat.icon,26)}</span><div style="flex:1;min-width:0"><b>${esc(p.name)}</b><div class="mini muted">${esc(cat.label)} · ${need?'ใส่ปลายทางแล้วค้นหา':'เปิดเว็บพันธมิตรเพื่อค้นหาและจอง'}</div></div></div>
+   ${need?`<div class="field" style="margin:10px 0 0"><input id="ptDest_${p.id}" placeholder="ปลายทาง เช่น เชียงใหม่" autocomplete="off"></div>`:''}
+   <button type="button" class="btn" style="width:100%;margin-top:10px;min-height:44px" onclick="openPartner('${p.id}')">${lineIcon('ext',16)} ${need?'ค้นหา':'เปิดเว็บพันธมิตร'}</button></div>`}
+function openPartner(id){
+  const p=(_expPartners||[]).find(x=>x.id===id);if(!p)return;
+  const d=document.getElementById('ptDest_'+id),u=partnerUrl(p,d?d.value.trim():'');
+  if(!u)return toast('ลิงก์ของพันธมิตรนี้ยังไม่ถูกต้อง');
+  if(partnerNeedsDest(p)&&d&&!d.value.trim())return toast('กรุณาใส่ปลายทางก่อน');
+  try{sb.rpc('track_partner_click',{p_partner:id}).then(()=>{},()=>{})}catch(e){}
+  window.open(u,'_blank','noopener,noreferrer')}
 function renderExplore(){
   const box=$('exploreBox');if(!box)return;const cur=EXPLORE_TABS.find(t=>t.key===exploreTab)||EXPLORE_TABS[0];
+  const soon=`<div class="card empty"><span class="bigicon">${lineIcon(cur.icon,40)}</span><br><b>${cur.label} · เร็วๆ นี้</b><br><span class="mini">ฟีเจอร์นี้กำลังจะมาในเร็วๆ นี้ ระหว่างนี้ลองดู "แผนที่การเที่ยวของฉัน" และลิงก์ตำแหน่งในแผนการเดินทาง</span></div>`;
+  const draw=()=>{const list=(_expPartners||[]).filter(x=>x.category===cur.key&&partnerUrl(x,'x')),body=$('exploreBody');
+    if(body&&cur.key===exploreTab)body.innerHTML=cur.ready?'':(list.length?list.map(x=>partnerCardHtml(x,cur)).join(''):soon)};
   box.innerHTML=`<div class="exptabs" role="tablist" aria-label="หมวดสำรวจ">${EXPLORE_TABS.map(t=>`<button type="button" role="tab" aria-selected="${t.key===cur.key}" class="exptab${t.key===cur.key?' active':''}" onclick="setExploreTab('${t.key}')">${lineIcon(t.icon,20)}<span>${t.label}</span></button>`).join('')}</div>
     <div class="adslot" data-slot="explore_top"></div>
-    <div id="exploreBody">${cur.ready?'':`<div class="card empty"><span class="bigicon">${lineIcon(cur.icon,40)}</span><br><b>${cur.label} · เร็วๆ นี้</b><br><span class="mini">ฟีเจอร์นี้กำลังจะมาในเร็วๆ นี้ ระหว่างนี้ลองดู "แผนที่การเที่ยวของฉัน" และลิงก์ตำแหน่งในแผนการเดินทาง</span></div>`}</div>`;
+    <div id="exploreBody">${cur.ready?'':(_expPartners?'':'<div class="card empty mini">กำลังโหลด…</div>')}</div>`;
+  if(_expPartners)draw();else loadExplorePartners().then(draw);
   hydrateAdSlots(box)}
 function applyFeatureNav(){
   const f=document.querySelector('.mobileNav .fab');if(!f)return;

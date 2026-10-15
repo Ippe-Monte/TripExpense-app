@@ -3,6 +3,14 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.6 — เอาข้อความ "ลิงก์พันธมิตร/ค่าคอมมิชชัน" ออกจากการ์ดพันธมิตรในหน้าสำรวจ
+
+## 2.2.5 — หน้าสำรวจ: แท็บที่พักแสดงพันธมิตร (Trip.com)
+- แท็บในหน้าสำรวจดึงพันธมิตรที่เปิดอยู่ (ตาราง partners) ตามประเภทมาแสดงเป็นการ์ด + ปุ่มเปิดเว็บ นับคลิกผ่าน track_partner_click
+- รองรับ {ปลายทาง}/{dest} และ [รหัส]/{aid} ในรูปแบบลิงก์ · ลิงก์ธรรมดา (เช่น atth.me) เปิดตรงๆ · ประเภทที่ยังไม่มีพันธมิตรยังเป็น "เร็วๆ นี้"
+- ไม่ต้องแก้ฐานข้อมูล
+- (รวม 2.2.4: แบนเนอร์ของเราเต็มความกว้างการ์ด)
+
 ## 2.2.4 — แบนเนอร์โฆษณาของเราเต็มความกว้างการ์ด
 - แบนเนอร์ "แบนเนอร์ของเรา" (house banner) จากเดิมจำกัดกว้าง 320px ตรงกลาง → ขยายเต็มความกว้างของหน้า (สัดส่วนรูปคงเดิม) ให้เข้ากับการ์ดอื่น
 - AdSense ยังใช้ขนาดตายตัวตามข้อกำหนด Google · ไม่แก้ฐานข้อมูล/Edge Function

@@ -802,3 +802,6 @@ details.more{border:1px solid var(--line);border-radius:14px;padding:10px 12px;m
 .ai-date{flex:1;min-width:0;max-width:200px;padding:6px 8px;border:1px solid var(--line,#d6dae1);border-radius:8px;background:var(--card,#fff);color:inherit;font:inherit}
 .ai-pinrow.bad{outline:2px solid #d9534f;outline-offset:2px;border-radius:8px}
 .ai-fallback{margin-top:6px;padding:8px;border-radius:8px;background:rgba(127,127,127,.1)}
+
+/* V2.2.4 การ์ดพันธมิตรในหน้าสำรวจ */
+.partnercard{margin-bottom:12px}.partnericon{width:48px;height:48px;border-radius:14px;background:#eaf2ff;color:#0f5fe0;display:flex;align-items:center;justify-content:center;flex:none}
