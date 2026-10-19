@@ -3,6 +3,9 @@
 Version format: **MAJOR.MINOR.REVISION**. The REVISION is rolled up (+1) on every released edit; MINOR on a new feature; MAJOR on a new generation.
 Asset counter (`?v=`) and the service-worker cache name (`tripexpense-<version>`) change with every release, so browsers never keep old files.
 
+## 2.2.8 — สรุป > ภาพรวม: ยอดจ่ายรวมของแต่ละคนปรับตามการโอนคืนกันแล้ว
+- เมื่อมีการบันทึกโอนคืนกัน ยอดต่อคน = จ่ายจริง + โอนออก − รับโอน (เช่น โอนครบแล้ว แต่ละคนแสดง 8,553) · ยอดรวมทั้งหมดเท่าเดิม · ถ้ายังไม่มีการโอน แสดงเหมือนเดิม
+
 ## 2.2.7 — Developer เพิ่มรายการที่พัก/ร้านค้าในหน้าสำรวจ
 - Developer Console: เมนู "รายการหน้าสำรวจ" เพิ่ม/แก้/ลบ/เปิดปิดรายการ (ประเภท ชื่อ รายละเอียด รูป ราคา ลิงก์ ลำดับ)
 - หน้าสำรวจแสดงรายการเป็นการ์ดตามแท็บ แล้วตามด้วยการ์ดพันธมิตร
