@@ -158,11 +158,12 @@ const LINE_ICONS={
  key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>',
  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 8c-1.5-3-5-3.5-5-1.5S10 8 12 8Zm0 0c1.5-3 5-3.5 5-1.5S14 8 12 8Z"/>',
  plane:'<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>'
 };
 function lineIcon(name,size){const d=LINE_ICONS[name];if(!d)return '';const sz=size?` style="width:${size}px;height:${size}px"`:'';return `<svg class="lic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"${sz}>${d}</svg>`}
 // แปลงอีโมจิเดิมเป็นชื่อไอคอนลายเส้น (ใช้กับโค้ดส่วนที่ยังส่งอีโมจิมา)
-const EMOJI_ICON={'🧳':'trips','👥':'groups','💰':'budget','📄':'documents','🤝':'friends','📊':'reports','📔':'history','🔔':'bell','⚙️':'settings','🗑️':'trash','📲':'phone','🛠️':'developer','❓':'help','ℹ️':'info','👤':'profile','🏠':'home','💬':'chat','🗺️':'schedule','💸':'expense','📨':'invite','✔️':'settle','🔑':'key','🔄':'swap','🖨️':'reports','🖼️':'documents'};
+const EMOJI_ICON={'🎁':'gift','🧳':'trips','👥':'groups','💰':'budget','📄':'documents','🤝':'friends','📊':'reports','📔':'history','🔔':'bell','⚙️':'settings','🗑️':'trash','📲':'phone','🛠️':'developer','❓':'help','ℹ️':'info','👤':'profile','🏠':'home','💬':'chat','🗺️':'schedule','💸':'expense','📨':'invite','✔️':'settle','🔑':'key','🔄':'swap','🖨️':'reports','🖼️':'documents'};
 function iconOf(x){return EMOJI_ICON[x]?lineIcon(EMOJI_ICON[x]):x}
 
 // =====================================================================

@@ -1,6 +1,6 @@
 // admin.js — หน้า Developer (เฉพาะบัญชีใน app_admins): ภาพรวมระบบ (สถิติรวม ไม่มีข้อมูลส่วนตัว) · ช่องโฆษณา/แบนเนอร์ · แคมเปญข้อเสนอ · พันธมิตร
 // เปลี่ยนค่าได้เองโดยไม่ต้องอัปโหลดแอปใหม่ — ค่าทั้งหมดเก็บในฐานข้อมูลและแอปอ่านตอนเปิด · กุญแจ API ของพันธมิตรไม่อยู่ในหน้านี้
-let isContentAdmin=false,adminView='hub',_adm={slots:[],banners:[],camps:[],cstats:{},partners:[],items:[],itemsErr:false,adst:{},pst:{},mon:{}},_ef={},_bnFile=null;
+let isContentAdmin=false,adminView='hub',_adm={slots:[],banners:[],camps:[],cstats:{},partners:[],items:[],itemsErr:false,ref:{},refErr:false,adst:{},pst:{},mon:{}},_ef={},_bnFile=null;
 const SLOT_SIZE_PX={'320x50':[640,100],'320x100':[640,200],'300x250':[600,500]};
 const KIND_LABEL={anniversary:'ครบรอบปี',inactive:'ไม่ได้เที่ยวนาน',season:'ช่วงฤดูกาล',general:'ดีลทั่วไป'};
 const POLICY_LABEL={once:'ครั้งเดียวเมื่อเข้าเงื่อนไข',daily:'วันละครั้ง',weekly:'สัปดาห์ละครั้ง'};
@@ -22,13 +22,13 @@ function adminGo(v){adminView=v;renderAdmin()}
 async function renderAdmin(){
   const box=$('adminBox');if(!box)return;
   if(!isContentAdmin){toast('เฉพาะผู้ดูแลระบบ');go('dashboard');return}
-  try{await loadAdmin();if(adminView==='monitor')await loadMonitor()}catch(e){return err(e)}
-  box.innerHTML=({hub:adminHubHtml,monitor:adminMonitorHtml,slots:adminSlotsHtml,campaigns:adminCampsHtml,partners:adminPartnersHtml,items:adminItemsHtml}[adminView]||adminHubHtml)()}
+  try{await loadAdmin();if(adminView==='monitor')await loadMonitor();if(adminView==='referral')await loadReferralAdmin()}catch(e){return err(e)}
+  box.innerHTML=({hub:adminHubHtml,monitor:adminMonitorHtml,slots:adminSlotsHtml,campaigns:adminCampsHtml,partners:adminPartnersHtml,items:adminItemsHtml,referral:adminReferralHtml}[adminView]||adminHubHtml)()}
 function adminHubHtml(){
   const on=_adm.slots.filter(s=>s.enabled&&s.source!=='off').length,live=_adm.camps.filter(c=>c.enabled).length,pon=_adm.partners.filter(p=>p.enabled).length;
   const tile=(ic,t,cap,v)=>`<button type="button" class="card admtile" onclick="adminGo('${v}')"><span class="admic">${lineIcon(ic,22)}</span><b>${t}</b><span class="mini muted">${cap}</span></button>`;
   return `<div class="card"><h3>ตั้งค่าเองได้ ไม่ต้องแก้โค้ด</h3><div class="muted" style="margin-top:4px">เปลี่ยนแบนเนอร์ ลิงก์ และแคมเปญได้ทันที ไม่ต้องอัปโหลดแอปใหม่ ผู้ใช้เห็นผลเมื่อเปิดแอปครั้งถัดไป</div></div>
-   <div class="admgrid">${tile('summary','ภาพรวมระบบ','ผู้ใช้ การกดโฆษณา ข้อเสนอ และพันธมิตร (ไม่มีข้อมูลส่วนตัว)','monitor')}${tile('image','ช่องโฆษณา','เปิด/ปิด เลือกแหล่ง เพิ่มแบนเนอร์ได้ไม่จำกัด','slots')}${tile('bell','แคมเปญข้อเสนอ','ป๊อปอัปข้อเสนอ ดู หรือ ปิด','campaigns')}${tile('map','รายการหน้าสำรวจ','เพิ่มที่พัก ร้านค้า ดีล พร้อมรูป ราคา และลิงก์','items')}${tile('link','พันธมิตรและลิงก์','เพิ่มพันธมิตรได้ไม่จำกัด','partners')}</div>
+   <div class="admgrid">${tile('summary','ภาพรวมระบบ','ผู้ใช้ การกดโฆษณา ข้อเสนอ และพันธมิตร (ไม่มีข้อมูลส่วนตัว)','monitor')}${tile('image','ช่องโฆษณา','เปิด/ปิด เลือกแหล่ง เพิ่มแบนเนอร์ได้ไม่จำกัด','slots')}${tile('bell','แคมเปญข้อเสนอ','ป๊อปอัปข้อเสนอ ดู หรือ ปิด','campaigns')}${tile('map','รายการหน้าสำรวจ','เพิ่มที่พัก ร้านค้า ดีล พร้อมรูป ราคา และลิงก์','items')}${tile('link','พันธมิตรและลิงก์','เพิ่มพันธมิตรได้ไม่จำกัด','partners')}${tile('invite','ระบบแนะนำเพื่อน','จำนวนคนในสาย และอนุมัติบัญชีบริษัททัวร์','referral')}</div>
    <div class="card"><h3>สถานะตอนนี้</h3><div class="muted" style="line-height:1.9">ช่องโฆษณาที่เปิดอยู่ ${on}/${_adm.slots.length} · แคมเปญที่เปิด ${live} · พันธมิตรที่เปิด ${pon}</div></div>`}
 // ---------- ภาพรวมระบบ: สถิติรวมเท่านั้น ไม่มีชื่อ อีเมล ชื่อกลุ่ม/ทริป หรือยอดเงินของใคร (PDPA) ----------
 async function loadMonitor(){const {data,error}=await sb.rpc('dev_overview');if(error)throw error;_adm.mon=data||{}}
